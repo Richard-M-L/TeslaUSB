@@ -6,8 +6,8 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-    <h2>🔔 Lock Chimes</h2>
-    <div class="status-label {{ mode_class }}">Current Mode: {{ mode_label }}</div>
+    <h2>🔔 锁车音效</h2>
+    <div class="status-label {{ mode_class }}">当前模式: {{ mode_label }}</div>
     
     <!-- Gadget State Indicator -->
     <div id="gadgetStateIndicator" style="display: none; margin: 15px 0; padding: 12px; border-radius: 8px; font-size: 14px;">
@@ -17,8 +17,8 @@
     
     <!-- iOS Safari Warning -->
     <div id="iosWarning" class="ios-warning">
-        <p><strong>⚠️ iOS Browser Limitation:</strong> File uploading is only available through Safari when running on iOS. Please open this page in Safari to upload files.</p>
-        <p>Note: Desktop browsers (Windows/Mac/Linux) work normally regardless of browser choice.</p>
+        <p><strong>⚠️ iOS浏览器限制:</strong> 在 iOS 系统上，文件上传功能仅支持通过 Safari 浏览器使用。请在 Safari 浏览器中打开此页面以上传文件。</p>
+        <p>注意：桌面浏览器（Windows/Mac/Linux）无论选择哪种浏览器都能正常运行。</p>
     </div>
     
     <!-- Active Lock Chime - Moved to top -->
@@ -37,14 +37,14 @@
     </div>
     {% else %}
     <div class="info-box" style="background-color: var(--msg-error-bg); border-left: 4px solid var(--error-text); margin-bottom: 20px; border-radius: 8px; padding: 15px;">
-        <p style="margin: 0; color: var(--msg-error-text);">⚠️ No active lock chime set. Select a chime from the library below.</p>
+        <p style="margin: 0; color: var(--msg-error-text);">⚠️ 未设置活动锁定音效。请从下方库中选择一个音效。</p>
     </div>
     {% endif %}
     
     <!-- Upload Controls - Collapsible -->
     <details class="folder-controls" id="chimeUploadControls" style="margin-bottom: 20px;" open>
         <summary style="cursor: pointer; font-weight: 600; padding: 15px; background: var(--collapsible-section-bg); border-radius: 8px; border-left: 4px solid var(--collapsible-section-border); color: var(--collapsible-section-text); font-size: 18px; list-style: none; user-select: none;">
-            <span style="display: inline-block; margin-right: 5px;">▶</span> 📤 Upload New Chime
+            <span style="display: inline-block; margin-right: 5px;">▶</span> 📤 上传新的铃声
         </summary>
         
         <div style="background: var(--collapsible-content-bg); padding: 15px; border-radius: 0 0 8px 8px; border-left: 4px solid var(--collapsible-section-border); border-right: 1px solid var(--collapsible-section-border); border-bottom: 1px solid var(--collapsible-section-border); margin-top: -8px;">
@@ -54,7 +54,7 @@
                 <label class="toggle-switch">
                     <input type="checkbox" id="bulkUploadToggle">
                     <span class="toggle-slider"></span>
-                    <span class="toggle-label">Bulk Upload</span>
+                    <span class="toggle-label">批量上传</span>
                 </label>
             </div>
             
@@ -69,7 +69,7 @@
                         <button type="submit" class="edit-btn" id="chimeUploadBtn" style="margin: 0; display: none;">📤 Upload</button>
                     </div>
                     <p style="margin: 0 0 15px 0; font-size: 12px; color: var(--text-secondary);">
-                        WAV or MP3 files - auto-converted to Tesla format (PCM 16-bit, 44.1 kHz, under 1MB)
+                        WAV 或 MP3 文件——将自动转换为特斯拉格式（PCM 16 位，44.1 kHz，小于 1MB）。
                     </p>
                 </form>
             </div>
@@ -77,14 +77,14 @@
             <!-- Bulk Upload Mode (validation only, no processing) -->
             <div id="bulkUploadMode" style="display: none;">
                 <div class="bulk-upload-info" style="background: var(--ios-warning-bg); border: 2px solid var(--ios-warning-border); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-                    <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--text-primary);">⚠️ Bulk Upload Requirements:</p>
+                    <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--text-primary);">⚠️ 批量上传要求:</p>
                     <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
-                        <li>Only WAV files accepted (no MP3)</li>
-                        <li>Files must already meet Tesla requirements:</li>
-                        <li style="list-style: none; padding-left: 15px;">• PCM 16-bit, 44.1 or 48 kHz, mono or stereo</li>
-                        <li style="list-style: none; padding-left: 15px;">• Under 1 MB file size</li>
-                        <li>No audio processing or conversion will be performed</li>
-                        <li>Invalid files will be rejected with detailed reasons</li>
+                        <li>仅接受 WAV 文件（不接受 MP3 文件）</li>
+                        <li>文件必须已经符合特斯拉的要求。:</li>
+                        <li style="list-style: none; padding-left: 15px;">• PCM 16位，44.1 kHz 或 48 kHz，单声道或立体声</li>
+                        <li style="list-style: none; padding-left: 15px;">• 文件大小小于 1 MB</li>
+                        <li>不会进行任何音效处理或转换。</li>
+                        <li>无效文件将被拒绝，并会提供详细的拒绝原因。</li>
                     </ul>
                 </div>
                 
@@ -93,9 +93,9 @@
                     <div class="drag-drop-zone" id="chimeDragDropZone" style="border: 3px dashed var(--border-input); border-radius: 8px; padding: 40px; text-align: center; background: var(--form-input-bg); cursor: pointer; transition: all 0.3s; margin-bottom: 20px;">
                         <div style="pointer-events: none;">
                             <i class="bi bi-cloud-upload" style="font-size: 48px; color: var(--btn-primary-bg); display: block; margin-bottom: 15px;"></i>
-                            <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Drag & drop WAV files here or click to browse</p>
+                            <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">将 WAV 文件拖放到此处，或点击此处浏览文件。</p>
                             <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-                                Tesla-ready WAV files only (multiple selection supported)
+                                仅支持适用于特斯拉汽车的 WAV 文件（支持多选）。
                             </p>
                         </div>
                     </div>
@@ -104,11 +104,11 @@
                     
                     <!-- Selected Files Preview -->
                     <div id="selectedChimesPreview" style="display: none; margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 Selected Files:</h4>
+                        <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 选定的文件:</h4>
                         <div id="chimeFilesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button type="button" class="edit-btn" id="uploadSelectedChimesBtn">📤 Upload All Files</button>
-                            <button type="button" class="btn-delete" id="clearSelectedChimesBtn">✖ Clear All</button>
+                            <button type="button" class="edit-btn" id="uploadSelectedChimesBtn">📤 上传所有文件</button>
+                            <button type="button" class="btn-delete" id="clearSelectedChimesBtn">✖ 清除所有</button>
                         </div>
                     </div>
                 </div>
@@ -118,120 +118,120 @@
                     <label for="chime_file_bulk" style="display: block; margin-bottom: 8px; font-weight: 600;">Select Tesla-ready WAV files:</label>
                     <input type="file" id="chime_file_bulk" accept=".wav" multiple 
                            style="display: block; margin-bottom: 10px; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; background: var(--form-input-bg); width: 100%; max-width: 400px; font-size: 14px; color: var(--text-primary);">
-                    <button type="button" class="edit-btn" id="uploadBulkBtn" style="display: none;">📤 Upload Files</button>
+                    <button type="button" class="edit-btn" id="uploadBulkBtn" style="display: none;">📤 上传文件</button>
                 </div>
             </div>
             
             <!-- Upload Progress Bar -->
             <div id="chimeUploadProgress" style="display: none; margin-top: 15px;">
                 <div style="background: var(--upload-progress-bg); border-radius: 8px; padding: 15px; border: 2px solid var(--btn-primary-bg);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--btn-primary-bg);">📤 Uploading Chime...</h4>
+                    <h4 style="margin: 0 0 10px 0; color: var(--btn-primary-bg);">📤 正在上传音效...</h4>
                     <div style="background: var(--upload-progress-bar-bg); border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px;">
                         <div id="chimeProgressBar" style="background: linear-gradient(90deg, #007bff, #0056b3); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
                             0%
                         </div>
                     </div>
-                    <p id="chimeUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Preparing upload...</p>
+                    <p id="chimeUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">正在准备上传...</p>
                     <div id="chimeUploadResults" style="display: none; margin-top: 15px;"></div>
                 </div>
             </div>
         </div>
     </details>
     
-    <!-- Audio Trim Editor -->
+    <!-- 音效剪辑编辑器 -->
     <div id="trimEditorSection" class="trim-editor-section" style="display: none;">
         <div class="trim-editor-header">
-            <span id="trimEditorTitle">✂️ Trim & Adjust Audio</span>
-            <span id="trimEditorBadge" class="trim-editor-badge" style="display: none;">Editing</span>
+            <span id="trimEditorTitle">✂️ 修剪和调整音效</span>
+            <span id="trimEditorBadge" class="trim-editor-badge" style="display: none;">编辑中</span>
         </div>
         
-        <!-- Loading State -->
+        <!-- 加载状态 -->
         <div id="trimEditorLoading" class="trim-editor-loading" style="display: none;">
             <div class="trim-editor-spinner"></div>
-            <p style="margin-top: 15px;">Decoding audio...</p>
+            <p style="margin-top: 15px;">正在解码音效...</p>
         </div>
         
-        <!-- Editor Content -->
+        <!-- 编辑器内容 -->
         <div id="trimEditorContent" style="display: none;">
-            <!-- Warning Message -->
+            <!-- 警告消息 -->
             <div id="trimMessage" class="trim-message" style="display: none;"></div>
             
-            <!-- Waveform -->
+            <!-- 波形图 -->
             <div class="waveform-container">
                 <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
             </div>
             
-            <!-- Trim Controls -->
+            <!-- 剪辑控制 -->
             <div class="trim-controls">
-                <!-- Start/End Time -->
+                <!-- 开始/结束时间 -->
                 <div class="trim-control-row">
                     <div class="trim-control-group">
                         <label class="trim-control-label">
-                            Start Time
+                            开始时间
                             <span class="trim-control-sublabel" id="startTimeDisplay">0.00s</span>
                         </label>
                         <input type="range" id="startTimeSlider" class="trim-slider" min="0" max="100" value="0" step="0.1">
                     </div>
                     <div class="trim-control-group">
                         <label class="trim-control-label">
-                            End Time
+                            结束时间
                             <span class="trim-control-sublabel" id="endTimeDisplay">0.00s</span>
                         </label>
                         <input type="range" id="endTimeSlider" class="trim-slider" min="0" max="100" value="100" step="0.1">
                     </div>
                 </div>
                 
-                <!-- Playback Speed - HIDDEN FOR NOW (pitch preservation needs improvement) -->
+                <!-- 播放速度（当前隐藏，注释已说明） -->
                 <div class="trim-control-group" style="display: none;">
                     <label class="trim-control-label">
-                        Playback Speed
+                        播放速度
                         <span class="trim-control-sublabel" id="speedDisplay">1.00x</span>
                     </label>
                     <input type="range" id="speedSlider" class="speed-slider" min="0.5" max="2.0" value="1.0" step="0.05">
                 </div>
                 
-                <!-- Volume Normalization -->
+                <!-- 音量归一化 -->
                 <div class="trim-control-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-input);">
                     <label class="trim-control-label" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
                         <input type="checkbox" id="trimNormalizeVolume" checked style="width: 18px; height: 18px; margin-right: 8px; cursor: pointer;">
-                        <span>🔊 Normalize Volume</span>
+                        <span>🔊 音量标准化</span>
                     </label>
                     <div id="trimNormalizationSettings" style="margin-top: 12px;">
                         <div style="margin-bottom: 8px;">
                             <input type="range" id="trimTargetLufs" class="speed-slider" min="0" max="3" value="1" step="1">
                         </div>
                         <div class="slider-labels" style="display: grid; grid-template-columns: repeat(4, 1fr); font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                            <span style="text-align: left;">Broadcast</span>
-                            <span style="text-align: center;">Streaming</span>
-                            <span style="text-align: center;">Loud</span>
-                            <span style="text-align: right;">Maximum</span>
+                            <span style="text-align: left;">广播</span>
+                            <span style="text-align: center;">流媒体</span>
+                            <span style="text-align: center;">响亮</span>
+                            <span style="text-align: right;">最大</span>
                         </div>
                         <div style="margin-top: 10px; padding: 8px; background: var(--form-input-bg); border-radius: 4px; border: 1px solid var(--border-input);">
-                            <strong id="trimCurrentLevel" style="display: block; margin-bottom: 4px; font-size: 13px;">Streaming</strong>
-                            <small id="trimLevelDescription" style="color: var(--text-secondary); font-size: 11px;">Recommended for balanced playback</small>
+                            <strong id="trimCurrentLevel" style="display: block; margin-bottom: 4px; font-size: 13px;">流媒体</strong>
+                            <small id="trimLevelDescription" style="color: var(--text-secondary); font-size: 11px;">推荐用于均衡播放效果。</small>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Stats Display -->
+            <!-- 统计显示 -->
             <div class="trim-stats">
                 <div class="trim-stats-grid">
                     <div class="trim-stat">
-                        <span class="trim-stat-label">Duration</span>
+                        <span class="trim-stat-label">总时长</span>
                         <span class="trim-stat-value" id="statDuration">0.0s</span>
                     </div>
                     <div class="trim-stat">
-                        <span class="trim-stat-label">Effective Duration</span>
+                        <span class="trim-stat-label">有效时长</span>
                         <span class="trim-stat-value" id="statEffective">0.0s</span>
                     </div>
                     <div class="trim-stat">
-                        <span class="trim-stat-label">File Size</span>
+                        <span class="trim-stat-label">文件大小</span>
                         <span class="trim-stat-value" id="statFileSize">0 KB</span>
                     </div>
                     <div class="trim-stat">
-                        <span class="trim-stat-label">Status</span>
-                        <span class="trim-stat-value success" id="statStatus">✓ Ready</span>
+                        <span class="trim-stat-label">状态</span>
+                        <span class="trim-stat-value success" id="statStatus">✓ 已就绪</span>
                     </div>
                 </div>
             </div>
@@ -239,71 +239,71 @@
             <!-- Filename Editor -->
             <div style="margin: 15px 0; padding: 15px; background: var(--form-input-bg); border-radius: 8px; border: 2px solid var(--border-input);">
                 <label for="trimFilename" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">
-                    📝 Output Filename:
+                    📝 输出文件名：
                 </label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="trimFilename" 
                            style="flex: 1; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);"
-                           placeholder="Enter filename (without extension)">
+                           placeholder="输入文件名（不含扩展名）">
                     <span style="color: var(--text-secondary); font-weight: 600;">.wav</span>
                 </div>
                 <div id="filenameValidation" style="margin-top: 8px; font-size: 13px; display: none;"></div>
             </div>
             
-            <!-- Playback Controls -->
+            <!-- 播放控制 -->
             <div class="playback-controls">
-                <button id="playBtn" class="play-btn" title="Play preview">
+                <button id="playBtn" class="play-btn" title="播放预览">
                     <i class="bi bi-play-fill"></i>
                 </button>
                 <button id="autoFitBtn" class="trim-btn trim-btn-purple">
-                    🎯 Auto-Fit to Limits
+                    🎯 自动适配边界
                 </button>
                 <button id="resetBtn" class="trim-btn trim-btn-secondary">
-                    ↺ Reset
+                    ↺ 重置
                 </button>
             </div>
             
-            <!-- Action Buttons -->
+            <!-- 操作按钮 -->
             <div class="trim-actions">
                 <button id="uploadTrimmedBtn" class="trim-btn trim-btn-success">
-                    📤 Upload Trimmed Audio
+                    📤 上传剪辑音效
                 </button>
                 <button id="cancelTrimBtn" class="trim-btn trim-btn-secondary">
-                    ✖ Cancel
+                    ✖ 取消
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Chime Scheduler -->
+    <!-- 音效定时器 -->
     <details id="scheduler-section" style="margin-bottom: 20px;">
         <summary style="cursor: pointer; font-weight: 600; padding: 15px; background: var(--collapsible-section-bg); border-radius: 8px; border-left: 4px solid var(--collapsible-section-border); color: var(--collapsible-section-text); font-size: 18px; list-style: none;">
-            <span style="display: inline-block; margin-right: 5px;">▶</span> 📅 Chime Scheduler {% if schedules %}({{ schedules|length }} schedule{{ 's' if schedules|length != 1 else '' }}){% endif %}
+            <span style="display: inline-block; margin-right: 5px;">▶</span> 📅 音效定时器 {% if schedules %}({{ schedules|length }} 个计划{{ 's' if schedules|length != 1 else '' }}){% endif %}
         </summary>
         
         <div style="background: var(--collapsible-content-bg); padding: 15px; border-radius: 0 0 8px 8px; border-left: 4px solid var(--collapsible-section-border); border-right: 1px solid var(--collapsible-section-border); border-bottom: 1px solid var(--collapsible-section-border); margin-top: -8px;">
-            <!-- Add New Schedule Form -->
+            <!-- 新增计划表单 -->
             <details {% if not schedules %}open{% endif %} style="margin-bottom: 15px;" id="schedule-form-details">
                 <summary style="cursor: pointer; font-weight: 600; padding: 10px; background: var(--form-input-bg); border-radius: 4px; list-style: none; border: 1px solid var(--border-input);">
-                    <span style="display: inline-block; margin-right: 5px;">▶</span> <span id="form-title">➕ Add New Schedule</span>
+                    <span style="display: inline-block; margin-right: 5px;">▶</span> <span id="form-title">➕ 添加新计划</span>
                 </summary>
             
             <form id="schedule-form" method="post" action="{{ url_for('lock_chimes.add_schedule') }}" style="background: var(--form-input-bg); padding: 15px; border-radius: 4px; margin-top: 10px; border: 1px solid var(--border-input);">
                 <div style="display: grid; gap: 15px;">
-                    <!-- Schedule Name -->
+                    <!-- 计划名称 -->
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Schedule Name:</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">计划名称:</label>
                         <input type="text" id="schedule-name" name="schedule_name" placeholder="e.g., Morning Chime" required
                                style="width: 100%; padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; box-sizing: border-box; background: var(--bg-secondary); color: var(--text-primary);">
                     </div>
                     
-                    <!-- Chime Selection -->
+                    <!-- 选择音效 -->
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Chime:</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">音效:</label>
                         <select id="chime-select" name="chime_filename" required
                                 style="width: 100%; padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                            <option value="">-- Select a chime --</option>
-                            <option value="RANDOM">🎲 Random Chime</option>
+                            <option value="">-- 选择音效 --</option>
+                            <option value="RANDOM">🎲 随机音效</option>
                             {% for chime in chime_files %}
                                 {% if chime.is_valid %}
                                 <option value="{{ chime.filename }}">{{ chime.filename }}</option>
@@ -312,101 +312,101 @@
                         </select>
                     </div>
                     
-                    <!-- Schedule Type Selection -->
+                    <!-- 计划类型选择 -->
                     <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Schedule Type:</label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">计划类型：:</label>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                             <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--form-label-bg); border-radius: 4px; cursor: pointer; user-select: none; border: 1px solid var(--border-input);">
                                 <input type="radio" name="schedule_type" value="weekly" class="schedule-type-radio" checked style="margin-right: 6px;">
-                                <span>📅 Days of Week</span>
+                                <span>📅 每周指定日期</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--form-label-bg); border-radius: 4px; cursor: pointer; user-select: none; border: 1px solid var(--border-input);">
                                 <input type="radio" name="schedule_type" value="date" class="schedule-type-radio" style="margin-right: 6px;">
-                                <span>📆 Specific Date</span>
+                                <span>📆 指定日期</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--form-label-bg); border-radius: 4px; cursor: pointer; user-select: none; border: 1px solid var(--border-input);">
                                 <input type="radio" name="schedule_type" value="holiday" class="schedule-type-radio" style="margin-right: 6px;">
-                                <span>🎉 US Holiday</span>
+                                <span>🎉 美国节日</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--form-label-bg); border-radius: 4px; cursor: pointer; user-select: none; border: 1px solid var(--border-input);">
                                 <input type="radio" name="schedule_type" value="recurring" class="schedule-type-radio" style="margin-right: 6px;">
-                                <span>🔄 Recurring Rotation</span>
+                                <span>🔄 循环轮换</span>
                             </label>
                         </div>
                     </div>
                     
-                    <!-- Interval Selection (for recurring schedules) -->
+                    <!-- 循环频率（用于 recurring） -->
                     <div id="interval-selection" class="schedule-type-field" style="display: none;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Rotation Frequency:</label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">轮换频率:</label>
                         <select id="interval-select" name="interval" style="width: 100%; padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                            <option value="">-- Select frequency --</option>
+                            <option value="">-- 选择频率 --</option>
                             {% for interval_value, interval_name in recurring_intervals.items() %}
                             <option value="{{ interval_value }}">{{ interval_name }}</option>
                             {% endfor %}
                         </select>
                         <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">
-                            ℹ️ Recurring schedules always use <strong>Random Chime</strong> and automatically avoid repeating the currently active chime
+                            ℹ️ 循环计划始终使用<strong>随机音效</strong> ，并自动避免重复当前正在使用的音效。
                         </p>
                     </div>
                     
-                    <!-- Days Selection (for weekly schedules) -->
+                    <!-- 每周日期选择 -->
                     <div id="days-selection" class="schedule-type-field">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Days:</label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">星期:</label>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                            {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                            {% for day in ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] %}
                             <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--form-label-bg); border-radius: 4px; cursor: pointer; user-select: none; border: 1px solid var(--border-input);">
                                 <input type="checkbox" name="days" value="{{ day }}" class="day-checkbox" id="day-{{ day }}" style="margin-right: 6px;">
                                 <span>{{ day[:3] }}</span>
                             </label>
                             {% endfor %}
                         </div>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">Select at least one day</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">至少选择一天</p>
                     </div>
                     
-                    <!-- Date Selection (for date schedules) -->
+                    <!-- 指定日期选择 -->
                     <div id="date-selection" class="schedule-type-field" style="display: none;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 600;">Date (Month/Day):</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <select id="month-select" name="month" style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="">Month</option>
-                                <option value="1">January</option>
-                                <option value="2">February</option>
-                                <option value="3">March</option>
-                                <option value="4">April</option>
-                                <option value="5">May</option>
-                                <option value="6">June</option>
-                                <option value="7">July</option>
-                                <option value="8">August</option>
-                                <option value="9">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
+                                <option value="">月份</option>
+                                <option value="1">1月</option>
+                                <option value="2">2月</option>
+                                <option value="3">3月</option>
+                                <option value="4">4月</option>
+                                <option value="5">5月</option>
+                                <option value="6">6月</option>
+                                <option value="7">7月</option>
+                                <option value="8">8月</option>
+                                <option value="9">9月</option>
+                                <option value="10">10月</option>
+                                <option value="11">11月</option>
+                                <option value="12">12月</option>
                             </select>
                             <select id="day-select" name="day" style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="">Day</option>
+                                <option value="">日期</option>
                                 {% for d in range(1, 32) %}
-                                <option value="{{ d }}">{{ d }}</option>
+                                <option value="{{ d }}">{{ d }}日</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">Chime will play every year on this date</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">每年该日期都会播放音效</p>
                     </div>
                     
-                    <!-- Holiday Selection (for holiday schedules) -->
+                    <!-- 节日选择 -->
                     <div id="holiday-selection" class="schedule-type-field" style="display: none;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Holiday:</label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">节日:</label>
                         <select id="holiday-select" name="holiday" style="width: 100%; padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                            <option value="">-- Select a holiday --</option>
+                            <option value="">-- 选择节日 --</option>
                             {% for holiday in holidays %}
                             <option value="{{ holiday.name }}">{{ holiday.name }} ({{ holiday.month }}/{{ holiday.day }})</option>
                             {% endfor %}
                         </select>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">Chime will play at 12:00 AM on the holiday</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-secondary);">节日当天凌晨 00:00 播放</p>
                     </div>
                     
-                    <!-- Time Selection (12-hour format) - hidden for holidays -->
+                    <!-- 时间选择（12小时制） -->
                     <div id="time-selection">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Time:</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">时间:</label>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <select id="hour-select" name="hour" required style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
                                 {% for h in range(1, 13) %}
@@ -420,33 +420,33 @@
                                 {% endfor %}
                             </select>
                             <select id="ampm-select" name="am_pm" required style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="AM" id="ampm-am-option" selected>AM</option>
-                                <option value="PM" id="ampm-pm-option">PM</option>
+                                <option value="AM" id="ampm-am-option" selected>上午</option>
+                                <option value="PM" id="ampm-pm-option">下午</option>
                             </select>
                         </div>
                     </div>
                     
-                    <!-- Enable Schedule -->
+                    <!-- 是否立即启用 -->
                     <div>
                         <label style="display: flex; align-items: center; cursor: pointer;">
                             <input type="checkbox" id="enabled-checkbox" name="enabled" value="true" checked style="margin-right: 8px;">
-                            <span style="font-weight: 600;">Enable this schedule immediately</span>
+                            <span style="font-weight: 600;">立即启用此计划</span>
                         </label>
                     </div>
                     
-                    <!-- Submit Button -->
+                    <!-- 提交按钮 -->
                     <div>
-                        <button type="submit" id="submit-btn" class="edit-btn" style="margin: 0; padding: 12px 25px;">💾 Save Schedule</button>
-                        <button type="button" id="cancel-btn" class="btn-delete" style="margin-left: 10px; display: none; padding: 12px 25px;" onclick="cancelEdit()">❌ Cancel</button>
+                        <button type="submit" id="submit-btn" class="edit-btn" style="margin: 0; padding: 12px 25px;">💾 保存计划</button>
+                        <button type="button" id="cancel-btn" class="btn-delete" style="margin-left: 10px; display: none; padding: 12px 25px;" onclick="cancelEdit()">❌ 取消</button>
                     </div>
                 </div>
             </form>
             </details>
         
-        <!-- Existing Schedules List -->
+        <!-- 已配置的计划列表 -->
         {% if schedules %}
         <div style="margin-top: 15px;">
-            <h4 style="margin: 0 0 10px 0;">Active Schedules:</h4>
+            <h4 style="margin: 0 0 10px 0;">已启用计划:</h4>
             {% for schedule in schedules %}
             <div style="background: var(--form-input-bg); padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 4px solid {% if schedule.enabled %}var(--active-chime-border){% else %}var(--text-muted){% endif %}; border: 1px solid var(--border-input);">
                 <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 10px;">
@@ -454,29 +454,29 @@
                         <div style="font-weight: 600; margin-bottom: 4px;">
                             {{ schedule.name }}
                             {% if not schedule.enabled %}
-                            <span style="background: var(--status-unknown-bg); color: var(--status-unknown-text); padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px;">DISABLED</span>
+                            <span style="background: var(--status-unknown-bg); color: var(--status-unknown-text); padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px;">已禁用</span>
                             {% endif %}
                         </div>
                         <div style="font-size: 13px; color: var(--text-secondary);">
-                            <div>🔔 {% if schedule.chime_filename == 'RANDOM' %}🎲 Random Chime{% else %}{{ schedule.chime_filename }}{% endif %}</div>
+                            <div>🔔 {% if schedule.chime_filename == 'RANDOM' %}🎲 随机音效{% else %}{{ schedule.chime_filename }}{% endif %}</div>
                             <div>⏰ {{ format_schedule(schedule) }}</div>
                             {% if schedule.last_run %}
                             <div style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">
-                                📊 Last run: {{ format_last_run(schedule.last_run) }}
+                                📊 上次执行: {{ format_last_run(schedule.last_run) }}
                             </div>
                             {% endif %}
                         </div>
                     </div>
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                        <button type="button" onclick="editSchedule({{ schedule.id }})" class="edit-btn" style="padding: 6px 10px; font-size: 13px; margin: 0;">✏️ Edit</button>
+                        <button type="button" onclick="editSchedule({{ schedule.id }})" class="edit-btn" style="padding: 6px 10px; font-size: 13px; margin: 0;">✏️ 编辑</button>
                         <form method="post" action="{{ url_for('lock_chimes.toggle_schedule', schedule_id=schedule.id) }}" style="display: inline;">
                             <button type="submit" class="present-btn" style="padding: 6px 10px; font-size: 13px; margin: 0;">
-                                {% if schedule.enabled %}⏸️ Disable{% else %}▶️ Enable{% endif %}
+                                {% if schedule.enabled %}⏸️ 禁用{% else %}▶️ 启用{% endif %}
                             </button>
                         </form>
                         <form method="post" action="{{ url_for('lock_chimes.delete_schedule', schedule_id=schedule.id) }}" 
-                              style="display: inline;" onsubmit="return confirm('Delete schedule \'{{ schedule.name | replace("'", "\\'") }}\'?');">
-                            <button type="submit" class="btn-delete" style="padding: 6px 10px; font-size: 13px; margin: 0;">🗑️</button>
+                              style="display: inline;" onsubmit="return confirm('确定删除计划 \ \'{{ schedule.name | replace("'", "\\'") }}\'吗？');">
+                            <button type="submit" class="btn-delete" style="padding: 6px 10px; font-size: 13px; margin: 0;">🗑️删除</button>
                         </form>
                     </div>
                 </div>
@@ -484,57 +484,57 @@
             {% endfor %}
         </div>
         {% else %}
-        <p style="margin: 10px 0 0 0; color: var(--text-secondary); font-size: 14px;">No schedules configured. Add one above to automatically change chimes at specific times.</p>
+        <p style="margin: 10px 0 0 0; color: var(--text-secondary); font-size: 14px;">暂无计划配置。请在上方添加计划，即可自动在指定时间切换音效。</p>
         {% endif %}
         
         <div style="background: var(--msg-info-bg); padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 13px; border: 1px solid var(--collapsible-section-border); color: var(--msg-info-text);">
-            <strong>ℹ️ How it works:</strong> Schedules run automatically every minute. The most recent schedule for each day will be active. Chimes change without interrupting Tesla recording!
+            <strong>ℹ️ 工作原理:</strong> 系统每分钟自动检查计划。每天最新的匹配计划将生效。切换音效不会中断 Tesla 行车录像。
         </div>
         </div>
     </details>
     
-    <!-- Chime Groups Section -->
+    <!-- 随机音效分组 -->
     <details id="groups-section" style="margin-bottom: 20px;">
         <summary style="cursor: pointer; font-weight: 600; padding: 15px; background: var(--collapsible-section-bg); border-radius: 8px; border-left: 4px solid var(--collapsible-section-border); color: var(--collapsible-section-text); font-size: 18px; list-style: none;">
-            <span style="display: inline-block; margin-right: 5px;">▶</span> 🎲 Random Chime Groups {% if groups %}({{ groups|length }} group{{ 's' if groups|length != 1 else '' }}){% endif %}
+            <span style="display: inline-block; margin-right: 5px;">▶</span> 🎲 随机音效分组 {% if groups %}({{ groups|length }} 个分组{{ 's' if groups|length != 1 else '' }}){% endif %}
         </summary>
         
         <div style="background: var(--collapsible-content-bg); padding: 15px; border-radius: 0 0 8px 8px; border-left: 4px solid var(--collapsible-section-border); border-right: 1px solid var(--collapsible-section-border); border-bottom: 1px solid var(--collapsible-section-border); margin-top: -8px;">
             
-            <!-- Random Mode Configuration -->
+            <!-- 随机模式配置（开机随机） -->
             <div class="random-mode-section {% if random_config.enabled %}active{% endif %}" id="randomModeSection">
                 <div class="random-mode-header">
                     <div class="random-mode-info">
-                        <h3>🎲 Random Mode on Boot</h3>
+                        <h3>🎲 开机随机模式</h3>
                         <span class="random-mode-status {% if random_config.enabled %}enabled{% else %}disabled{% endif %}" id="randomModeStatus">
-                            {{ '✓ Enabled' if random_config.enabled else '○ Disabled' }}
+                            {{ '✓ 已启用' if random_config.enabled else '○ 未启用' }}
                         </span>
                     </div>
                     <div class="random-mode-controls">
                         <select class="random-group-select" id="randomGroupSelect">
-                            <option value="">-- Select a group --</option>
+                            <option value="">-- 选择分组 --</option>
                             {% for group in groups %}
                             <option value="{{ group.id }}" {% if random_config.enabled and random_config.group_id == group.id %}selected{% endif %}>
-                                {{ group.name }} ({{ group.chime_count }} chime{{ 's' if group.chime_count != 1 else '' }})
+                                {{ group.name }} ({{ group.chime_count }} 个音效{{ 's' if group.chime_count != 1 else '' }})
                             </option>
                             {% endfor %}
                         </select>
                         <button class="group-btn group-btn-edit" id="toggleRandomMode">
-                            {{ '✓ Enabled' if random_config.enabled else 'Enable' }}
+                            {{ '✓ 已启用' if random_config.enabled else '启用' }}
                         </button>
                     </div>
                 </div>
                 <div class="random-mode-description">
-                    <strong>💡 How it works:</strong> When enabled, a random chime from the selected group will be chosen each time your device boots up. The system uses high-resolution time seeding for true randomness and avoids repeating the previously selected chime.
+                    <strong>💡 工作原理:</strong> 启用后，每次设备开机时，系统会从所选分组中随机挑选一个音效。使用高精度时间种子确保真正随机，且不会重复上一次选择的音效。
                 </div>
             </div>
             
-            <!-- Add New Group Button -->
+            <!-- 新建分组按钮 -->
             <div style="margin: 20px 0;">
-                <button class="edit-btn" id="createGroupBtn">➕ Create New Group</button>
+                <button class="edit-btn" id="createGroupBtn">➕ 创建新分组</button>
             </div>
             
-            <!-- Groups List -->
+            <!-- 分组列表 -->
             <div class="groups-container" id="groupsContainer">
                 {% if groups %}
                     {% for group in groups %}
@@ -544,7 +544,7 @@
                                 <h4 class="group-name">
                                     {{ group.name }}
                                     {% if random_config.enabled and random_config.group_id == group.id %}
-                                    <span style="color: var(--active-chime-heading); font-size: 14px; margin-left: 8px;">🎲 Active</span>
+                                    <span style="color: var(--active-chime-heading); font-size: 14px; margin-left: 8px;">🎲 当前随机分组</span>
                                     {% endif %}
                                 </h4>
                                 {% if group.description %}
@@ -552,23 +552,23 @@
                                 {% endif %}
                                 <div class="group-meta">
                                     <span class="group-meta-item">
-                                        🔊 {{ group.chime_count }} chime{{ 's' if group.chime_count != 1 else '' }}
+                                        🔊 {{ group.chime_count }} 个音效{{ 's' if group.chime_count != 1 else '' }}
                                     </span>
                                 </div>
                             </div>
                             <div class="group-actions">
                                 <button class="group-btn group-btn-edit edit-group-btn" data-group-id="{{ group.id }}">
-                                    ✏️ Edit
+                                    ✏️ 编辑
                                 </button>
                                 <button class="group-btn group-btn-delete delete-group-btn" data-group-id="{{ group.id }}">
-                                    🗑️ Delete
+                                    🗑️ 删除
                                 </button>
                             </div>
                         </div>
                         
                         {% if group.chimes %}
                         <div class="group-chimes-list">
-                            <h4>Chimes in this group:</h4>
+                            <h4>该分组中的音效:</h4>
                             <div class="group-chimes">
                                 {% for chime in group.chimes %}
                                 <span class="chime-tag">
@@ -584,39 +584,39 @@
                 {% else %}
                     <div class="group-empty-state">
                         <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
-                        <p>No chime groups yet. Create a group to organize your lock chimes!</p>
+                        <p>暂无音效分组。创建分组来按主题整理你的锁车音效！</p>
                     </div>
                 {% endif %}
             </div>
             
             <div style="background: var(--msg-info-bg); padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 13px; border: 1px solid var(--collapsible-section-border); color: var(--msg-info-text);">
-                <strong>ℹ️ About Groups:</strong> Create groups to organize your chimes by theme (Holidays, Funny, Seasonal, etc.). Enable random mode to have the system automatically pick a different chime from your selected group each time the device boots.
+                <strong>ℹ️ 关于分组:</strong> 创建分组来按主题整理音效（节日、搞笑、季节等）。启用随机模式后，系统会在设备每次开机时自动从所选分组中挑选不同的音效音效。
             </div>
         </div>
     </details>
     
-    <!-- Group Modal -->
+    <!-- 分组弹窗 -->
     <div id="groupModal" class="group-modal">
         <div class="group-modal-content">
             <div class="group-modal-header">
-                <h3 id="groupModalTitle">Create New Group</h3>
+                <h3 id="groupModalTitle">创建新分组</h3>
                 <span class="group-modal-close" id="groupModalClose">&times;</span>
             </div>
             <form id="groupForm">
                 <input type="hidden" id="groupFormId" value="">
                 
                 <div class="group-form-field">
-                    <label for="groupName">Group Name <span style="color: var(--error-text);">*</span></label>
-                    <input type="text" id="groupName" required placeholder="e.g., Holiday Chimes">
+                    <label for="groupName">分组名称 <span style="color: var(--error-text);">*</span></label>
+                    <input type="text" id="groupName" required placeholder="例如：节日音效">
                 </div>
                 
                 <div class="group-form-field">
-                    <label for="groupDescription">Description (optional)</label>
-                    <textarea id="groupDescription" placeholder="Describe what chimes belong in this group..."></textarea>
+                    <label for="groupDescription">描述（可选）</label>
+                    <textarea id="groupDescription" placeholder="描述这个分组包含哪些音效..."></textarea>
                 </div>
                 
                 <div class="chime-selector-section">
-                    <h4>Add Chimes to Group:</h4>
+                    <h4>添加到分组的音效:</h4>
                     <div class="chime-checkboxes" id="chimeCheckboxes">
                         {% if chime_files %}
                             {% for chime in chime_files %}
@@ -628,34 +628,34 @@
                                 {% endif %}
                             {% endfor %}
                         {% else %}
-                            <p style="color: var(--text-secondary); margin: 10px; font-size: 13px;">No chimes available. Upload chimes first.</p>
+                            <p style="color: var(--text-secondary); margin: 10px; font-size: 13px;">暂无可用音效。请先上传音效。</p>
                         {% endif %}
                     </div>
                 </div>
                 
                 <div class="group-form-actions">
                     <button type="button" class="group-btn" style="background: var(--btn-primary-bg); color: var(--btn-primary-text);" id="cancelGroupBtn">
-                        Cancel
+                        取消
                     </button>
                     <button type="submit" class="group-btn" style="background: var(--btn-success-bg); color: var(--btn-success-text);" id="saveGroupBtn">
-                        Save Group
+                        保存分组
                     </button>
                 </div>
             </form>
         </div>
     </div>
     
-    <!-- Chime Library -->
-    <h3 style="margin: 20px 0 10px 0;">📚 Chime Library</h3>
+    <!-- 音效库 -->
+    <h3 style="margin: 20px 0 10px 0;">📚 音效库</h3>
     {% if chime_files %}
     <div class="video-table-container">
         <table class="video-table">
             <thead>
                 <tr>
-                    <th>Filename</th>
-                    <th>Size</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>文件名</th>
+                    <th>大小</th>
+                    <th>状态</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -665,7 +665,7 @@
                     <td>{{ chime.size_str }}</td>
                     <td>
                         {% if chime.is_valid %}
-                        <span style="color: #4caf50;">✓ Valid</span>
+                        <span style="color: #4caf50;">✓ 有效</span>
                         {% else %}
                         <span style="color: #f44336;" title="{{ chime.validation_msg }}">✗ {{ chime.validation_msg[:30] }}...</span>
                         {% endif %}
@@ -676,16 +676,16 @@
                                 <source src="{{ url_for('lock_chimes.play_lock_chime', filename=chime.filename) }}?v={{ chime.mtime }}" type="audio/wav">
                             </audio>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
-                                <a href="{{ url_for('lock_chimes.download_lock_chime', filename=chime.filename) }}" class="present-btn" style="text-decoration: none; padding: 6px 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; line-height: 1.5; height: 34px; box-sizing: border-box;">⬇️ Download</a>
-                                <button type="button" class="edit-btn" onclick='editChime({{ chime.filename|tojson }})' style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">✏️ Edit</button>
+                                <a href="{{ url_for('lock_chimes.download_lock_chime', filename=chime.filename) }}" class="present-btn" style="text-decoration: none; padding: 6px 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; line-height: 1.5; height: 34px; box-sizing: border-box;">⬇️ 下载</a>
+                                <button type="button" class="edit-btn" onclick='editChime({{ chime.filename|tojson }})' style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">✏️ 编辑</button>
                                 {% if chime.is_valid %}
                                 <form method="post" action="{{ url_for('lock_chimes.set_as_chime', filename=chime.filename) }}" style="display: inline;" onsubmit="return handleSetChime(this);">
-                                    <button type="submit" class="set-chime-btn" style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">🔔 Set as Active</button>
+                                    <button type="submit" class="set-chime-btn" style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">🔔 设置为当前使用</button>
                                 </form>
                                 {% endif %}
                                 <form method="post" action="{{ url_for('lock_chimes.delete_lock_chime', filename=chime.filename) }}" style="display: inline;" 
-                                      onsubmit="return confirm('Are you sure you want to delete \'{{ chime.filename | replace("'", "\\'") }}\'?');">
-                                    <button type="submit" class="btn-delete" style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">🗑️ Delete</button>
+                                      onsubmit="return confirm('确定要删除音效 \'{{ chime.filename | replace("'", "\\'") }}\'吗？');">
+                                    <button type="submit" class="btn-delete" style="padding: 6px 12px; margin: 0; font-size: 14px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">🗑️ 删除</button>
                                 </form>
                             </div>
                         </div>
@@ -696,7 +696,7 @@
         </table>
     </div>
     
-    <!-- Mobile Card Layout for Lock Chimes -->
+    <!-- 移动端音效卡片布局 -->
     <div class="mobile-card-container">
         {% for chime in chime_files %}
         <div class="mobile-card" style="{% if not chime.is_valid %}border-left: 4px solid #f44336;{% endif %}">
@@ -705,16 +705,16 @@
             </div>
             <div class="mobile-card-info">
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Size:</span>
+                    <span class="mobile-card-info-label">大小:</span>
                     <span class="mobile-card-info-value">{{ chime.size_str }}</span>
                 </div>
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Status:</span>
+                    <span class="mobile-card-info-label">状态:</span>
                     <span class="mobile-card-info-value">
                         {% if chime.is_valid %}
-                        <span class="mobile-card-status valid">✓ Valid</span>
+                        <span class="mobile-card-status valid">✓ 有效</span>
                         {% else %}
-                        <span class="mobile-card-status invalid" title="{{ chime.validation_msg }}">✗ Invalid</span>
+                        <span class="mobile-card-status invalid" title="{{ chime.validation_msg }}">✗ 无效</span>
                         {% endif %}
                     </span>
                 </div>
@@ -725,16 +725,16 @@
                 </audio>
             </div>
             <div class="mobile-card-actions">
-                <a href="{{ url_for('lock_chimes.download_lock_chime', filename=chime.filename) }}" class="present-btn">⬇️ Download</a>
-                <button type="button" class="edit-btn" onclick='editChime({{ chime.filename|tojson }})'>✏️ Edit</button>
+                <a href="{{ url_for('lock_chimes.download_lock_chime', filename=chime.filename) }}" class="present-btn">⬇️ 下载</a>
+                <button type="button" class="edit-btn" onclick='editChime({{ chime.filename|tojson }})'>✏️ 编辑</button>
                 {% if chime.is_valid %}
                 <form method="post" action="{{ url_for('lock_chimes.set_as_chime', filename=chime.filename) }}" onsubmit="return handleSetChime(this);">
-                    <button type="submit" class="set-chime-btn">🔔 Set as Active</button>
+                    <button type="submit" class="set-chime-btn">🔔 设置为当前使用</button>
                 </form>
                 {% endif %}
                 <form method="post" action="{{ url_for('lock_chimes.delete_lock_chime', filename=chime.filename) }}" 
-                      onsubmit="return confirm('Are you sure you want to delete \'{{ chime.filename | replace("'", "\\'") }}\'?');">
-                    <button type="submit" class="btn-delete">🗑️ Delete</button>
+                      onsubmit="return confirm('确定要删除音效 \'{{ chime.filename | replace("'", "\\'") }}\'吗？');">
+                    <button type="submit" class="btn-delete">🗑️ 删除</button>
                 </form>
             </div>
         </div>
@@ -742,18 +742,18 @@
     </div>
     {% else %}
     <div class="info-box">
-        <p>No chimes found in the Chimes library.</p>
-        <p>Upload WAV files above to add them to your library.</p>
+        <p>音效库中暂无文件。</p>
+        <p>请在上方上传 WAV 文件添加到库中。</p>
     </div>
     {% endif %}
 </div>
 
-<!-- Loading overlay for Set as Chime operation -->
+<!-- 设置为当前音效时的加载遮罩 -->
 <div id="chimeLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
     <div style="text-align: center; color: white;">
         <div class="spinner" style="border: 8px solid #f3f3f3; border-top: 8px solid #007bff; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-        <h3>Setting lock chime...</h3>
-        <p>Please wait, this may take a few seconds</p>
+        <h3>正在设置为当前锁车音效...</h3>
+        <p>请稍候，这可能需要几秒钟</p>
     </div>
 </div>
 
@@ -763,7 +763,7 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Toggle Switch Styles */
+/* 开关样式（Toggle Switch） */
 .toggle-switch {
     display: inline-flex;
     align-items: center;
@@ -822,12 +822,12 @@
 </style>
 
 <script>
-// Preserve scheduler section state across page loads
+// 页面加载时恢复调度器面板的展开状态（使用 sessionStorage 持久化）
 document.addEventListener('DOMContentLoaded', function() {
     const schedulerSection = document.getElementById('scheduler-section');
     const scheduleFormDetails = document.getElementById('schedule-form-details');
     
-    // Check if there are any flash messages (indicates an action was just performed)
+    // 判断是否有闪现消息（表示刚执行了添加/编辑/删除操作）
     const hasFlashMessages = document.querySelector('.flash-message') !== null;
     
     // Open scheduler section if:
@@ -841,7 +841,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.setItem('schedulerSectionOpen', 'true');
     }
     
-    // Track when user manually opens/closes the section
+    // 监听用户手动展开/收起，实时保存状态
     schedulerSection.addEventListener('toggle', function() {
         sessionStorage.setItem('schedulerSectionOpen', schedulerSection.open ? 'true' : 'false');
     });
@@ -980,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Show confirmation dialog
                         const schedulesText = data.schedules_to_disable.map(s => `  • ${s.name}`).join('\n');
                         const confirmed = confirm(
-                            `${data.message}\n\nSchedules that will be disabled:\n${schedulesText}`
+                            `${data.message}\n\n以下计划将被禁用:\n${schedulesText}`
                         );
                         
                         if (confirmed) {
@@ -998,7 +998,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('错误:', error);
                 // On error, reload to show any flash messages
                 window.location.reload();
             }
@@ -1021,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusText = document.getElementById('chimeUploadStatus');
         
         if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please select a file to upload');
+            alert('请选择要上传的文件');
             return;
         }
         
@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (file.size > maxSize) {
             const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
             const maxSizeMB = (maxSize / 1024 / 1024).toFixed(2);
-            alert(`File is too large: ${fileSizeMB} MB\n\nTesla requires lock chimes to be under ${maxSizeMB} MB.\nPlease use the audio trimmer or compress your file.`);
+            alert(`文件过大: ${fileSizeMB} MB\n\nTesla 锁车音效音效要求小于 ${maxSizeMB} MB.\n请使用音效剪辑工具裁剪或压缩文件。`);
             return;
         }
         
@@ -1040,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Disable upload button and show progress
         uploadBtn.disabled = true;
-        uploadBtn.textContent = '⏳ Uploading...';
+        uploadBtn.textContent = '⏳ 上传中...';
         progressDiv.style.display = 'block';
         
         // Create AJAX request with progress tracking
@@ -1052,7 +1052,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const percentComplete = Math.round((e.loaded / e.total) * 100);
                 progressBar.style.width = percentComplete + '%';
                 progressBar.textContent = percentComplete + '%';
-                statusText.textContent = `Uploading ${file.name}... (${(e.loaded / 1024).toFixed(1)} KB / ${(e.total / 1024).toFixed(1)} KB)`;
+                statusText.textContent = `正在上传 ${file.name}... (${(e.loaded / 1024).toFixed(1)} KB / ${(e.total / 1024).toFixed(1)} KB)`;
             }
         });
         
@@ -1060,9 +1060,9 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.upload.addEventListener('loadend', function() {
             if (xhr.readyState !== 4) {  // If request not complete yet
                 progressBar.style.width = '100%';
-                progressBar.textContent = '🔄 Processing...';
+                progressBar.textContent = '🔄 处理中...';
                 progressBar.style.background = '#ffc107';
-                statusText.textContent = 'Upload complete! Processing and validating file...';
+                statusText.textContent = '上传完成！正在处理和验证文件...';
                 statusText.style.color = '#856404';
             }
         });
@@ -1078,14 +1078,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (xhr.status === 200 && response && response.success) {
                 progressBar.style.width = '100%';
-                progressBar.textContent = '✓ Complete';
+                progressBar.textContent = '✓ 完成';
                 progressBar.style.background = '#28a745';
                 
                 // Show re-encoding info if present
-                let successMsg = 'Upload complete!';
+                let successMsg = '上传成功！';
                 if (response.reencoded && response.details) {
                     const details = response.details;
-                    successMsg = `Upload successful! File was automatically re-encoded to ${details.strategy || 'Tesla format'} (${details.size_mb || '<1'} MB)`;
+                    successMsg = `上传成功！文件已自动转码为 ${details.strategy || 'Tesla 格式'} (${details.size_mb || '<1'} MB)`;
                 }
                 
                 statusText.textContent = successMsg;
@@ -1097,21 +1097,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1000);
             } else {
                 progressBar.style.background = '#dc3545';
-                const errorMsg = response && response.error ? response.error : xhr.statusText || 'Upload failed';
-                statusText.textContent = 'Upload failed: ' + errorMsg;
+                const errorMsg = response && response.error ? response.error : xhr.statusText || '上传失败';
+                statusText.textContent = '上传失败: ' + errorMsg;
                 statusText.style.color = '#dc3545';
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '📤 Upload';
+                uploadBtn.textContent = '📤 上传';
             }
         });
         
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = '上传失败：网络错误';
             statusText.style.color = '#dc3545';
             uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Upload';
+            uploadBtn.textContent = '📤 上传';
         });
         
         // Send the request
@@ -1152,7 +1152,7 @@ async function editSchedule(scheduleId) {
         const data = await response.json();
         
         if (!data.success) {
-            alert('Error loading schedule: ' + (data.error || 'Unknown error'));
+            alert('加载计划失败: ' + (data.error || '未知错误'));
             return;
         }
         
@@ -1207,8 +1207,8 @@ async function editSchedule(scheduleId) {
         form.dataset.editingId = scheduleId;
         
         // Update UI
-        document.getElementById('form-title').textContent = '✏️ Edit Schedule';
-        document.getElementById('submit-btn').textContent = '💾 Update Schedule';
+        document.getElementById('form-title').textContent = '✏️ 编辑计划';
+        document.getElementById('submit-btn').textContent = '💾 更新计划';
         document.getElementById('cancel-btn').style.display = 'inline-block';
         
         // Open the form
@@ -1218,8 +1218,8 @@ async function editSchedule(scheduleId) {
         document.getElementById('schedule-form-details').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         
     } catch (error) {
-        console.error('Error loading schedule:', error);
-        alert('Error loading schedule. Please try again.');
+        console.error('加载计划出错:', error);
+        alert('加载计划失败，请重试。');
     }
 }
 
@@ -1238,8 +1238,8 @@ function cancelEdit() {
     }
     
     // Reset UI
-    document.getElementById('form-title').textContent = '➕ Add New Schedule';
-    document.getElementById('submit-btn').textContent = '💾 Save Schedule';
+    document.getElementById('form-title').textContent = '➕ 添加新计划';
+    document.getElementById('submit-btn').textContent = '💾 保存计划';
     document.getElementById('cancel-btn').style.display = 'none';
     
     // Close the form
@@ -1261,7 +1261,7 @@ async function fetchExistingFilenames() {
             existingChimeFilenames = data.filenames || [];
         }
     } catch (error) {
-        console.warn('Failed to fetch existing filenames:', error);
+        console.warn('获取已有文件名失败:', error);
         existingChimeFilenames = [];
     }
 }
@@ -1317,7 +1317,7 @@ function generateUniqueFilename(baseName, extension, isEditing) {
 
 // Check for Web Audio API support
 if (!AudioTrimmer.isSupported()) {
-    console.warn('Web Audio API not supported - trimmer disabled');
+    console.warn('Web Audio API 不支持 - 裁剪功能已禁用');
     // Fallback: show upload button, hide trim editor
     document.getElementById('chimeUploadBtn').style.display = 'inline-block';
 } else {
@@ -1365,10 +1365,10 @@ function setupTrimEditorUI() {
     
     // Volume normalization level definitions
     const volumeLevels = [
-        { name: 'Broadcast', lufs: -23, description: 'Broadcast standard (quieter, more headroom)' },
-        { name: 'Streaming', lufs: -16, description: 'Recommended for balanced playback' },
-        { name: 'Loud', lufs: -14, description: 'Louder output (less dynamic range)' },
-        { name: 'Maximum', lufs: -12, description: 'Maximum loudness (may clip on some systems)' }
+        { name: '广播', lufs: -23, description: '广播标准（较安静，更多动态余量）' },
+        { name: '流媒体', lufs: -16, description: '适合均衡播放的推荐值' },
+        { name: '响亮', lufs: -14, description: '更响亮的输出（动态范围较小）' },
+        { name: '最大', lufs: -12, description: '最大响度（部分系统可能出现削波）' }
     ];
     
     // Set canvas size based on container
@@ -1465,7 +1465,7 @@ function setupTrimEditorUI() {
         // Check for invalid characters
         const invalidChars = /[<>:"|?*\/\\]/;
         if (invalidChars.test(value)) {
-            filenameValidation.textContent = '❌ Filename contains invalid characters';
+            filenameValidation.textContent = '❌ 文件名包含非法字符';
             filenameValidation.style.color = '#f44336';
             filenameValidation.style.display = 'block';
             return false;
@@ -1473,13 +1473,13 @@ function setupTrimEditorUI() {
         
         // Check if it already exists
         if (existingChimeFilenames.some(f => f.toLowerCase() === lowerFileName)) {
-            filenameValidation.textContent = '❌ This filename already exists';
+            filenameValidation.textContent = '❌ 该文件名已被使用';
             filenameValidation.style.color = '#f44336';
             filenameValidation.style.display = 'block';
             return false;
         }
         
-        filenameValidation.textContent = '✅ Filename available';
+        filenameValidation.textContent = '✅ 文件名可用';
         filenameValidation.style.color = '#4CAF50';
         filenameValidation.style.display = 'block';
         return true;
@@ -1528,7 +1528,7 @@ function setupTrimEditorUI() {
         audioTrimmer.setTrimRegion(0, Math.min(duration, audioTrimmer.maxDuration));
         audioTrimmer.setPlaybackSpeed(1.0);
         updateTrimUI();
-        showTrimMessage('Reset to original settings', 'info');
+        showTrimMessage('已恢复原始设置', 'info');
     });
     
     // Upload button
@@ -1537,7 +1537,7 @@ function setupTrimEditorUI() {
         
         try {
             uploadBtn.disabled = true;
-            uploadBtn.textContent = '⏳ Processing...';
+            uploadBtn.textContent = '⏳ 处理中...';
             
             // Refresh filename list to check for collisions
             await fetchExistingFilenames();
@@ -1555,23 +1555,23 @@ function setupTrimEditorUI() {
                 // Validate filename
                 const invalidChars = /[<>:"|?*\/\\]/;
                 if (invalidChars.test(customName)) {
-                    showTrimMessage('Filename contains invalid characters. Please use only letters, numbers, spaces, hyphens, and underscores.', 'error');
+                    showTrimMessage('文件名包含非法字符，请仅使用字母、数字、空格、连字符和下划线。', 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                     return;
                 }
                 
                 // Check for collisions
                 const lowerFileName = newFilename.toLowerCase();
                 if (existingChimeFilenames.some(f => f.toLowerCase() === lowerFileName)) {
-                    showTrimMessage(`Filename "${newFilename}" already exists. Please choose a different name.`, 'error');
+                    showTrimMessage(`Filename "${newFilename}" 已被使用，请选择其他名称。`, 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                     return;
                 }
                 
                 // Perform rename via API
-                uploadBtn.textContent = '📝 Renaming...';
+                uploadBtn.textContent = '📝 正在重命名...';
                 const response = await fetch(`/api/rename_chime/${encodeURIComponent(audioTrimmer.originalFileName)}/${encodeURIComponent(newFilename)}`, {
                     method: 'POST',
                     headers: {
@@ -1582,14 +1582,14 @@ function setupTrimEditorUI() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    showTrimMessage('File renamed successfully!', 'success');
+                    showTrimMessage('文件重命名成功！', 'success');
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    showTrimMessage('Rename failed: ' + (result.error || 'Unknown error'), 'error');
+                    showTrimMessage('重命名失败: ' + (result.error || 'Unknown error'), 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                 }
                 return;
             }
@@ -1601,9 +1601,9 @@ function setupTrimEditorUI() {
             // Check actual file size
             if (wavBlob.size > {{ MAX_LOCK_CHIME_SIZE }}) {
                 const actualSizeMB = (wavBlob.size / 1024 / 1024).toFixed(2);
-                showTrimMessage(`Pre-trimmed file validation failed: File is ${actualSizeMB} MB. Tesla requires lock chimes to be under 1 MB. ['success':false]`, 'error');
+                showTrimMessage(`裁剪前验证失败：文件大小为 ${actualSizeMB} MB. Tesla 要求锁车铃声小于 1 MB。 ['success':false]`, 'error');
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                uploadBtn.textContent = '📤 上传裁剪后的音效';
                 return;
             }
             
@@ -1620,9 +1620,9 @@ function setupTrimEditorUI() {
                 // Check for invalid characters
                 const invalidChars = /[<>:"|?*\/\\]/;
                 if (invalidChars.test(customName)) {
-                    showTrimMessage('Filename contains invalid characters. Please use only letters, numbers, spaces, hyphens, and underscores.', 'error');
+                    showTrimMessage('文件名包含非法字符，请仅使用字母、数字、空格、连字符和下划线。', 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                     return;
                 }
                 
@@ -1631,9 +1631,9 @@ function setupTrimEditorUI() {
                 // Validate it doesn't already exist (case-insensitive)
                 const lowerFileName = fileName.toLowerCase();
                 if (existingChimeFilenames.some(f => f.toLowerCase() === lowerFileName)) {
-                    showTrimMessage(`Filename "${fileName}" already exists. Please choose a different name.`, 'error');
+                    showTrimMessage(`文件名 "${fileName}" 已被使用，请选择其他名称。`, 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                     return;
                 }
             } else {
@@ -1642,9 +1642,9 @@ function setupTrimEditorUI() {
                 fileName = generateUniqueFilename(baseName, '.wav', isEditingExistingChime);
             }
             
-            console.log('Original filename:', audioTrimmer.originalFileName);
-            console.log('Editing existing:', isEditingExistingChime);
-            console.log('Final filename:', fileName);
+            console.log('原始文件名:', audioTrimmer.originalFileName);
+            console.log('是否编辑现有文件:', isEditingExistingChime);
+            console.log('最终文件名:', fileName);
             formData.append('chime_file', wavBlob, fileName);
             formData.append('pre_trimmed', 'true'); // WAV already in correct format and normalized in browser
             formData.append('original_filename', audioTrimmer.originalFileName);
@@ -1667,21 +1667,21 @@ function setupTrimEditorUI() {
                     // Reload page to show new chime
                     window.location.reload();
                 } else {
-                    showTrimMessage('Upload failed: ' + (result.error || 'Unknown error'), 'error');
+                    showTrimMessage('上传失败: ' + (result.error || '未知错误'), 'error');
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                    uploadBtn.textContent = '📤 上传裁剪后的音效';
                 }
             } else {
                 const text = await response.text();
-                showTrimMessage('Upload failed: ' + text, 'error');
+                showTrimMessage('上传失败: ' + text, 'error');
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '📤 Upload Trimmed Audio';
+                uploadBtn.textContent = '📤 上传裁剪后的音效';
             }
         } catch (error) {
-            console.error('Upload error:', error);
-            showTrimMessage('Upload failed: ' + error.message, 'error');
+            console.error('上传错误:', error);
+            showTrimMessage('上传失败: ' + error.message, 'error');
             uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Upload Trimmed Audio';
+            uploadBtn.textContent = '📤 上传裁剪后的音效';
         }
     });
     
@@ -1725,11 +1725,11 @@ function loadAudioForTrimming(file) {
             if (normalizeCheckbox && normalizeCheckbox.checked && targetLufsSlider) {
                 const sliderIndex = parseInt(targetLufsSlider.value);
                 const volumeLevels = [
-                    { name: "Very Quiet", lufs: -23, description: "Barely audible" },
-                    { name: "Quiet", lufs: -18, description: "Soft and subtle" },
-                    { name: "Normal", lufs: -14, description: "Standard loudness" },
-                    { name: "Loud", lufs: -11, description: "Attention-grabbing" },
-                    { name: "Very Loud", lufs: -9, description: "Maximum volume" }
+                    { name: "非常安静", lufs: -23, description: "几乎听不见" },
+                    { name: "安静", lufs: -18, description: "柔和低调" },
+                    { name: "正常", lufs: -14, description: "标准响度" },
+                    { name: "响亮", lufs: -11, description: "引人注意" },
+                    { name: "非常响亮", lufs: -9, description: "最大音量" }
                 ];
                 audioTrimmer.setNormalization(true, volumeLevels[sliderIndex].lufs);
                 await audioTrimmer.calculateNormalizationGain();
@@ -1751,7 +1751,7 @@ function loadAudioForTrimming(file) {
             // Scroll to editor
             document.getElementById('trimEditorSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            showTrimMessage('Failed to decode audio: ' + result.error, 'error');
+            showTrimMessage('音频解码失败：: ' + result.error, 'error');
             closeTrimEditor();
         }
     });
@@ -1759,7 +1759,7 @@ function loadAudioForTrimming(file) {
 
 function editChime(filename) {
     if (!audioTrimmer) {
-        alert('Audio trimmer not available');
+        alert('音频裁剪工具不可用');
         return;
     }
     
@@ -1772,7 +1772,7 @@ function editChime(filename) {
     document.getElementById('trimEditorLoading').style.display = 'block';
     document.getElementById('trimEditorContent').style.display = 'none';
     document.getElementById('trimEditorBadge').style.display = 'inline-block';
-    document.getElementById('trimEditorBadge').textContent = 'Editing: ' + filename;
+    document.getElementById('trimEditorBadge').textContent = '正在编辑: ' + filename;
     
     // Pre-populate filename field with _edited suffix suggestion
     const trimFilenameInput = document.getElementById('trimFilename');
@@ -1801,11 +1801,11 @@ function editChime(filename) {
             if (normalizeCheckbox && normalizeCheckbox.checked && targetLufsSlider) {
                 const sliderIndex = parseInt(targetLufsSlider.value);
                 const volumeLevels = [
-                    { name: "Very Quiet", lufs: -23, description: "Barely audible" },
-                    { name: "Quiet", lufs: -18, description: "Soft and subtle" },
-                    { name: "Normal", lufs: -14, description: "Standard loudness" },
-                    { name: "Loud", lufs: -11, description: "Attention-grabbing" },
-                    { name: "Very Loud", lufs: -9, description: "Maximum volume" }
+                    { name: "非常安静", lufs: -23, description: "几乎听不见" },
+                    { name: "安静", lufs: -18, description: "柔和低调" },
+                    { name: "正常", lufs: -14, description: "标准响度" },
+                    { name: "响亮", lufs: -11, description: "引人注意" },
+                    { name: "非常响亮", lufs: -9, description: "最大音量" }
                 ];
                 audioTrimmer.setNormalization(true, volumeLevels[sliderIndex].lufs);
                 await audioTrimmer.calculateNormalizationGain();
@@ -1830,7 +1830,7 @@ function editChime(filename) {
             // Scroll to editor
             document.getElementById('trimEditorSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            showTrimMessage('Failed to load audio: ' + result.error, 'error');
+            showTrimMessage('音频解码失败: ' + result.error, 'error');
             closeTrimEditor();
         }
     });
@@ -1880,15 +1880,15 @@ function updateTrimUI() {
     if (!withinLimit) {
         statusEl.classList.add('error');
         statusTextEl.classList.add('error');
-        statusTextEl.textContent = '✗ Too Large';
+        statusTextEl.textContent = '✗ 超出大小限制';
     } else if (fileSize > {{ MAX_LOCK_CHIME_SIZE }} * 0.9) {
         statusEl.classList.add('warning');
         statusTextEl.classList.add('warning');
-        statusTextEl.textContent = '⚠ Close to Limit';
+        statusTextEl.textContent = '⚠ 接近上限';
     } else {
         statusEl.classList.add('success');
         statusTextEl.classList.add('success');
-        statusTextEl.textContent = '✓ Ready';
+        statusTextEl.textContent = '✓ 已就绪';
     }
     
     // Recalculate actual size periodically to update UI (debounced)
@@ -1913,15 +1913,15 @@ function updateTrimUI() {
                 if (!withinActualLimit) {
                     statusEl.classList.add('error');
                     statusTextEl.classList.add('error');
-                    statusTextEl.textContent = '✗ Too Large';
+                    statusTextEl.textContent = '✗ 超出大小限制';
                 } else if (actualFileSize > {{ MAX_LOCK_CHIME_SIZE }} * 0.9) {
                     statusEl.classList.add('warning');
                     statusTextEl.classList.add('warning');
-                    statusTextEl.textContent = '⚠ Close to Limit';
+                    statusTextEl.textContent = '⚠ 接近上限';
                 } else {
                     statusEl.classList.add('success');
                     statusTextEl.classList.add('success');
-                    statusTextEl.textContent = '✓ Ready';
+                    statusTextEl.textContent = '✓ 已就绪';
                 }
             }
         } catch (error) {
@@ -2152,12 +2152,12 @@ function handleChimeFiles(files) {
     const validFiles = files.filter(file => file.name.toLowerCase().endsWith('.wav'));
     
     if (validFiles.length === 0) {
-        alert('Please select valid WAV files that meet Tesla requirements');
+        alert('请只选择符合 Tesla 要求的 WAV 文件');
         return;
     }
     
     if (validFiles.length < files.length) {
-        alert('Note: Only WAV files are accepted in bulk upload mode. MP3 files were filtered out.');
+        alert('提示：在批量上传模式下只接受 WAV 文件，已自动过滤掉 MP3 等其他格式。');
     }
     
     // Check for files that are too large
@@ -2170,7 +2170,7 @@ function handleChimeFiles(files) {
             return `  • ${f.name} (${sizeMB} MB)`;
         }).join('\n');
         const maxSizeMB = (maxSize / 1024 / 1024).toFixed(2);
-        alert(`The following files are too large (max ${maxSizeMB} MB):\n\n${fileList}\n\nBulk upload requires files to already meet Tesla requirements. To upload these files, use the Single Upload mode and the Audio Trimmer tool to reduce their size.`);
+        alert(`以下文件超出大小限制（最大 ${maxSizeMB} MB):\n\n${fileList}\n\n批量上传要求文件已满足 Tesla 大小限制。如需上传这些文件，请使用“单文件上传”模式并通过音频裁剪工具压缩大小。`);
         return;
     }
     
@@ -2214,7 +2214,7 @@ function updateChimeFilesList() {
                     <strong>${escapeHtml(file.name)}</strong>
                     <span${sizeWarning} style="font-size: 12px; margin-left: 8px;">${sizeStr}</span>
                 </div>
-                <button type="button" onclick="removeChimeFile(${index})" style="background: none; border: none; color: var(--error-text, #dc3545); cursor: pointer; padding: 4px 8px; font-size: 18px;" title="Remove">✖</button>
+                <button type="button" onclick="removeChimeFile(${index})" style="background: none; border: none; color: var(--error-text, #dc3545); cursor: pointer; padding: 4px 8px; font-size: 18px;" title="移除文件">✖</button>
             </div>
         `;
     });
@@ -2235,7 +2235,7 @@ function escapeHtml(text) {
 
 async function uploadBulkChimes() {
     if (selectedChimeFiles.length === 0) {
-        alert('Please select files to upload');
+        alert('请先选择要上传的文件');
         return;
     }
     
@@ -2258,7 +2258,7 @@ async function uploadBulkChimesFromArray(files) {
         progressDiv.style.display = 'block';
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        statusText.textContent = 'Preparing upload...';
+        statusText.textContent = '准备上传中...';
     }
     
     const formData = new FormData();
@@ -2278,7 +2278,7 @@ async function uploadBulkChimesFromArray(files) {
                 
                 const loadedMB = (e.loaded / 1024 / 1024).toFixed(2);
                 const totalMB = (e.total / 1024 / 1024).toFixed(2);
-                statusText.textContent = `Uploading ${files.length} file(s)... (${loadedMB} MB / ${totalMB} MB)`;
+                statusText.textContent = `正在上传 ${files.length} 个文件... (${loadedMB} MB / ${totalMB} MB)`;
             }
         });
         
@@ -2293,11 +2293,11 @@ async function uploadBulkChimesFromArray(files) {
                     
                     if (response.success) {
                         progressBar.style.background = '#28a745';
-                        statusText.textContent = response.summary || 'Upload complete!';
+                        statusText.textContent = response.summary || '上传完成！';
                         statusText.style.color = '#28a745';
                     } else {
                         progressBar.style.background = '#ffc107';
-                        statusText.textContent = 'Upload completed with some errors';
+                        statusText.textContent = '上传完成，但部分文件有错误';
                         statusText.style.color = '#ffc107';
                     }
                     
@@ -2312,7 +2312,7 @@ async function uploadBulkChimesFromArray(files) {
                     
                 } catch (e) {
                     progressBar.style.background = '#28a745';
-                    statusText.textContent = 'Upload complete!';
+                    statusText.textContent = '上传完成！';
                     statusText.style.color = '#28a745';
                     
                     // Re-enable buttons
@@ -2326,7 +2326,7 @@ async function uploadBulkChimesFromArray(files) {
                 }
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = '上传失败: ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 if (uploadBtn) uploadBtn.disabled = false;
                 if (clearBtn) clearBtn.disabled = false;
@@ -2336,7 +2336,7 @@ async function uploadBulkChimesFromArray(files) {
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = '上传失败：网络错误';
             statusText.style.color = '#dc3545';
             if (uploadBtn) uploadBtn.disabled = false;
             if (clearBtn) clearBtn.disabled = false;
@@ -2348,8 +2348,8 @@ async function uploadBulkChimesFromArray(files) {
         xhr.send(formData);
         
     } catch (error) {
-        console.error('Upload error:', error);
-        alert('Upload failed: ' + error.message);
+        console.error('上传发生错误:', error);
+        alert('上传失败: ' + error.message);
         if (uploadBtn) uploadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
     }
@@ -2364,8 +2364,8 @@ function showChimeUploadResults(results, overallSuccess) {
     
     let html = '<div style="margin-top: 15px; padding: 15px; background: var(--bg-info); border: 2px solid var(--border-color); border-radius: 8px; max-height: 400px; overflow-y: auto;">';
     html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
-    html += '<h4 style="margin: 0; color: var(--text-primary);">📋 Upload Results</h4>';
-    html += '<button type="button" onclick="document.getElementById(\'chimeUploadResults\').style.display=\'none\';document.getElementById(\'chimeUploadProgress\').style.display=\'none\'" style="background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Close</button>';
+    html += '<h4 style="margin: 0; color: var(--text-primary);">📋 上传结果</h4>';
+    html += '<button type="button" onclick="document.getElementById(\'chimeUploadResults\').style.display=\'none\';document.getElementById(\'chimeUploadProgress\').style.display=\'none\'" style="background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">关闭</button>';
     html += '</div>';
     html += '<ul style="margin: 10px 0 0 0; padding: 0; list-style: none;">';
     
@@ -2387,12 +2387,12 @@ function showChimeUploadResults(results, overallSuccess) {
     
     html += '</ul>';
     html += `<div style="margin-top: 15px; padding: 10px; background: var(--form-input-bg); border-radius: 4px; color: var(--text-primary);">`;
-    html += `<strong>Summary:</strong> ${successCount} succeeded, ${failCount} failed out of ${results.length} total file(s)`;
+    html += `<strong>总结:</strong> 成功${successCount} 个, 失败${failCount}个，共 ${results.length} 个文件`;
     html += '</div>';
     
     if (successCount > 0) {
         html += '<div style="margin-top: 10px; text-align: center;">';
-        html += '<button type="button" onclick="window.location.reload()" style="background: var(--btn-primary-bg); color: var(--btn-primary-text); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">🔄 Refresh to See New Files</button>';
+        html += '<button type="button" onclick="window.location.reload()" style="background: var(--btn-primary-bg); color: var(--btn-primary-text); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">🔄 刷新页面查看新文件</button>';
         html += '</div>';
     }
     
@@ -2418,7 +2418,7 @@ async function checkGadgetState() {
             indicator.style.borderLeft = '4px solid var(--warning-border, #ffc107)';
             indicator.style.color = 'var(--text-primary)';
             
-            title.textContent = '⚠️ Gadget State Issues Detected';
+            title.textContent = '⚠️ 检测到设备状态有问题';
             title.style.color = 'var(--text-primary)';
             
             let detailsHtml = '<ul style="margin: 5px 0 0 20px; padding: 0; color: var(--text-primary);">';
@@ -2428,12 +2428,12 @@ async function checkGadgetState() {
             detailsHtml += '</ul>';
             
             if (state.fixes_applied.length > 0) {
-                detailsHtml += '<div style="margin-top: 5px; color: var(--success-text, #28a745); font-weight: 600;">✓ Auto-fixed: ' + state.fixes_applied.join(', ') + '</div>';
+                detailsHtml += '<div style="margin-top: 5px; color: var(--success-text, #28a745); font-weight: 600;">✓ 已自动修复: ' + state.fixes_applied.join(', ') + '</div>';
             }
             
             if (state.errors.length > 0) {
-                detailsHtml += '<div style="margin-top: 5px; color: var(--error-text, #dc3545); font-weight: 600;">✗ Errors: ' + state.errors.join(', ') + '</div>';
-                detailsHtml += '<div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">Tip: Switch to Edit mode and back to Present mode to reset gadget state.</div>';
+                detailsHtml += '<div style="margin-top: 5px; color: var(--error-text, #dc3545); font-weight: 600;">✗ 错误: ' + state.errors.join(', ') + '</div>';
+                detailsHtml += '<div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">提示：切换到「编辑模式」再切换回「车载U盘模式」可重置设备状态。</div>';
             }
             
             details.innerHTML = detailsHtml;
@@ -2446,7 +2446,7 @@ async function checkGadgetState() {
             indicator.style.color = 'var(--text-primary)';
             
             title.textContent = '✓ Gadget State Recovered';
-            details.innerHTML = '<div style="color: var(--success-text, #28a745);">Fixed: ' + state.fixes_applied.join(', ') + '</div>';
+            details.innerHTML = '<div style="color: var(--success-text, #28a745);">已修复: ' + state.fixes_applied.join(', ') + '</div>';
             
             // Auto-hide after 10 seconds
             setTimeout(() => {
@@ -2456,7 +2456,7 @@ async function checkGadgetState() {
         // If healthy and no fixes, don't show indicator
         
     } catch (error) {
-        console.error('Error checking gadget state:', error);
+        console.error('检查设备状态时出错:', error);
     }
 }
 </script>

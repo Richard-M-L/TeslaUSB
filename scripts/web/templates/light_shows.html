@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-    <h2>💡 Light Shows</h2>
-    <div class="status-label {{ mode_class }}">Current Mode: {{ mode_label }}</div>
+    <h2>💡 灯光秀</h2>
+    <div class="status-label {{ mode_class }}">当前模式: {{ mode_label }}</div>
     
     <!-- iOS Safari Warning -->
     <div id="iosWarning" class="ios-warning">
-        <p><strong>⚠️ iOS Browser Limitation:</strong> File uploading is only available through Safari when running on iOS. Please open this page in Safari to upload files.</p>
-        <p>Note: Desktop browsers (Windows/Mac/Linux) work normally regardless of browser choice.</p>
+        <p><strong>⚠️ iOS浏览器限制:</strong> 在 iOS 系统上，文件上传功能仅支持通过 Safari 浏览器使用。请在 Safari 浏览器中打开此页面以上传文件。</p>
+        <p>注意：桌面浏览器（Windows/Mac/Linux）无论选择哪种浏览器都能正常运行。</p>
     </div>
     
     <div class="folder-controls" id="showUploadControls">
@@ -16,9 +16,9 @@
             <div class="drag-drop-zone" id="dragDropZone" style="border: 3px dashed var(--border-input); border-radius: 8px; padding: 40px; text-align: center; background: var(--form-input-bg); cursor: pointer; transition: all 0.3s; margin-bottom: 20px;">
                 <div style="pointer-events: none;">
                     <i class="bi bi-cloud-upload" style="font-size: 48px; color: var(--btn-purple-bg); display: block; margin-bottom: 15px;"></i>
-                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Drag & drop files here or click to browse</p>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">将文件拖放到此处或点击浏览。</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-                        Supports: .fseq, .mp3, .wav, .zip (can select multiple files)
+                        支持的文件格式: .fseq, .mp3, .wav, .zip (可选择多个文件)
                     </p>
                 </div>
             </div>
@@ -27,21 +27,21 @@
             
             <!-- Selected Files Preview -->
             <div id="selectedFilesPreview" style="display: none; margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 Selected Files:</h4>
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 待上传文件:</h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="edit-btn" id="uploadSelectedBtn">📤 Upload All Files</button>
-                    <button type="button" class="btn-delete" id="clearSelectedBtn">✖ Clear All</button>
+                    <button type="button" class="edit-btn" id="uploadSelectedBtn">📤 上传全部文件</button>
+                    <button type="button" class="btn-delete" id="clearSelectedBtn">✖ 全部清除</button>
                 </div>
             </div>
         </div>
         
         <!-- Mobile/Fallback Simple Upload Interface -->
         <form method="post" action="{{ url_for('light_shows.upload_light_show') }}" enctype="multipart/form-data" style="margin-bottom: 20px;" id="showUploadForm">
-            <label for="show_file" style="display: block; margin-bottom: 8px; font-weight: 600;">Upload Light Show File or ZIP:</label>
+            <label for="show_file" style="display: block; margin-bottom: 8px; font-weight: 600;">上传灯光秀文件或 ZIP 文件:</label>
             <p style="margin: 0 0 10px 0; font-size: 13px; color: var(--text-secondary);">
-                Individual files: .fseq, .mp3, .wav<br>
-                ZIP files: Can contain multiple light show files in any folder structure
+                单个文件：.fseq、.mp3、.wav<br>
+                ZIP 文件：可以包含多个灯光秀文件，文件结构不受限制。
             </p>
             <input type="file" name="show_file" id="show_file" accept=".fseq,.mp3,.wav,.zip" required 
                    style="display: block; margin-bottom: 10px; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; background: var(--form-input-bg); width: 100%; max-width: 400px; font-size: 14px; color: var(--text-primary);">
@@ -56,7 +56,7 @@
                         0%
                     </div>
                 </div>
-                <p id="showUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Preparing upload...</p>
+                <p id="showUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">正在准备上传...</p>
             </div>
         </div>
     </div>
@@ -66,9 +66,9 @@
         <table class="video-table" style="table-layout: fixed;">
             <thead>
                 <tr>
-                    <th style="width: 25%;">Show Name</th>
-                    <th style="width: 45%;">Files</th>
-                    <th style="width: 30%;">Actions</th>
+                    <th style="width: 25%;">灯光秀名称</th>
+                    <th style="width: 45%;">文件类型</th>
+                    <th style="width: 30%;">操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -102,11 +102,11 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <a href="{{ url_for('light_shows.download_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
                                class="edit-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; font-size: 14px; border-radius: 4px;">
-                                📥 Download ZIP
+                                📥 打包ZIP下载
                             </a>
                             <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" style="display: inline-block; margin: 0;" 
-                                  onsubmit="return confirm('Are you sure you want to delete all files for {{ group.base_name }}?');">
-                                <button type="submit" class="btn-delete">🗑️ Delete</button>
+                                  onsubmit="return confirm('您确定要删除 {{ group.base_name }}所有文件吗？');">
+                                <button type="submit" class="btn-delete">🗑️ 删除</button>
                             </form>
                         </div>
                     </td>
@@ -157,12 +157,12 @@
             <div class="mobile-card-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch;">
                 <a href="{{ url_for('light_shows.download_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
                    class="edit-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; flex: 1; padding: 6px 12px; border-radius: 4px;">
-                    📥 Download
+                    📥 下载
                 </a>
                 <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
-                      onsubmit="return confirm('Are you sure you want to delete all files for {{ group.base_name }}?');"
+                      onsubmit="return confirm('您确定要删除 {{ group.base_name }}的所有文件吗？');"
                       style="flex: 1; margin: 0;">
-                    <button type="submit" class="btn-delete" style="width: 100%; height: 100%;">🗑️ Delete</button>
+                    <button type="submit" class="btn-delete" style="width: 100%; height: 100%;">🗑️ 删除</button>
                 </form>
             </div>
         </div>
@@ -170,7 +170,7 @@
     </div>
     {% else %}
     <div class="info-box">
-        <p>No light show files found in the LightShow folders.</p>
+        <p>在 LightShow 文件夹中未找到灯光秀文件。</p>
     </div>
     {% endif %}
 </div>
@@ -303,7 +303,7 @@ function handleFiles(files) {
     });
     
     if (validFiles.length === 0) {
-        alert('Please select valid light show files (.fseq, .mp3, .wav, .zip)');
+        alert('请选择有效的光影秀文件（.fseq、.mp3、.wav、.zip）。');
         return;
     }
     
@@ -364,7 +364,7 @@ function escapeHtml(text) {
 
 async function uploadMultipleFiles() {
     if (selectedFiles.length === 0) {
-        alert('Please select files to upload');
+        alert('请选择要上传的文件。');
         return;
     }
     
@@ -383,7 +383,7 @@ async function uploadMultipleFiles() {
         progressDiv.style.display = 'block';
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        statusText.textContent = 'Preparing upload...';
+        statusText.textContent = '正在准备上传...';
     }
     
     const formData = new FormData();
@@ -403,7 +403,7 @@ async function uploadMultipleFiles() {
                 
                 const loadedMB = (e.loaded / 1024 / 1024).toFixed(2);
                 const totalMB = (e.total / 1024 / 1024).toFixed(2);
-                statusText.textContent = `Uploading ${selectedFiles.length} file(s)... (${loadedMB} MB / ${totalMB} MB)`;
+                statusText.textContent = `正在上传 ${selectedFiles.length} 个文件... (${loadedMB} MB / ${totalMB} MB)`;
             }
         });
         
@@ -418,7 +418,7 @@ async function uploadMultipleFiles() {
                     progressBar.style.background = '#28a745';
                     
                     if (response.success) {
-                        statusText.textContent = response.summary || 'Upload complete!';
+                        statusText.textContent = response.summary || '上传完成！';
                         statusText.style.color = '#28a745';
                         
                         // Show detailed results
@@ -430,7 +430,7 @@ async function uploadMultipleFiles() {
                             window.location.reload();
                         }, 2000);
                     } else {
-                        statusText.textContent = 'Upload completed with errors';
+                        statusText.textContent = '上传完成，但出现错误。';
                         statusText.style.color = '#ffc107';
                         showUploadResults(response.results);
                         
@@ -440,7 +440,7 @@ async function uploadMultipleFiles() {
                     }
                 } catch (e) {
                     progressBar.style.background = '#dc3545';
-                    statusText.textContent = 'Upload complete! Redirecting...';
+                    statusText.textContent = '上传完成！正在重定向......';
                     statusText.style.color = '#28a745';
                     setTimeout(function() {
                         window.location.reload();
@@ -448,7 +448,7 @@ async function uploadMultipleFiles() {
                 }
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = '上传失败： ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 if (uploadBtn) uploadBtn.disabled = false;
                 if (clearBtn) clearBtn.disabled = false;
@@ -458,7 +458,7 @@ async function uploadMultipleFiles() {
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = '上传失败：网络错误。';
             statusText.style.color = '#dc3545';
             if (uploadBtn) uploadBtn.disabled = false;
             if (clearBtn) clearBtn.disabled = false;
@@ -513,7 +513,7 @@ function initializeSimpleUpload() {
         const statusText = document.getElementById('showUploadStatus');
         
         if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please select a file to upload');
+            alert('请选择要上传的文件。');
             return;
         }
         
@@ -522,7 +522,7 @@ function initializeSimpleUpload() {
         
         // Disable upload button and show progress
         uploadBtn.disabled = true;
-        uploadBtn.textContent = '⏳ Uploading...';
+        uploadBtn.textContent = '⏳ 正在上传...';
         progressDiv.style.display = 'block';
         
         // Create AJAX request with progress tracking
@@ -555,7 +555,7 @@ function initializeSimpleUpload() {
                 progressBar.style.width = '100%';
                 progressBar.textContent = '100%';
                 progressBar.style.background = '#28a745';
-                statusText.textContent = 'Upload complete! Redirecting...';
+                statusText.textContent = '上传完成！正在跳转...';
                 statusText.style.color = '#28a745';
                 
                 // Redirect after short delay
@@ -564,20 +564,20 @@ function initializeSimpleUpload() {
                 }, 1000);
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = '上传失败: ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '📤 Upload';
+                uploadBtn.textContent = '📤 上传';
             }
         });
         
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = '上传失败：网络错误。';
             statusText.style.color = '#dc3545';
             uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Upload';
+            uploadBtn.textContent = '📤 上传';
         });
         
         // Send the request

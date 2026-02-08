@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cleanup Settings - Tesla USB Gadget Control{% endblock %}
+{% block title %}自动清理设置 - Tesla USB 工具箱{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cleanup.css') }}?v=20251108">
@@ -11,8 +11,8 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-back">← Back to Analytics</a>
-        <h2>🧹 Auto-Cleanup Settings</h2>
+        <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-back">← 返回存储分析仪表板</a>
+        <h2>🧹 自动清理设置</h2>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -25,12 +25,27 @@
 
     {% if mode != 'edit' %}
         <div class="alert alert-warning">
-            <strong>⚠️ Edit Mode Required</strong><br>
-            You must be in Edit mode to configure and run cleanup.
-            <a href="{{ url_for('mode_control.index') }}">Switch to Edit mode</a>
+            <strong>⚠️ 需要进入编辑模式</strong><br>
+            必须处于编辑模式才能配置和运行自动清理。
+            <a href="{{ url_for('mode_control.index') }}">切换到编辑模式</a>
         </div>
     {% endif %}
+    <!-- Help Card -->
+    <div class="cleanup-card help-card">
+        <h3>ℹ️ 自动清理功能说明</h3>
+        <ul>
+            <li><strong>手动清理:</strong> 使用“预览清理效果”可以先查看将要删除的文件列表，然后选择是否执行。不受“开机自动清理”开关影响。</li>
+            <li><strong>自动清理:</strong> 当某个文件夹开启“开机时自动清理”后，系统会在启动过程中（向 Tesla 呈现 USB 之前）自动删除符合条件的文件。</li>
+            <li><strong>EncryptedClips:</strong> 这些视频通常是特斯拉在某些特定情况下（例如涉及隐私、法律取证或安全事件）自动加密保存的 — 默认关闭。</li>
+            <li><strong>Photobooth:</strong> 照相亭拍的照片，后续更新清理照片功能 — 不太重要。</li>
+            <li><strong>RecentClips:</strong> 普通行车记录视频 — 建议可设置自动删除旧视频。</li>
+            <li><strong>SavedClips:</strong> 用户手动保存的视频 — 默认关闭以保护重要片段。</li>
+            <li><strong>SentryClips:</strong> 哨兵模式安全事件视频 — 默认关闭以防误删。</li>
 
+            <li><strong>保护机制:</strong> 最近 1 小时内的视频永远不会被删除（可能正在录制中）。</li>
+            <li><strong>启动流程:</strong> 开机时系统会以读写模式挂载分区 → 执行启用的文件夹清理 → 卸载并以 USB 设备模式呈现给 Tesla。</li>
+        </ul>
+    </div>
     <form method="POST" action="{{ url_for('cleanup.save_settings') }}" class="cleanup-form">
         <!-- Dynamic folder settings based on detected folders -->
         {% for folder_name, policy in policies.items() %}
@@ -51,9 +66,9 @@
                            {% if mode != 'edit' %}disabled{% endif %}>
                     <span class="toggle-slider"></span>
                     <span class="toggle-label">
-                        Run cleanup on boot
+                        开机时自动清理此文件夹
                         {% if folder_name in ['SavedClips', 'SentryClips', 'EncryptedClips'] %}
-                        (⚠️ Not recommended)
+                        (⚠️ 不推荐开启)
                         {% endif %}
                     </span>
                 </label>
@@ -65,12 +80,12 @@
                         <input type="checkbox" name="{{ folder_name }}_age_enabled"
                                {% if policy['age_based']['enabled'] %}checked{% endif %}
                                {% if mode != 'edit' %}disabled{% endif %}>
-                        Age-based: Delete videos older than
+                        按时间清理：删除早于
                     </label>
                     <input type="number" name="{{ folder_name }}_age_days"
                            value="{{ policy['age_based']['days'] }}"
                            min="1" max="3650" class="number-input"
-                           {% if mode != 'edit' %}disabled{% endif %}> days
+                           {% if mode != 'edit' %}disabled{% endif %}> 天前的视频
                 </div>
 
                 {% if 'size_based' in policy %}
@@ -79,7 +94,7 @@
                         <input type="checkbox" name="{{ folder_name }}_size_enabled"
                                {% if policy['size_based']['enabled'] %}checked{% endif %}
                                {% if mode != 'edit' %}disabled{% endif %}>
-                        Size-based: Keep maximum of
+                        按容量清理：最多保留
                     </label>
                     <input type="number" name="{{ folder_name }}_size_gb"
                            value="{{ policy['size_based']['max_gb'] }}"
@@ -94,12 +109,12 @@
                         <input type="checkbox" name="{{ folder_name }}_count_enabled"
                                {% if policy['count_based']['enabled'] %}checked{% endif %}
                                {% if mode != 'edit' %}disabled{% endif %}>
-                        Count-based: Keep only newest
+                        按数量清理：只保留最新的
                     </label>
                     <input type="number" name="{{ folder_name }}_count_videos"
                            value="{{ policy['count_based']['max_videos'] }}"
                            min="1" max="10000" class="number-input"
-                           {% if mode != 'edit' %}disabled{% endif %}> videos
+                           {% if mode != 'edit' %}disabled{% endif %}> 个视频
                 </div>
                 {% endif %}
             </div>
@@ -108,24 +123,9 @@
 
         <!-- Action Buttons -->
         <div class="button-group">
-            <button type="submit" class="btn btn-primary" {% if mode != 'edit' %}disabled{% endif %}>💾 Save Settings</button>
-            <a href="{{ url_for('cleanup.preview') }}" class="btn btn-secondary {% if mode != 'edit' %}disabled{% endif %}">🔍 Preview Cleanup</a>
+            <button type="submit" class="btn btn-primary" {% if mode != 'edit' %}disabled{% endif %}>💾 保存设置</button>
+            <a href="{{ url_for('cleanup.preview') }}" class="btn btn-secondary {% if mode != 'edit' %}disabled{% endif %}">🔍 预览清理效果</a>
         </div>
     </form>
-
-    <!-- Help Card -->
-    <div class="cleanup-card help-card">
-        <h3>ℹ️ How Auto-Cleanup Works</h3>
-        <ul>
-            <li><strong>Manual Cleanup:</strong> Use "Preview Cleanup" to see what will be deleted, then choose to execute. This works regardless of the "Run cleanup on boot" setting.</li>
-            <li><strong>Automatic Cleanup:</strong> When "Run cleanup on boot" is enabled for a folder, the system will automatically delete matching files during the boot sequence, before presenting the USB drive to Tesla.</li>
-            <li><strong>RecentClips:</strong> Normal dashcam footage - safe to auto-delete after a period</li>
-            <li><strong>SavedClips:</strong> Videos you manually saved - disabled by default to protect important clips</li>
-            <li><strong>SentryClips:</strong> Security event recordings - disabled by default for safety</li>
-            <li><strong>EncryptedClips:</strong> Cybertruck encrypted footage - disabled by default</li>
-            <li><strong>Protected videos:</strong> Videos from the past hour are never deleted (might still be recording)</li>
-            <li><strong>Boot sequence:</strong> On startup, the system mounts drives read-write, runs cleanup for enabled folders, then unmounts and presents the USB gadget to Tesla</li>
-        </ul>
-    </div>
 </div>
 {% endblock %}

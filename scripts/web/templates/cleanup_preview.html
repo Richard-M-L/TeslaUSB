@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cleanup Preview - Tesla USB Gadget Control{% endblock %}
+{% block title %}清理预览 - Tesla USB 工具箱{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cleanup.css') }}">
@@ -8,22 +8,22 @@
 
 {% block content %}
 <div class="cleanup-container">
-    <h1>🔍 Cleanup Preview</h1>
+    <h1>🔍 清理预览</h1>
     
     {% if cleanup_plan['total_count'] == 0 %}
         <div class="alert alert-success">
-            <h2>✅ No Files to Delete</h2>
-            <p>Based on your current cleanup rules, no files need to be deleted.</p>
-            <p>All videos are within the configured limits.</p>
+            <h2>✅ 无需删除任何文件</h2>
+            <p>根据您当前的清理规则，没有文件需要被删除。</p>
+            <p>所有视频均在设置的限制范围内。</p>
         </div>
         
         <div class="button-group">
-            <a href="{{ url_for('cleanup.settings') }}" class="btn btn-secondary">← Back to Settings</a>
+            <a href="{{ url_for('cleanup.settings') }}" class="btn btn-secondary">← 返回设置</a>
         </div>
     {% else %}
         <div class="alert alert-warning">
-            <h2>⚠️ Cleanup Preview</h2>
-            <p>Based on your current rules, the following files will be deleted:</p>
+            <h2>⚠️ 清理预览</h2>
+            <p>根据您当前的规则，以下文件将被删除：</p>
         </div>
         
         <!-- Summary -->
@@ -32,7 +32,7 @@
                 <div class="summary-icon">🗑️</div>
                 <div class="summary-content">
                     <h3>{{ cleanup_plan['total_count'] }}</h3>
-                    <p>Videos to Delete</p>
+                    <p>个视频将被删除</p>
                 </div>
             </div>
             
@@ -40,7 +40,7 @@
                 <div class="summary-icon">💾</div>
                 <div class="summary-content">
                     <h3>{{ cleanup_plan['total_size_gb'] }} GB</h3>
-                    <p>Space to Free</p>
+                    <p>可释放空间</p>
                 </div>
             </div>
             
@@ -49,7 +49,7 @@
                 <div class="summary-icon">📅</div>
                 <div class="summary-content">
                     <h3>{{ cleanup_plan['oldest_remaining'] }}</h3>
-                    <p>Oldest Remaining</p>
+                    <p>清理后最旧保留文件</p>
                 </div>
             </div>
             {% endif %}
@@ -57,16 +57,16 @@
         
         <!-- Before/After Storage Impact -->
         <div class="impact-section">
-            <h2>📊 Storage Impact</h2>
+            <h2>📊 存储空间影响</h2>
             <div class="impact-grid">
                 <div class="impact-card">
-                    <h3>Before Cleanup</h3>
+                    <h3>清理前</h3>
                     <div class="storage-stat">
-                        <span class="stat-label">Used:</span>
+                        <span class="stat-label">已使用:</span>
                         <span class="stat-value">{{ impact['before']['used_gb'] }} GB ({{ "%.1f"|format(impact['before']['percent_used']) }}%)</span>
                     </div>
                     <div class="storage-stat">
-                        <span class="stat-label">Free:</span>
+                        <span class="stat-label">剩余:</span>
                         <span class="stat-value">{{ impact['before']['free_gb'] }} GB</span>
                     </div>
                 </div>
@@ -74,13 +74,13 @@
                 <div class="impact-arrow">→</div>
                 
                 <div class="impact-card">
-                    <h3>After Cleanup</h3>
+                    <h3>清理后</h3>
                     <div class="storage-stat">
-                        <span class="stat-label">Used:</span>
+                        <span class="stat-label">已使用:</span>
                         <span class="stat-value">{{ impact['after']['used_gb'] }} GB ({{ "%.1f"|format(impact['after']['percent_used']) }}%)</span>
                     </div>
                     <div class="storage-stat">
-                        <span class="stat-label">Free:</span>
+                        <span class="stat-label">剩余:</span>
                         <span class="stat-value">{{ impact['after']['free_gb'] }} GB</span>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
         
         <!-- Folder Breakdown -->
         <div class="breakdown-section">
-            <h2>📁 Files by Folder</h2>
+            <h2>📁 按文件夹分类</h2>
             {% for folder, data in cleanup_plan['breakdown_by_folder'].items() %}
                 {% if data['count'] > 0 %}
                 <div class="folder-breakdown">
@@ -99,12 +99,12 @@
                             {{ folder }}
                         </h3>
                         <span class="folder-stats">
-                            {{ data['count'] }} videos, {{ "%.2f"|format(data['size'] / 1024**3) }} GB
+                            {{ data['count'] }} 个视频, {{ "%.2f"|format(data['size'] / 1024**3) }} GB
                         </span>
                     </div>
                     
                     <details class="file-list">
-                        <summary>Show file list ({{ data['count'] }} files)</summary>
+                        <summary>查看文件列表（共 {{ data['count'] }} 个）</summary>
                         <ul>
                             {% for video in data['videos'][:50] %}
                             <li>
@@ -116,7 +116,7 @@
                             </li>
                             {% endfor %}
                             {% if data['count'] > 50 %}
-                            <li class="more-files">... and {{ data['count'] - 50 }} more files</li>
+                            <li class="more-files">... 还有 {{ data['count'] - 50 }} 个文件</li>
                             {% endif %}
                         </ul>
                     </details>
@@ -127,19 +127,19 @@
         
         <!-- Warning and Actions -->
         <div class="alert alert-critical">
-            <h3>⚠️ Warning: This Action Cannot Be Undone!</h3>
-            <p>Once files are deleted, they cannot be recovered. Please review the file list carefully.</p>
+            <h3>⚠️ 警告：此操作不可撤销！</h3>
+            <p>文件一旦删除将无法恢复，请仔细核对文件列表。</p>
         </div>
         
         <form method="POST" action="{{ url_for('cleanup.execute') }}" class="execute-form">
             <div class="button-group">
-                <a href="{{ url_for('cleanup.settings') }}" class="btn btn-secondary">← Cancel</a>
+                <a href="{{ url_for('cleanup.settings') }}" class="btn btn-secondary">← 取消</a>
                 <button type="submit" name="dry_run" value="true" class="btn btn-info">
-                    🧪 Test Run (No Deletion)
+                    🧪 模拟运行（不实际删除）
                 </button>
                 <button type="submit" name="dry_run" value="false" class="btn btn-danger" 
-                        onclick="return confirm('Are you sure you want to delete {{ cleanup_plan['total_count'] }} files? This cannot be undone!');">
-                    🗑️ Execute Cleanup
+                        onclick="return confirm('确定要删除 {{ cleanup_plan['total_count'] }} 个文件吗？此操作不可撤销！');">
+                    🗑️ 执行清理
                 </button>
             </div>
         </form>

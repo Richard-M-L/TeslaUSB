@@ -735,7 +735,7 @@
                     <!-- Speed -->
                     <div class="hud-speed">
                         <div class="hud-speed-value" id="hudSpeed">0</div>
-                        <div class="hud-speed-label">mph</div>
+                        <div class="hud-speed-label">km/h</div>
                     </div>
 
                     <!-- Right turn signal -->
@@ -782,7 +782,7 @@
             <button class="clip-nav-btn" id="prevClipBtn" onclick="navigateClip(-1)" title="Previous Clip">
                 <i class="bi bi-chevron-left"></i>
             </button>
-            <div class="clip-info" id="clipInfo">Clip 1 of 1</div>
+            <div class="clip-info" id="clipInfo">片段 1 / 1</div>
             <button class="clip-nav-btn" id="nextClipBtn" onclick="navigateClip(1)" title="Next Clip">
                 <i class="bi bi-chevron-right"></i>
             </button>
@@ -791,7 +791,7 @@
 
         <!-- SEI Overlay Toggle -->
         <div class="sei-toggle-container">
-            <div class="sei-toggle-label">HUD<br>Overlay</div>
+            <div class="sei-toggle-label">显示<br>HUD</div>
             <label class="sei-toggle-switch">
                 <input type="checkbox" id="seiToggle" onchange="toggleSEIMode()">
                 <span class="sei-toggle-slider"></span>
@@ -802,18 +802,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.front %}
         <div class="camera-option encrypted" data-camera="front" title="Video file cannot be played">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">前方</div>
         </div>
             {% else %}
         <div class="camera-option active" onclick="switchCamera('{{ video_url(event.camera_videos.front) }}', this)" data-camera="front">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">前方</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">前方</div>
         </div>
         {% endif %}
 
@@ -821,18 +821,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.back %}
         <div class="camera-option encrypted" data-camera="rear" title="Video file cannot be played">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">后方</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.back) }}', this)" data-camera="rear">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">后方</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">后方</div>
         </div>
         {% endif %}
 
@@ -840,18 +840,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.left_repeater %}
         <div class="camera-option encrypted" data-camera="left" title="Video file cannot be played">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">左侧</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.left_repeater) }}', this)" data-camera="left">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">左侧</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">左侧</div>
         </div>
         {% endif %}
 
@@ -859,18 +859,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.right_repeater %}
         <div class="camera-option encrypted" data-camera="right" title="Video file cannot be played">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">右侧</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.right_repeater) }}', this)" data-camera="right">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">右侧</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">右侧</div>
         </div>
         {% endif %}
 
@@ -878,18 +878,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.left_pillar %}
         <div class="camera-option encrypted" data-camera="left-pillar" title="Video file cannot be played">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">左侧B柱</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.left_pillar) }}', this)" data-camera="left-pillar">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">左侧B柱</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">左侧B柱</div>
         </div>
         {% endif %}
 
@@ -897,37 +897,32 @@
             {% if event.encrypted_videos and event.encrypted_videos.right_pillar %}
         <div class="camera-option encrypted" data-camera="right-pillar" title="Video file cannot be played">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">右侧B柱</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.right_pillar) }}', this)" data-camera="right-pillar">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">右侧B柱</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">右侧B柱</div>
         </div>
         {% endif %}
 
-        <!-- Download Event Button -->
-        <div class="camera-option download-option" id="downloadButton" onclick="downloadEvent()">
-            <i class="bi bi-download camera-icon" id="downloadIcon"></i>
-            <div class="camera-label" id="downloadLabel">Download All</div>
-        </div>
 
         <!-- Delete Event Button -->
         {% if mode_token == 'edit' %}
         <div class="camera-option delete-option" id="deleteButton" onclick="deleteEvent()">
             <i class="bi bi-trash camera-icon" id="deleteIcon"></i>
-            <div class="camera-label" id="deleteLabel">Delete</div>
+            <div class="camera-label" id="deleteLabel">删除</div>
         </div>
         {% else %}
         <div class="camera-option delete-option disabled" id="deleteButton" title="Switch to Edit Mode to delete videos">
             <i class="bi bi-trash camera-icon" id="deleteIcon"></i>
-            <div class="camera-label" id="deleteLabel">Delete</div>
+            <div class="camera-label" id="deleteLabel">删除</div>
         </div>
         {% endif %}
     </div>
@@ -973,7 +968,7 @@
         const nextBtn = document.getElementById('nextClipBtn');
 
         if (clipInfo) {
-            clipInfo.textContent = `Clip ${currentClipIndex + 1} of ${eventClips.length}`;
+            clipInfo.textContent = `片段 ${currentClipIndex + 1} / ${eventClips.length}`;
         }
 
         if (prevBtn) {
@@ -998,7 +993,7 @@
         // CRITICAL: Abort any in-progress downloads before starting new one
         // This prevents bandwidth competition and stalled downloads
         if (seiAbortController) {
-            console.log('Aborting previous SEI download for clip navigation');
+            console.log('正在取消之前的 SEI 下载，以便进行片段导航。');
             seiAbortController.abort();
             seiAbortController = null;
         }
@@ -1126,7 +1121,7 @@
         // If switching to stream mode and download is in progress, abort it
         if (!seiOverlayEnabled && seiLoading) {
             if (seiAbortController) {
-                console.log('Aborting SEI download - overlay mode disabled');
+                console.log('取消 SEI 下载 - 叠加模式已禁用');
                 seiAbortController.abort();
                 seiAbortController = null;
             }
@@ -1162,7 +1157,7 @@
         // Use originalUrl (set before clearing src), or currentVideoSrc (from SEI load), or current src
         const streamUrl = video.dataset.originalUrl || currentVideoSrc || currentSrc;
 
-        console.log('Toggle mode - streamUrl:', streamUrl, 'originalUrl:', video.dataset.originalUrl, 'currentVideoSrc:', currentVideoSrc);
+        console.log('切换模式 - 流媒体网址:', streamUrl, '原始网址:', video.dataset.originalUrl, '当前视频源:', currentVideoSrc);
 
         // Only proceed if we have a valid stream URL (not blob)
         if (streamUrl && !streamUrl.startsWith('blob:')) {
@@ -1219,7 +1214,7 @@
         // In overlay mode: DON'T set video.src here - loadSEIData will fetch the video,
         // parse SEI metadata, and set video.src to a blob URL. This avoids double download.
         if (seiOverlayEnabled && seiType) {
-            console.log('HUD Overlay mode: deferring video load to SEI fetch');
+            console.log('HUD叠加模式：将视频加载推迟到获取SEI信息之后进行。');
             loadSEIData(videoUrl);
             return;
         }
@@ -1300,7 +1295,7 @@
         // SEI will load automatically if in overlay mode
     } else {
         // No playable videos - show message
-        console.warn('No playable videos found - all may be encrypted');
+        console.warn('未找到可播放的视频 - 所有视频可能都已加密。');
     }
 
     // Initialize SEI parsing
@@ -1310,7 +1305,7 @@
             seiType = result.SeiMetadata;
             enumFields = result.enumFields;
         } catch (err) {
-            console.error('Failed to initialize SEI:', err);
+            console.error('初始化 SEI 失败:', err);
         }
     }
 
@@ -1345,13 +1340,13 @@
         let resumeFrom = cachedData ? cachedData.bytesLoaded : 0;
         let existingChunks = cachedData ? cachedData.chunks : [];
 
-        console.log(resumeFrom > 0 ? `Resuming download from ${(resumeFrom / 1024 / 1024).toFixed(1)} MB (cached)` : 'Starting fresh download');
+        console.log(resumeFrom > 0 ? `从以下位置恢复下载： ${(resumeFrom / 1024 / 1024).toFixed(1)} MB (已缓存)` : '开始全新下载');
 
         // Show loading indicator
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'seiLoading';
         loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#fff;padding:30px 50px;border-radius:12px;z-index:9999;font-size:18px;text-align:center;backdrop-filter:blur(10px);';
-        loadingDiv.innerHTML = '<div style="margin-bottom:15px;">⏳ Loading Video...</div><div style="font-size:14px;opacity:0.7;" id="seiProgress">Preparing...</div>';
+        loadingDiv.innerHTML = '<div style="margin-bottom:15px;">⏳ 等待视频数据缓冲...</div><div style="font-size:14px;opacity:0.7;" id="seiProgress">Preparing...</div>';
         document.body.appendChild(loadingDiv);
 
         try {
@@ -1359,10 +1354,10 @@
             seiAbortController = new AbortController();
 
             // Use streaming URL directly (supports Range requests)
-            console.log('Fetching SEI data from:', videoUrl);
+            console.log('正在从以下位置获取 SEI 数据:', videoUrl);
 
             const progressDiv = document.getElementById('seiProgress');
-            progressDiv.textContent = resumeFrom > 0 ? 'Resuming download...' : 'Downloading video file...';
+            progressDiv.textContent = resumeFrom > 0 ? '恢复下载...' : '正在下载视频文件...';
 
             const headers = {
                 'Accept': 'video/mp4'
@@ -1400,7 +1395,7 @@
                 total = parseInt(contentLength, 10);
                 // If we requested a range but got 200, server doesn't support it
                 if (resumeFrom > 0 && response.status === 200) {
-                    console.warn('Server does not support Range requests, downloading full file');
+                    console.warn('服务器不支持范围请求，正在下载完整文件。');
                     actualResumeFrom = 0; // Start from scratch
                 }
             }
@@ -1428,11 +1423,11 @@
                     const percent = Math.round((loaded / total) * 100);
                     const mb = (loaded / 1024 / 1024).toFixed(1);
                     const totalMb = (total / 1024 / 1024).toFixed(1);
-                    progressDiv.textContent = `Downloaded ${mb} MB / ${totalMb} MB (${percent}%)`;
+                    progressDiv.textContent = `已下载 ${mb} MB / ${totalMb} MB (${percent}%)`;
                 }
             }
 
-            progressDiv.textContent = 'Parsing video data...';
+            progressDiv.textContent = '解析视频数据...';
 
             // Combine chunks into single buffer
             const buffer = new Uint8Array(loaded);
@@ -1454,7 +1449,7 @@
                 return result;
             });
 
-            console.log(`Loaded ${seiFrames.filter(f => f.sei).length} SEI frames from ${seiFrames.length} total frames`);
+            console.log(`已加载 ${seiFrames.filter(f => f.sei).length} SEI 帧来自 ${seiFrames.length} 总帧数`);
 
             // Create Blob URL from downloaded buffer and use it as video source
             // This avoids downloading the same file twice (once for SEI, once for playback)
@@ -1484,7 +1479,7 @@
         } catch (err) {
             // If download was aborted (user switched modes), keep cache for resume
             if (err.name === 'AbortError') {
-                console.log('SEI download aborted by user - progress saved for resume');
+                console.log('用户取消了 SEI 下载 - 下载进度已保存，可继续下载。');
                 seiLoading = false;
                 return;
             }
@@ -1505,7 +1500,7 @@
     }
 
     // Update HUD with SEI data
-    // Reset HUD to default state (0 mph, Park, centered wheel, no indicators)
+    // Reset HUD to default state (0 km/h, Park, centered wheel, no indicators)
     function resetHUDToDefaults() {
         document.getElementById('hudSpeed').textContent = '0';
         document.getElementById('hudGear').textContent = 'P';
@@ -1534,10 +1529,10 @@
 
         const sei = frame.sei;
 
-        // Speed (convert m/s to mph, always show positive value)
+        // Speed (convert m/s to km/h, always show positive value)
         if (sei.vehicleSpeedMps !== undefined) {
-            const mph = Math.round(Math.abs(sei.vehicleSpeedMps) * 2.23694);
-            document.getElementById('hudSpeed').textContent = mph;
+            const kmh = Math.round(Math.abs(sei.vehicleSpeedMps) * 3.6);
+            document.getElementById('hudSpeed').textContent = kmh;
         } else {
             document.getElementById('hudSpeed').textContent = '0';
         }
@@ -1595,13 +1590,13 @@
 
     // Initialize on page load
     initSEI().then(() => {
-        console.log('SEI system initialized');
+        console.log('SEI系统已初始化');
         // If overlay mode is enabled and video already loaded (before SEI init),
         // trigger SEI loading now to avoid double download on next navigation
         if (seiOverlayEnabled && video.src && !video.src.startsWith('blob:') && !seiLoading) {
             const originalUrl = video.dataset.originalUrl || video.src;
             if (originalUrl) {
-                console.log('SEI init complete - loading SEI for already-playing video');
+                console.log('SEI 初始化完成 - 正在加载已播放视频的 SEI 数据');
                 loadSEIData(originalUrl);
             }
         }
@@ -1616,7 +1611,7 @@
             // or when the video was loaded before SEI system initialized
             const originalUrl = video.dataset.originalUrl || video.src;
             if (originalUrl && !originalUrl.startsWith('blob:')) {
-                console.log('Late SEI load triggered by loadedmetadata');
+                console.log('加载元数据后触发延迟的 SEI 加载');
                 loadSEIData(originalUrl);
             }
         }
@@ -1636,7 +1631,7 @@
         // CRITICAL: Abort any in-progress SEI download before starting new one
         // This prevents bandwidth competition and stalled downloads
         if (seiAbortController) {
-            console.log('Aborting previous SEI download for camera switch');
+            console.log('由于切换摄像头，正在中止之前的 SEI 下载。');
             seiAbortController.abort();
             seiAbortController = null;
         }
@@ -1711,7 +1706,7 @@
 
         // Show preparing state
         icon.className = 'bi bi-hourglass-split camera-icon';
-        label.textContent = 'Preparing...';
+        label.textContent = '正在准备...';
 
         // Build download URL
         const downloadUrl = "{{ url_for('videos.download_event', folder=folder, event_name=event.name) }}";
@@ -1727,7 +1722,7 @@
         // Show downloading state after 1 second
         setTimeout(() => {
             icon.className = 'bi bi-cloud-download camera-icon';
-            label.textContent = 'Downloading...';
+            label.textContent = '正在下载...';
         }, 1000);
 
         // Reset to ready state after 8 seconds
@@ -1746,14 +1741,14 @@
 
         // Check if disabled (not in edit mode)
         if (button.classList.contains('disabled')) {
-            alert('Switch to Edit Mode to delete videos');
+            alert('切换到编辑模式即可删除视频。');
             return;
         }
 
         // Confirm deletion
         const confirmMsg = folderStructure === 'flat'
-            ? `Delete all camera views for session "${eventName}"?`
-            : `Delete entire event folder "${eventName}" and all its contents?`;
+            ? `是否删除会话中的所有摄像机视图。 "${eventName}"?`
+            : `是否删除整个事件文件夹 "${eventName}" 以及其中的所有内容？`;
 
         if (!confirm(confirmMsg + '\n\nThis cannot be undone.')) {
             return;
@@ -1766,7 +1761,7 @@
         button.style.pointerEvents = 'none';
         button.style.opacity = '0.5';
         icon.className = 'bi bi-hourglass-split camera-icon';
-        label.textContent = 'Deleting...';
+        label.textContent = '正在删除...';
 
         // Make delete request
         fetch(`/videos/delete_event/${encodeURIComponent(folder)}/${encodeURIComponent(eventName)}`, {
@@ -1779,7 +1774,7 @@
         .then(data => {
             if (data.success) {
                 icon.className = 'bi bi-check-circle camera-icon';
-                label.textContent = 'Deleted!';
+                label.textContent = '已删除!';
 
                 // Redirect back to video list after a brief delay
                 setTimeout(() => {
@@ -1793,7 +1788,7 @@
             console.error('Delete error:', error);
             icon.className = 'bi bi-exclamation-triangle camera-icon';
             label.textContent = 'Error';
-            alert('Failed to delete: ' + error.message);
+            alert('删除失败: ' + error.message);
 
             // Reset button after error
             setTimeout(() => {

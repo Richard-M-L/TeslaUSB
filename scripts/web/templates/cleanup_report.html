@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cleanup Report - Tesla USB Gadget Control{% endblock %}
+{% block title %}清理报告 - Tesla USB 工具箱{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cleanup.css') }}">
@@ -9,17 +9,17 @@
 {% block content %}
 <div class="cleanup-container">
     {% if dry_run %}
-        <h1>🧪 Test Run Complete</h1>
+        <h1>🧪模拟运行完成</h1>
         <div class="alert alert-info">
-            <h2>ℹ️ Dry Run Mode</h2>
-            <p>This was a test run - no files were actually deleted.</p>
-            <p>The results below show what <em>would have</em> been deleted in a real cleanup.</p>
+            <h2>ℹ️ 模拟模式</h2>
+            <p>这是一次测试运行 — 没有实际删除任何文件。</p>
+            <p>以下结果显示如果执行真实清理，<em>将会删除</em> 哪些内容。</p>
         </div>
     {% else %}
-        <h1>✅ Cleanup Complete</h1>
+        <h1>✅ 清理完成</h1>
         <div class="alert alert-success">
-            <h2>🎉 Files Successfully Deleted</h2>
-            <p>Your cleanup operation completed successfully.</p>
+            <h2>🎉 文件删除成功</h2>
+            <p>您的清理操作已成功完成。</p>
         </div>
     {% endif %}
 
@@ -29,7 +29,7 @@
             <div class="summary-icon">🗑️</div>
             <div class="summary-content">
                 <h3>{{ deleted_count }}</h3>
-                <p>Videos {% if dry_run %}Would Be {% endif %}Deleted</p>
+                <p>个视频{% if dry_run %}已 {% endif %}删除</p>
             </div>
         </div>
 
@@ -37,7 +37,7 @@
             <div class="summary-icon">💾</div>
             <div class="summary-content">
                 <h3>{{ deleted_size_gb }} GB</h3>
-                <p>Space {% if dry_run %}Would Be {% endif %}Freed</p>
+                <p>空间 {% if dry_run %}已 {% endif %}释放</p>
             </div>
         </div>
     </div>
@@ -45,19 +45,19 @@
     {% if not dry_run and partition_usage %}
     <!-- Updated Storage Status -->
     <div class="storage-update">
-        <h2>📊 Updated Storage Status</h2>
+        <h2>📊 更新后的存储状态</h2>
         <div class="partition-card">
-            <h3>🚗 TeslaCam Drive</h3>
+            <h3>🚗 TeslaCam 存储分区</h3>
             <div class="storage-stat">
-                <span class="stat-label">Total Space:</span>
+                <span class="stat-label">总容量:</span>
                 <span class="stat-value">{{ partition_usage['total_gb'] }} GB</span>
             </div>
             <div class="storage-stat">
-                <span class="stat-label">Used:</span>
+                <span class="stat-label">已使用:</span>
                 <span class="stat-value">{{ partition_usage['used_gb'] }} GB ({{ "%.1f"|format(partition_usage['percent_used']) }}%)</span>
             </div>
             <div class="storage-stat">
-                <span class="stat-label">Free:</span>
+                <span class="stat-label">剩余:</span>
                 <span class="stat-value">{{ partition_usage['free_gb'] }} GB</span>
             </div>
 
@@ -72,29 +72,29 @@
     <!-- Action Buttons -->
     <div class="button-group">
         <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-primary">
-            📊 View Analytics
+            📊 查看存储分析仪表盘
         </a>
         <a href="{{ url_for('videos.file_browser') }}" class="btn btn-secondary">
-            🎥 Browse Videos
+            🎥 浏览视频文件
         </a>
         <a href="{{ url_for('cleanup.settings') }}" class="btn btn-secondary">
-            ⚙️ Cleanup Settings
+            ⚙️ 清理设置
         </a>
         {% if dry_run %}
         <a href="{{ url_for('cleanup.preview') }}" class="btn btn-danger">
-            ▶️ Run Real Cleanup
+            ▶️ 执行真实清理
         </a>
         {% endif %}
     </div>
 
     {% if not dry_run %}
     <div class="help-text">
-        <h3>ℹ️ What's Next?</h3>
+        <h3>ℹ️ 后续操作建议</h3>
         <ul>
-            <li>Check the <strong>Analytics</strong> dashboard to see your updated storage usage</li>
-            <li>Browse your <strong>Videos</strong> to verify the correct files were removed</li>
-            <li>Adjust cleanup <strong>Settings</strong> if you want to fine-tune the rules</li>
-            <li>Consider enabling <strong>automatic scheduling</strong> to run cleanup regularly</li>
+            <li>前往 <strong>分析仪表盘</strong> 查看更新后的存储使用情况</li>
+            <li>通过 <strong>浏览视频</strong> 功能确认被删除的文件是否正确</li>
+            <li>如需调整规则，可返回 <strong>清理设置</strong> 页面</li>
+            <li>考虑开启 <strong>自动定时清理</strong> ，让系统定期维护空间</li>
         </ul>
     </div>
     {% endif %}

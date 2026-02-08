@@ -6,7 +6,7 @@
     {% if auto_refresh %}
     <meta http-equiv="refresh" content="15">
     {% endif %}
-    <title>Tesla USB Gadget Control</title>
+    <title>Tesla USB工具箱</title>
     <script>
         // Apply theme immediately before page renders to prevent flash
         (function() {
@@ -30,14 +30,14 @@
                 <span></span>
                 <span></span>
             </div>
-            <h1><a href="{{ url_for('mode_control.index') }}">🚗 Tesla USB Gadget Control - {{ hostname }}</a></h1>
+            <h1><a href="{{ url_for('mode_control.index') }}">🚗 Tesla USB 工具箱 - {{ hostname }}</a></h1>
             <div class="nav-links">
-                <a href="{{ url_for('mode_control.index') }}" {% if page == 'control' %}class="active"{% endif %}>Settings</a>
-                <a href="{{ url_for('analytics.dashboard') }}" {% if page == 'analytics' %}class="active"{% endif %}>Analytics</a>
-                <a href="{{ url_for('videos.file_browser') }}" {% if page == 'browser' %}class="active"{% endif %}>Videos</a>
-                <a href="{{ url_for('lock_chimes.lock_chimes') }}" {% if page == 'chimes' %}class="active"{% endif %}>Lock Chimes</a>
-                <a href="{{ url_for('light_shows.light_shows') }}" {% if page == 'shows' %}class="active"{% endif %}>Light Shows</a>
-                <a href="{{ url_for('wraps.wraps') }}" {% if page == 'wraps' %}class="active"{% endif %}>Wraps</a>
+                <a href="{{ url_for('mode_control.index') }}" {% if page == 'control' %}class="active"{% endif %}>设置</a>
+                <a href="{{ url_for('analytics.dashboard') }}" {% if page == 'analytics' %}class="active"{% endif %}>存储分析</a>
+                <a href="{{ url_for('videos.file_browser') }}" {% if page == 'browser' %}class="active"{% endif %}>行车记录仪</a>
+                <a href="{{ url_for('lock_chimes.lock_chimes') }}" {% if page == 'chimes' %}class="active"{% endif %}>锁车音效</a>
+                <a href="{{ url_for('light_shows.light_shows') }}" {% if page == 'shows' %}class="active"{% endif %}>灯光秀</a>
+                <a href="{{ url_for('wraps.wraps') }}" {% if page == 'wraps' %}class="active"{% endif %}>车皮</a>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
                     <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
                 </button>
@@ -51,12 +51,12 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-close" onclick="toggleMobileMenu()">&times;</div>
-        <a href="{{ url_for('mode_control.index') }}" {% if page == 'control' %}class="active"{% endif %}>Settings</a>
-        <a href="{{ url_for('analytics.dashboard') }}" {% if page == 'analytics' %}class="active"{% endif %}>Analytics</a>
-        <a href="{{ url_for('videos.file_browser') }}" {% if page == 'browser' %}class="active"{% endif %}>Videos</a>
-        <a href="{{ url_for('lock_chimes.lock_chimes') }}" {% if page == 'chimes' %}class="active"{% endif %}>Lock Chimes</a>
-        <a href="{{ url_for('light_shows.light_shows') }}" {% if page == 'shows' %}class="active"{% endif %}>Light Shows</a>
-        <a href="{{ url_for('wraps.wraps') }}" {% if page == 'wraps' %}class="active"{% endif %}>Wraps</a>
+        <a href="{{ url_for('mode_control.index') }}" {% if page == 'control' %}class="active"{% endif %}>设置</a>
+        <a href="{{ url_for('analytics.dashboard') }}" {% if page == 'analytics' %}class="active"{% endif %}>存储分析</a>
+        <a href="{{ url_for('videos.file_browser') }}" {% if page == 'browser' %}class="active"{% endif %}>行车记录仪</a>
+        <a href="{{ url_for('lock_chimes.lock_chimes') }}" {% if page == 'chimes' %}class="active"{% endif %}>锁车音效</a>
+        <a href="{{ url_for('light_shows.light_shows') }}" {% if page == 'shows' %}class="active"{% endif %}>灯光秀</a>
+        <a href="{{ url_for('wraps.wraps') }}" {% if page == 'wraps' %}class="active"{% endif %}>车皮</a>
         <div class="mobile-theme-toggle">
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
                 <i class="bi bi-moon-stars-fill" id="theme-icon-mobile"></i>
@@ -71,12 +71,12 @@
             <div class="operation-content">
                 <div class="operation-icon">⚠️</div>
                 <div class="operation-message">
-                    <strong>File operation in progress...</strong>
+                    <strong>正在进行文件操作...</strong>
                     <span id="operation-details">
                         {% if estimated_completion > 0 %}
-                        Estimated completion: {{ estimated_completion }}s
+                        预计完成时间: {{ estimated_completion }}s
                         {% else %}
-                        Completing soon...
+                        即将完成...
                         {% endif %}
                     </span>
                 </div>

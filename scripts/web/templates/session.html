@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-    <h2>📹 Multi-Camera Session View</h2>
-    <div class="status-label {{ mode_class }}">Current Mode: {{ mode_label }}</div>
+    <h2>📹 多摄像头会话视图</h2>
+    <div class="status-label {{ mode_class }}">当前模式: {{ mode_label }}</div>
 
     <div class="info-box">
-        <strong>Session:</strong> {{ session_id }}<br>
-        <strong>Folder:</strong> {{ folder }}<br>
-        <strong>Cameras:</strong> {{ videos|length }} view(s)
+        <strong>会话ID:</strong> {{ session_id }}<br>
+        <strong>文件夹:</strong> {{ folder }}<br>
+        <strong>摄像头数量:</strong> {{ videos|length }} 个视角
     </div>
 
     <style>
@@ -31,23 +31,23 @@
             <div class="focus-player">
                 <div class="session-video-container">
                     <video id="mainVideo" controls preload="auto" poster="" playsinline>
-                        Your browser does not support the video tag.
+                        您的浏览器不支持视频播放。
                     </video>
                     <div class="session-video-label" id="mainLabel">
-                        📹 Loading…
+                        📹 正在加载…
                         <span id="mainStatus" style="font-size: 11px; color: #666;"></span>
                     </div>
                 </div>
                 <div class="session-controls">
-                    <button onclick="playMain()" class="present-btn">▶️ Play</button>
-                    <button onclick="pauseMain()" class="edit-btn">⏸️ Pause</button>
-                    <button onclick="seekMain(0)" class="set-chime-btn">⏮️ Restart</button>
-                    <button onclick="openFullVideo(currentVideo()?.name)" class="present-btn">↗️ Open in list</button>
+                    <button onclick="playMain()" class="present-btn">▶️ 播放</button>
+                    <button onclick="pauseMain()" class="edit-btn">⏸️ 暂停</button>
+                    <button onclick="seekMain(0)" class="set-chime-btn">⏮️ 从头开始</button>
+                    <button onclick="openFullVideo(currentVideo()?.name)" class="present-btn">↗️ 在列表中打开</button>
                 </div>
             </div>
 
             <div class="filmstrip" id="filmstrip">
-                {# Front camera first, then the rest #}
+                {# 前置摄像头优先，其余按顺序 #}
                 {% for video in videos if 'front' in video.camera|lower %}
                 <button class="filmstrip-item" data-name="{{ video.name }}">
                     <div class="film-thumb">
@@ -71,7 +71,7 @@
 
         <div style="text-align: center; margin-top: 20px;">
             <a href="{{ url_for('videos.file_browser', folder=folder) }}" class="btn-download">
-                ← Back to Video List
+                ← 返回视频列表
             </a>
         </div>
     </div>
@@ -127,7 +127,7 @@
         mainVideo.src = item.src;
         mainVideo.currentTime = 0;
         mainLabel.innerHTML = `📹 ${item.camera} <span style="font-size: 11px; color: #666;">${item.name}</span>`;
-        setStatus('Loading…', '#2196f3');
+        setStatus('正在加载…', '#2196f3');
         highlightActiveThumb(index);
         if (autoplay) {
             mainVideo.play().catch(() => {});
@@ -226,11 +226,11 @@
     // Status events
     mainVideo.addEventListener('playing', () => setStatus('Streaming…', '#4caf50'));
     mainVideo.addEventListener('waiting', () => {
-        setStatus('Buffering…', '#ff9800');
+        setStatus('缓冲中…', '#ff9800');
         ensurePlaying(200);
     });
     mainVideo.addEventListener('stalled', () => {
-        setStatus('Stalled, retrying…', '#f44336');
+        setStatus('卡顿，重试中…', '#f44336');
         ensurePlaying(200);
     });
     mainVideo.addEventListener('pause', () => {
@@ -238,7 +238,7 @@
             ensurePlaying(150);
         }
     });
-    mainVideo.addEventListener('canplay', () => setStatus('Ready', '#4caf50'));
+    mainVideo.addEventListener('canplay', () => setStatus('已就绪', '#4caf50'));
 
     // Initialize first video
     if (videoList.length) {

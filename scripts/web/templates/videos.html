@@ -1,18 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-    <h2>📹 TeslaCam Event Browser</h2>
-    <div class="status-label {{ mode_class }}">Current Mode: {{ mode_label }}</div>
+    <h2>📹 TeslaCam事件查看器</h2>
+    <div class="status-label {{ mode_class }}">当前模式: {{ mode_label }}</div>
 
     {% if not teslacam_available %}
     <div class="no-videos">
-        <p><strong>TeslaCam folder is not accessible.</strong></p>
-        <p>Make sure the system is in Present or Edit mode and the TeslaCam folder exists.</p>
+        <p><strong>TeslaCam文件夹无法访问。</strong></p>
+        <p>请确保系统处于「车载U盘模式」或「编辑模式」，并且TeslaCam文件夹存在。</p>
     </div>
     {% elif folders %}
+    
+    <div class="info-box" style="margin-bottom: 20px;">
+        <p><strong>📋 各文件夹内容:</strong></p>
+        <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 13px; color: var(--text-secondary);">
+            <li><strong>EncryptedClips:</strong> 这些视频通常是特斯拉在某些特定情况下（例如涉及隐私、法律取证或安全事件）自动加密保存的。</li>
+            <li><strong>Photobooth:</strong> 照相亭拍的照片，因Tesla手机端可连接查看，考虑是否支持在线查看。</li>
+            <li><strong>RecentClips:</strong> 存储最近一小时的行车记录视频。</li>
+            <li><strong>SavedClips:</strong> 手动保存的重要事件录像。 </li>
+            <li><strong>SentryClips:</strong> 哨兵模式触发时的安全事件录像。</li>
+        </ul>
+        <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
+        </p>
+    </div>
+
+
     <div class="folder-controls">
         <div class="folder-selector">
-            <label for="folderSelect"><strong>Select Folder:</strong></label>
+            <label for="folderSelect"><strong>选择文件夹:</strong></label>
             <select id="folderSelect" onchange="loadFolder(this.value)">
                 {% for folder in folders %}
                 <option value="{{ folder.name }}" {% if folder.name == current_folder %}selected{% endif %}>
@@ -23,10 +38,10 @@
         </div>
     </div>
 
-    <!-- Loading indicator for folder switch -->
+    <!-- 切换文件夹时的加载指示 -->
     <div id="folder-loading" style="display: none; text-align: center; padding: 60px;">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">加载中...</span>
         </div>
     </div>
 
@@ -40,13 +55,13 @@
                     {% if folder_structure == 'flat' %}
                     <img data-src="{{ url_for('videos.get_session_thumbnail', folder=current_folder, session_name=event.name) }}"
                          class="lazy-thumbnail"
-                         alt="Session thumbnail"
+                         alt="会话缩略图"
                          src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                          onerror="this.parentElement.innerHTML='<div class=\'event-thumbnail-placeholder\'><i class=\'bi bi-camera-video\' style=\'font-size: 3em;\'></i></div>';">
                     {% else %}
                     <img data-src="{{ url_for('videos.get_event_thumbnail', folder=current_folder, event_name=event.name) }}"
                          class="lazy-thumbnail"
-                         alt="Event thumbnail"
+                         alt="事件缩略图"
                          src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                          onerror="this.parentElement.innerHTML='<div class=\'event-thumbnail-placeholder\'><i class=\'bi bi-camera-video\' style=\'font-size: 3em;\'></i></div>';">
                     {% endif %}
@@ -68,12 +83,12 @@
                     {% endif %}
                 </div>
                 <div class="event-cameras">
-                    {% if event.camera_videos.front %}<span class="camera-badge">Front</span>{% endif %}
-                    {% if event.camera_videos.back %}<span class="camera-badge">Back</span>{% endif %}
-                    {% if event.camera_videos.left_repeater %}<span class="camera-badge">Left</span>{% endif %}
-                    {% if event.camera_videos.right_repeater %}<span class="camera-badge">Right</span>{% endif %}
-                    {% if event.camera_videos.left_pillar %}<span class="camera-badge">L-Pillar</span>{% endif %}
-                    {% if event.camera_videos.right_pillar %}<span class="camera-badge">R-Pillar</span>{% endif %}
+                    {% if event.camera_videos.front %}<span class="camera-badge">前方</span>{% endif %}
+                    {% if event.camera_videos.back %}<span class="camera-badge">后方</span>{% endif %}
+                    {% if event.camera_videos.left_repeater %}<span class="camera-badge">左侧</span>{% endif %}
+                    {% if event.camera_videos.right_repeater %}<span class="camera-badge">右侧</span>{% endif %}
+                    {% if event.camera_videos.left_pillar %}<span class="camera-badge">左侧B柱</span>{% endif %}
+                    {% if event.camera_videos.right_pillar %}<span class="camera-badge">右侧B柱</span>{% endif %}
                 </div>
             </div>
         </div>
@@ -83,24 +98,24 @@
     <!-- Infinite Scroll Loading Indicator -->
     <div id="loading-indicator" style="display: none; text-align: center; padding: 20px;">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">加载中...</span>
         </div>
     </div>
 
     <!-- End of List Indicator -->
     <div id="end-of-list" style="display: none; text-align: center; padding: 20px; color: var(--text-muted);">
-        <p>No more videos</p>
+        <p>没有更多视频了</p>
     </div>
 
     {% else %}
     <div class="no-videos" id="no-videos-message">
-        <p>No events found in {{ current_folder }}.</p>
+        <p> {{ current_folder }} 中未找到任何事件。.</p>
     </div>
     {% endif %}
     </div>
     {% else %}
     <div class="no-videos">
-        <p>No folders available in TeslaCam.</p>
+        <p>TeslaCam中没有可用文件夹。</p>
     </div>
     {% endif %}
 </div>
@@ -411,7 +426,7 @@
             const thumbUrl = folderStructure === 'flat'
                 ? `/videos/session_thumbnail/${encodeURIComponent(currentFolder)}/${encodeURIComponent(event.name)}`
                 : `/videos/event_thumbnail/${encodeURIComponent(currentFolder)}/${encodeURIComponent(event.name)}`;
-            thumbnailHtml = `<img data-src="${thumbUrl}" class="lazy-thumbnail" alt="Thumbnail"
+            thumbnailHtml = `<img data-src="${thumbUrl}" class="lazy-thumbnail" alt="事件缩略图"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 onerror="this.parentElement.innerHTML='<div class=\\'event-thumbnail-placeholder\\'><i class=\\'bi bi-camera-video\\' style=\\'font-size: 3em;\\'></i></div>';">`;
         } else {
@@ -421,12 +436,12 @@
         // Camera badges (works with both full and compact camera_videos)
         const cams = event.camera_videos || {};
         let camerasHtml = '';
-        if (cams.front) camerasHtml += '<span class="camera-badge">Front</span>';
-        if (cams.back) camerasHtml += '<span class="camera-badge">Back</span>';
-        if (cams.left_repeater) camerasHtml += '<span class="camera-badge">Left</span>';
-        if (cams.right_repeater) camerasHtml += '<span class="camera-badge">Right</span>';
-        if (cams.left_pillar) camerasHtml += '<span class="camera-badge">L-Pillar</span>';
-        if (cams.right_pillar) camerasHtml += '<span class="camera-badge">R-Pillar</span>';
+        if (cams.front) camerasHtml += '<span class="camera-badge">前方</span>';
+        if (cams.back) camerasHtml += '<span class="camera-badge">后方</span>';
+        if (cams.left_repeater) camerasHtml += '<span class="camera-badge">左侧</span>';
+        if (cams.right_repeater) camerasHtml += '<span class="camera-badge">右侧</span>';
+        if (cams.left_pillar) camerasHtml += '<span class="camera-badge">左侧B柱</span>';
+        if (cams.right_pillar) camerasHtml += '<span class="camera-badge">右侧B柱</span>';
 
         card.innerHTML = `
             <div class="event-thumbnail">${thumbnailHtml}</div>
@@ -489,12 +504,12 @@
                         const loadInd = document.createElement('div');
                         loadInd.id = 'loading-indicator';
                         loadInd.style.cssText = 'display: none; text-align: center; padding: 20px;';
-                        loadInd.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+                        loadInd.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">加载中...</span></div>';
                         eventsContainer.appendChild(loadInd);
                         const endInd = document.createElement('div');
                         endInd.id = 'end-of-list';
                         endInd.style.cssText = 'display: none; text-align: center; padding: 20px; color: var(--text-muted);';
-                        endInd.innerHTML = '<p>No more videos</p>';
+                        endInd.innerHTML = '<p>没有更多视频了</p>';
                         eventsContainer.appendChild(endInd);
                     } else {
                         grid.innerHTML = '';
@@ -513,7 +528,7 @@
                     if (endList) endList.style.display = hasNext ? 'none' : 'block';
                 } else {
                     // No events
-                    eventsContainer.innerHTML = `<div class="no-videos" id="no-videos-message"><p>No events found in ${folderName}.</p></div>`;
+                    eventsContainer.innerHTML = `<div class="no-videos" id="no-videos-message"><p>${folderName}中未找到任何事件。.</p></div>`;
                 }
                 eventsContainer.style.display = 'block';
             }
@@ -521,7 +536,7 @@
         .catch(err => {
             console.error('Error loading folder:', err);
             if (eventsContainer) {
-                eventsContainer.innerHTML = `<div class="no-videos"><p>Error loading folder. Please try again.</p></div>`;
+                eventsContainer.innerHTML = `<div class="no-videos"><p>加载文件夹失败，请稍后重试。</p></div>`;
                 eventsContainer.style.display = 'block';
             }
         })
@@ -570,7 +585,7 @@
             const endList = document.getElementById('end-of-list');
             if (endList && !hasNext) endList.style.display = 'block';
         })
-        .catch(err => console.error('Error loading more:', err))
+        .catch(err => console.error('加载更多时出错:', err))
         .finally(() => {
             isLoading = false;
             const loadInd = document.getElementById('loading-indicator');

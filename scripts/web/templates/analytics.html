@@ -4,28 +4,28 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
 
 <div class="container">
-    <h2>📊 Storage Analytics Dashboard</h2>
-    <div class="status-label {{ mode_class }}">Current Mode: {{ mode_label }}</div>
+    <h2>📊 存储分析仪表板</h2>
+    <div class="status-label {{ mode_class }}">当前模式: {{ mode_label }}</div>
 
     <!-- Storage Health Status -->
     {% set health = analytics.storage_health %}
     {% if health.status == 'critical' %}
         <div class="alert alert-critical">
-            <strong>⚠️ Critical Storage Alert!</strong>
+            <strong>⚠️ 警告：存储空间严重不足！</strong>
             {% for alert in health.alerts %}
                 <div>{{ alert }}</div>
             {% endfor %}
         </div>
     {% elif health.status == 'warning' %}
         <div class="alert alert-warning">
-            <strong>⚠️ Storage Warning</strong>
+            <strong>⚠️ 存储警告</strong>
             {% for alert in health.alerts %}
                 <div>{{ alert }}</div>
             {% endfor %}
         </div>
     {% else %}
         <div class="alert alert-success">
-            <strong>✅ Storage Healthy</strong>
+            <strong>✅ 存储健康</strong>
         </div>
     {% endif %}
 
@@ -34,8 +34,8 @@
         <a href="{{ url_for('cleanup.settings') }}" class="action-card">
             <div class="action-icon">🧹</div>
             <div class="action-content">
-                <h3>Auto-Cleanup Settings</h3>
-                <p>Configure automatic deletion of old videos to free up space</p>
+                <h3>自动清理设置</h3>
+                <p>配置自动删除旧视频的功能，以释放存储空间。</p>
             </div>
             <div class="action-arrow">→</div>
         </a>
@@ -43,10 +43,10 @@
 
     <!-- Filesystem Health Check Section -->
     <div class="analytics-section fsck-section">
-        <h3>🔍 Filesystem Health Check</h3>
+        <h3>🔍 文件系统健康检查</h3>
         <p class="section-description">
-            Run filesystem checks to detect and repair corruption.<br>
-            <small><strong>Quick Check:</strong> Can run in any mode (read-only, 30min timeout) | <strong>Repair:</strong> Requires Edit Mode (fixes errors, 2hr timeout)</small>
+            运行文件系统检查以检测和修复损坏。<br>
+            <small><strong>快速检查：</strong> 可以在任何模式下运行（只读模式，30分钟超时）。 | <strong>修复：</strong> 需要进入编辑模式（修复错误，超时时间为2小时）</small>
         </p>
 
         <div class="fsck-status-container" id="fsck-status-container">
@@ -55,36 +55,36 @@
 
         <div class="fsck-partitions">
             <div class="fsck-partition-card">
-                <h4>📹 TeslaCam Drive</h4>
-                <div id="part1-last-check" class="last-check-info">Loading...</div>
+                <h4>📹 行车记录仪文件夹(TeslaCam)</h4>
+                <div id="part1-last-check" class="last-check-info">等待...</div>
                 <div class="fsck-actions">
                     <button onclick="startFsck(1, 'quick')" class="btn btn-secondary" id="btn-fsck-part1-quick">
-                        Quick Check
+                        快速检查
                     </button>
                     <button onclick="startFsck(1, 'repair')" class="btn btn-warning" id="btn-fsck-part1-repair">
-                        Check & Repair
+                        检查并修复
                     </button>
                 </div>
             </div>
 
             <div class="fsck-partition-card">
-                <h4>💡 LightShow Drive</h4>
-                <div id="part2-last-check" class="last-check-info">Loading...</div>
+                <h4>💡 灯光秀文件夹(LightShow)</h4>
+                <div id="part2-last-check" class="last-check-info">等待...</div>
                 <div class="fsck-actions">
                     <button onclick="startFsck(2, 'quick')" class="btn btn-secondary" id="btn-fsck-part2-quick">
-                        Quick Check
+                        快速检查
                     </button>
                     <button onclick="startFsck(2, 'repair')" class="btn btn-warning" id="btn-fsck-part2-repair">
-                        Check & Repair
+                        检查并修复
                     </button>
                 </div>
             </div>
         </div>
 
         <div id="fsck-history-container" class="fsck-history-container">
-            <h4>Recent Checks</h4>
+            <h4>近期检查</h4>
             <div class="fsck-history-scroll">
-                <div id="fsck-history-list">Loading...</div>
+                <div id="fsck-history-list">等待...</div>
             </div>
         </div>
     </div>
@@ -93,22 +93,22 @@
     <div class="analytics-grid">
         {% for partition_name, usage in analytics.partition_usage.items() %}
         <div class="analytics-card">
-            <h3>{{ '📹 TeslaCam Drive' if partition_name == 'part1' else '💡 LightShow Drive' }}</h3>
+            <h3>{{ '📹 行车记录仪文件夹(TeslaCam)' if partition_name == 'part1' else '💡 灯光秀文件夹(LightShow)' }}</h3>
 
             {% if 'error' in usage %}
                 <div class="error-message">{{ usage.error }}</div>
             {% else %}
                 <div class="usage-stats">
                     <div class="stat-row">
-                        <span class="stat-label">Total Space:</span>
+                        <span class="stat-label">总空间:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.total_gb) }} GB</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Used:</span>
+                        <span class="stat-label">已使用:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.used_gb) }} GB</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Free:</span>
+                        <span class="stat-label">空闲:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.free_gb) }} GB</span>
                     </div>
                 </div>
@@ -123,7 +123,7 @@
                          style="width: {{ usage.percent_used }}%">
                     </div>
                 </div>
-                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}% Used</div>
+                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}% 已使用</div>
 
                 <div class="partition-path">{{ usage.path }}</div>
             {% endif %}
@@ -135,34 +135,34 @@
     {% set estimate = analytics.recording_estimate %}
     {% if estimate.teslacam_hours is not none %}
     <div class="info-card">
-        <h3>⏱️ Estimated Recording Time Remaining</h3>
+        <h3>⏱️ 预计剩余录制时间</h3>
         <div class="estimate-value">
             {% if estimate.teslacam_hours >= 24 %}
-                {{ "%.1f"|format(estimate.teslacam_hours / 24) }} days
+                {{ "%.1f"|format(estimate.teslacam_hours / 24) }} 天
             {% elif estimate.teslacam_hours >= 1 %}
-                {{ "%.1f"|format(estimate.teslacam_hours) }} hours
+                {{ "%.1f"|format(estimate.teslacam_hours) }} 小时
             {% else %}
-                {{ "%.0f"|format(estimate.teslacam_hours * 60) }} minutes
+                {{ "%.0f"|format(estimate.teslacam_hours * 60) }} 分钟
             {% endif %}
         </div>
         <div class="estimate-method">{{ estimate.method }}</div>
-        <div class="estimate-confidence">Confidence: {{ estimate.confidence }}</div>
+        <div class="estimate-confidence">结果的可信度: {{ estimate.confidence }}</div>
     </div>
     {% endif %}
 
     <!-- Video Statistics -->
     <div class="analytics-section">
-        <h3>📹 Video Statistics</h3>
+        <h3>📹 视频统计</h3>
 
         {% set video_stats = analytics.video_statistics %}
         <div class="totals-row">
             <div class="total-stat">
                 <div class="total-number">{{ video_stats.totals.total_videos }}</div>
-                <div class="total-label">Total Videos</div>
+                <div class="total-label">视频总数</div>
             </div>
             <div class="total-stat">
                 <div class="total-number">{{ "%.2f"|format(video_stats.totals.total_size_gb) }} GB</div>
-                <div class="total-label">Total Size</div>
+                <div class="total-label">总大小</div>
             </div>
         </div>
     </div>
@@ -170,44 +170,49 @@
     <!-- Folder Breakdown -->
     {% if analytics.folder_breakdown %}
     <div class="analytics-section">
-        <h3>📁 Folder Breakdown</h3>
+        <h3>📁 视频文件夹概览</h3>
 
         <div class="folder-table-container">
-            <table class="analytics-table">
+            <table class="analytics-table" style="table-layout: fixed; width: 100%;">
                 <thead>
                     <tr>
-                        <th>Folder</th>
-                        <th>Videos</th>
-                        <th>Size</th>
-                        <th>% of Total</th>
-                        <th>Oldest</th>
-                        <th>Newest</th>
+                        <th style="width: 30%;">文件夹名称</th>
+                        <th style="width: 10%;text-align: center;">视频数量</th>
+                        <th style="width: 10%;text-align: center;">占用</th>
+                        <th style="width: 20%;text-align: center;">总占比</th>
+                        <th style="width: 15%;text-align: center;">最早创建</th>
+                        <th style="width: 15%;text-align: center;">最新创建</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for folder in analytics.folder_breakdown %}
                     <tr class="priority-{{ folder.priority }}">
-                        <td>
+                        <td style="padding: 12px 10px;">
                             <span class="folder-icon">{{ folder.icon }}</span>
                             <strong>{{ folder.name }}</strong>
-                            <div class="folder-description">{{ folder.description }}</div>
+                            <div class="folder-description" style="font-size: 0.85em; color: #888; margin-top: 4px;">{{ folder.description }}</div>
                         </td>
-                        <td class="number-cell">{{ folder.count }}</td>
-                        <td class="number-cell">{{ "%.2f"|format(folder.size_gb) }} GB</td>
-                        <td class="number-cell">
-                            <div class="mini-progress-container">
-                                <div class="mini-progress-bar" style="width: {{ folder.size_percent }}%"></div>
+                        <td class="number-cell" style="text-align: center;">{{ folder.count }}</td>
+                        <td class="number-cell" style="text-align: center;">{{ "%.2f"|format(folder.size_gb) }} GB</td>
+                        <td class="number-cell" style="text-align: center;">
+                            <div class="mini-progress-container" style="margin: 0 auto; width: 80%;">
+                                <div class="mini-progress-bar" style="width: {{ folder.size_percent }}%">
+                                </div>
                             </div>
-                            {{ "%.1f"|format(folder.size_percent) }}%
+                            <div style="margin-top: 4px;">
+                                {{ "%.1f"|format(folder.size_percent) }}%
+                            </div>
                         </td>
-                        <td class="date-cell">{{ folder.oldest or 'N/A' }}</td>
-                        <td class="date-cell">{{ folder.newest or 'N/A' }}</td>
+                        <td class="date-cell" style="text-align: center;">{{ folder.oldest or 'N/A' }}</td>
+                        <td class="date-cell" style="text-align: center;">{{ folder.newest or 'N/A' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        
 
+        
         <!-- Mobile Card Layout -->
         <div class="folder-cards-mobile">
             {% for folder in analytics.folder_breakdown %}
@@ -221,24 +226,21 @@
                 </div>
                 <div class="folder-card-stats">
                     <div class="folder-stat">
-                        <span class="folder-stat-label">Videos:</span>
+                        <span class="folder-stat-label">视频数量:</span>
                         <span class="folder-stat-value">{{ folder.count }}</span>
                     </div>
                     <div class="folder-stat">
-                        <span class="folder-stat-label">Size:</span>
+                        <span class="folder-stat-label">占用:</span>
                         <span class="folder-stat-value">{{ "%.2f"|format(folder.size_gb) }} GB</span>
                     </div>
                     <div class="folder-stat">
-                        <span class="folder-stat-label">% of Total:</span>
+                        <span class="folder-stat-label">总占比:</span>
                         <span class="folder-stat-value">{{ "%.1f"|format(folder.size_percent) }}%</span>
                     </div>
                 </div>
-                <div class="mini-progress-container">
-                    <div class="mini-progress-bar" style="width: {{ folder.size_percent }}%"></div>
-                </div>
                 <div class="folder-card-dates">
-                    <div><small>Oldest: {{ folder.oldest or 'N/A' }}</small></div>
-                    <div><small>Newest: {{ folder.newest or 'N/A' }}</small></div>
+                    <div><small>最早创建: {{ folder.oldest or 'N/A' }}</small></div>
+                    <div><small>最新创建: {{ folder.newest or 'N/A' }}</small></div>
                 </div>
             </div>
             {% endfor %}
@@ -249,7 +251,7 @@
     <!-- Recommendations -->
     {% if health.recommendations %}
     <div class="recommendations-section">
-        <h3>💡 Recommendations</h3>
+        <h3>💡 推荐</h3>
         <ul class="recommendations-list">
             {% for recommendation in health.recommendations %}
             <li>{{ recommendation }}</li>
@@ -260,8 +262,8 @@
 
     <!-- Last Updated -->
     <div class="last-updated">
-        Last updated: {{ analytics.last_updated }}
-        <button onclick="location.reload()" class="btn-refresh">🔄 Refresh</button>
+        最后更新时间: {{ analytics.last_updated }}
+        <button onclick="location.reload()" class="btn-refresh">🔄 刷新</button>
     </div>
 </div>
 
@@ -273,7 +275,7 @@ let currentMode = '{{ mode_token }}';
 function startFsck(partition, mode) {
     // Repair requires edit mode, quick check can run in any mode
     if (mode === 'repair' && currentMode !== 'edit') {
-        if (confirm('Check & Repair requires Edit Mode.\n\nWould you like to switch to Edit Mode, run the repair, and then switch back?')) {
+        if (confirm('检查和修复功能需要编辑模式。\n\n您是否切换到编辑模式，运行修复程序，然后再切换回来？')) {
             startFsckWithModeSwitch(partition, mode);
         }
         return;
@@ -300,7 +302,7 @@ function executeFsck(partition, mode) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showFsckStatus('Filesystem check started...', 'info');
+            showFsckStatus('文件系统检查已开始...', 'info');
             // Start polling for status
             startFsckStatusPolling();
         } else {
@@ -309,7 +311,7 @@ function executeFsck(partition, mode) {
         }
     })
     .catch(error => {
-        showFsckStatus('Error starting filesystem check: ' + error, 'error');
+        showFsckStatus('启动文件系统检查时出错：' + error, 'error');
         disableFsckButtons(false);
     });
 }
@@ -319,22 +321,22 @@ function startFsckWithModeSwitch(partition, mode) {
     const partitionName = partition === 1 ? 'TeslaCam' : 'LightShow';
 
     disableFsckButtons(true);
-    showFsckStatus('Switching to Edit Mode...', 'info');
+    showFsckStatus('正在切换到编辑模式...', 'info');
 
     // Step 1: Switch to edit mode
     fetch('/edit_usb', {
         method: 'POST'
     })
     .then(response => {
-        if (!response.ok) throw new Error('Failed to switch to Edit Mode');
+        if (!response.ok) throw new Error('切换到编辑模式失败。');
         currentMode = 'edit';
-        showFsckStatus(`Edit Mode active - waiting for mode switch to complete...`, 'info');
+        showFsckStatus(`编辑模式激活中 - 等待模式切换完成...`, 'info');
 
         // Wait for mode switch to fully complete (unmount gadget, remount RW)
         return new Promise(resolve => setTimeout(resolve, 3000));
     })
     .then(() => {
-        showFsckStatus(`Starting ${partitionName} repair...`, 'info');
+        showFsckStatus(`开始 ${partitionName} 修复...`, 'info');
 
         // Step 2: Start fsck
         return fetch('/fsck/api/start', {
@@ -351,7 +353,7 @@ function startFsckWithModeSwitch(partition, mode) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showFsckStatus(`${partitionName} repair in progress...`, 'info');
+            showFsckStatus(`${partitionName} 修复中...`, 'info');
             // Poll for completion, then restore mode
             startFsckStatusPollingWithRestore(originalMode);
         } else {
@@ -359,7 +361,7 @@ function startFsckWithModeSwitch(partition, mode) {
         }
     })
     .catch(error => {
-        showFsckStatus('Error: ' + error.message, 'error');
+        showFsckStatus('错误: ' + error.message, 'error');
         disableFsckButtons(false);
         // Try to restore original mode on error
         if (currentMode !== originalMode) {
@@ -379,12 +381,12 @@ function startFsckStatusPollingWithRestore(originalMode) {
             .then(status => {
                 if (status.running) {
                     // Still running, update status
-                    const progress = status.progress || 'Running...';
+                    const progress = status.progress || '正在运行...';
                     const elapsed = status.start_time ?
                         Math.round((new Date() - new Date(status.start_time)) / 1000) : 0;
                     const friendlyName = getFriendlyPartitionName(status.partition);
                     showFsckStatus(
-                        `${friendlyName} - ${progress} (${elapsed}s elapsed)`,
+                        `${friendlyName} - ${progress} (已用${elapsed}秒)`,
                         'info'
                     );
                 } else {
@@ -397,7 +399,7 @@ function startFsckStatusPollingWithRestore(originalMode) {
                             ? 'success' : 'warning';
                         const friendlyName = getFriendlyPartitionName(status.partition);
                         showFsckStatus(
-                            `${friendlyName} - ${status.result}: ${status.details} (${status.duration}s) - Restoring mode...`,
+                            `${friendlyName} - ${status.result}: ${status.details} (${status.duration}s) - 恢复模式...`,
                             resultClass
                         );
                     }
@@ -409,7 +411,7 @@ function startFsckStatusPollingWithRestore(originalMode) {
                 }
             })
             .catch(error => {
-                console.error('Error checking fsck status:', error);
+                console.error('检查文件系统状态时出错：', error);
             });
     };
 
@@ -424,7 +426,7 @@ function restoreMode(targetMode) {
     }
 
     const endpoint = targetMode === 'present' ? '/present_usb' : '/edit_usb';
-    const modeName = targetMode === 'present' ? 'Present Mode' : 'Edit Mode';
+    const modeName = targetMode === 'present' ? '车载U盘模式' : '编辑模式';
 
     fetch(endpoint, {
         method: 'POST'
@@ -432,17 +434,17 @@ function restoreMode(targetMode) {
     .then(response => {
         if (response.ok) {
             currentMode = targetMode;
-            showFsckStatus(`Restored to ${modeName}`, 'success');
+            showFsckStatus(`恢复到 ${modeName}`, 'success');
             setTimeout(() => {
                 document.getElementById('fsck-status-container').style.display = 'none';
                 disableFsckButtons(false);
             }, 3000);
         } else {
-            throw new Error(`Failed to restore ${modeName}`);
+            throw new Error(`恢复 ${modeName}失败`);
         }
     })
     .catch(error => {
-        showFsckStatus('Error restoring mode: ' + error.message + ' - Please switch modes manually', 'error');
+        showFsckStatus('恢复模式出错: ' + error.message + ' - 请手动切换模式', 'error');
         disableFsckButtons(false);
     });
 }
@@ -471,12 +473,12 @@ function updateFsckStatus() {
                 // Disable buttons while check is running
                 disableFsckButtons(true);
 
-                const progress = status.progress || 'Running...';
+                const progress = status.progress || '正在运行...';
                 const elapsed = status.start_time ?
                     Math.round((new Date() - new Date(status.start_time)) / 1000) : 0;
                 const friendlyName = getFriendlyPartitionName(status.partition);
                 showFsckStatus(
-                    `${friendlyName} - ${progress} (${elapsed}s elapsed)`,
+                    `${friendlyName} - ${progress} (已用${elapsed}秒)`,
                     'info'
                 );
 
@@ -517,7 +519,7 @@ function updateFsckStatus() {
             }
         })
         .catch(error => {
-            console.error('Error checking fsck status:', error);
+            console.error('检查文件系统状态时出错:', error);
         });
 }
 
@@ -539,7 +541,7 @@ function showFsckStatus(message, type) {
 }
 
 function cancelFsck() {
-    if (!confirm('Are you sure you want to cancel the filesystem check?')) {
+    if (!confirm('您确定要取消文件系统检查吗？')) {
         return;
     }
 
@@ -552,13 +554,13 @@ function cancelFsck() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showFsckStatus('Cancelling filesystem check...', 'warning');
+            showFsckStatus('正在取消文件系统检查...', 'warning');
         } else {
-            showFsckStatus('Failed to cancel: ' + data.message, 'error');
+            showFsckStatus('取消失败: ' + data.message, 'error');
         }
     })
     .catch(error => {
-        showFsckStatus('Error cancelling check: ' + error, 'error');
+        showFsckStatus('取消检查时出错: ' + error, 'error');
     });
 }
 
@@ -577,9 +579,9 @@ function updateLastChecks() {
                 if (data.timestamp) {
                     const date = new Date(data.timestamp);
                     const ageHours = data.age_hours || 0;
-                    const ageStr = ageHours < 1 ? 'Less than 1 hour ago' :
-                                   ageHours < 24 ? `${Math.round(ageHours)} hours ago` :
-                                   `${Math.round(ageHours / 24)} days ago`;
+                    const ageStr = ageHours < 1 ? '不到一小时前' :
+                                   ageHours < 24 ? `${Math.round(ageHours)} 小时前` :
+                                   `${Math.round(ageHours / 24)} 天前`;
 
                     const icon = data.result === 'healthy' ? '✅' :
                                 data.result === 'repaired' ? '🔧' :
@@ -596,16 +598,16 @@ function updateLastChecks() {
 
                     container.innerHTML = `
                         <div class="last-check-result ${statusClass}">
-                            ${icon} Last checked: ${ageStr}
+                            ${icon} 上次检查: ${ageStr}
                             <br><small>${data.details}</small>
                         </div>
                     `;
                 } else {
-                    container.innerHTML = '<div class="last-check-never">Never checked</div>';
+                    container.innerHTML = '<div class="last-check-never">从未检查过</div>';
                 }
             })
             .catch(error => {
-                console.error(`Error loading last check for partition ${partition}:`, error);
+                console.error(`加载分区上次检查结果时出错 ${partition}:`, error);
             });
     });
 }
@@ -616,14 +618,14 @@ function updateFsckHistory() {
         .then(history => {
             const container = document.getElementById('fsck-history-list');
             if (history.length === 0) {
-                container.innerHTML = '<div class="no-history">No filesystem checks recorded yet</div>';
+                container.innerHTML = '<div class="no-history">目前尚未记录任何文件系统检查信息。</div>';
                 return;
             }
 
             // Show last 5 entries
             const recent = history.slice(-5).reverse();
             let html = '<table class="fsck-history-table"><thead><tr>' +
-                       '<th>Time</th><th>Drive</th><th>Mode</th><th>Result</th><th>Details</th>' +
+                       '<th>时间</th><th>文件夹</th><th>模式</th><th>结果</th><th>细节</th>' +
                        '</tr></thead><tbody>';
 
             recent.forEach(entry => {
@@ -648,7 +650,7 @@ function updateFsckHistory() {
             container.innerHTML = html;
         })
         .catch(error => {
-            console.error('Error loading fsck history:', error);
+            console.error('加载历史记录时出错:', error);
         });
 }
 
