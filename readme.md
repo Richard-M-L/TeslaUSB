@@ -151,6 +151,7 @@ For detailed information, see the official Raspberry Pi whitepaper: [Using OTG m
 git clone https://github.com/Richard-M-L/TeslaUSB.git
 cd TeslaUSB
 chmod +x setup_usb.sh
+sudo rm /var/swap
 sudo ./setup_usb.sh
 ```
 
