@@ -1035,10 +1035,37 @@ if [ -f "$CONFIG_FILE" ]; then
     else
       echo "gpu_mem already configured in $CONFIG_FILE"
     fi
+
+    # Disable HDMI output (headless, saves boot time + power)
+    if ! grep -q '^hdmi_blanking=' "$CONFIG_FILE"; then
+      sed -i '/^\[all\]/a hdmi_blanking=2' "$CONFIG_FILE"
+      echo "Added hdmi_blanking=2 under [all] section in $CONFIG_FILE (disables HDMI for faster boot)"
+      CONFIG_CHANGED=1
+    else
+      echo "hdmi_blanking already configured in $CONFIG_FILE"
+    fi
+
+    # Disable Bluetooth (not needed for TeslaUSB, saves boot time + frees UART)
+    if ! grep -q '^dtoverlay=disable-bt$' "$CONFIG_FILE"; then
+      sed -i '/^\[all\]/a dtoverlay=disable-bt' "$CONFIG_FILE"
+      echo "Added dtoverlay=disable-bt under [all] section in $CONFIG_FILE (disables Bluetooth)"
+      CONFIG_CHANGED=1
+    else
+      echo "dtoverlay=disable-bt already present in $CONFIG_FILE"
+    fi
+
+    # Disable onboard audio (not needed for TeslaUSB)
+    if ! grep -q '^dtparam=audio=off$' "$CONFIG_FILE"; then
+      sed -i '/^\[all\]/a dtparam=audio=off' "$CONFIG_FILE"
+      echo "Added dtparam=audio=off under [all] section in $CONFIG_FILE (disables onboard audio)"
+      CONFIG_CHANGED=1
+    else
+      echo "dtparam=audio=off already present in $CONFIG_FILE"
+    fi
   else
-    # No [all] section - append it with both entries
-    printf '\n[all]\ndtoverlay=dwc2\ndtparam=watchdog=on\ngpu_mem=16\n' >> "$CONFIG_FILE"
-    echo "Appended [all] section with dtoverlay=dwc2, dtparam=watchdog=on and gpu_mem=16 to $CONFIG_FILE"
+    # No [all] section - append it with all entries
+    printf '\n[all]\ndtoverlay=dwc2\ndtparam=watchdog=on\ngpu_mem=16\nhdmi_blanking=2\ndtoverlay=disable-bt\ndtparam=audio=off\n' >> "$CONFIG_FILE"
+    echo "Appended [all] section with all TeslaUSB config entries to $CONFIG_FILE"
     CONFIG_CHANGED=1
   fi
 else

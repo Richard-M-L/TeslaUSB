@@ -75,7 +75,7 @@ logger = logging.getLogger(__name__)
 #     longer than that means at least one clip is missing entirely.
 #     Catches park-break gaps even when the car barely moved.
 #
-#   * MAX_GAP_METERS = 250 — Tesla SEI samples at ~1 Hz; even at 80 mph
+#   * MAX_GAP_METERS = 250 — Tesla SEI samples at ~1 Hz; even at 129 km/h
 #     (~36 m/s) consecutive samples are <40 m apart. A jump >250 m
 #     between two adjacent waypoints is geographically impossible and
 #     usually indicates SEI clock skew across overlapping clips, dropped
@@ -1162,8 +1162,8 @@ def get_driving_stats(db_path: str) -> dict:
             'total_distance_km': round(total_distance, 1),
             'total_distance_mi': round(total_distance * 0.621371, 1),
             'total_duration_hours': round(total_duration / 3600, 1),
-            'avg_speed_mph': round(avg_speed * 2.23694, 1),
-            'max_speed_mph': round(max_speed * 2.23694, 1),
+            'avg_speed_kph': round(avg_speed * 3.6, 1),
+            'max_speed_kph': round(max_speed * 3.6, 1),
             'fsd_usage_pct': fsd_pct,
             'total_events': event_count,
             'warning_events': warning_count,

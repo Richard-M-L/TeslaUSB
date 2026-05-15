@@ -278,8 +278,8 @@ async function loadDrivingStats() {
         document.getElementById('dsTotalDist').textContent = `${data.total_distance_mi} mi (${data.total_distance_km} km)`;
         document.getElementById('dsTotalTime').textContent = `${data.total_duration_hours} hrs`;
         document.getElementById('dsTripCount').textContent = data.trip_count;
-        document.getElementById('dsAvgSpeed').textContent = `${data.avg_speed_mph} mph`;
-        document.getElementById('dsMaxSpeed').textContent = `${data.max_speed_mph} mph`;
+        document.getElementById('dsAvgSpeed').textContent = `${data.avg_speed_kph} km/h`;
+        document.getElementById('dsMaxSpeed').textContent = `${data.max_speed_kph} km/h`;
         document.getElementById('dsFsdPct').textContent = `${data.fsd_usage_pct}%`;
         document.getElementById('dsEventCount').textContent = data.total_events;
         document.getElementById('dsWarnCount').textContent = data.warning_events;

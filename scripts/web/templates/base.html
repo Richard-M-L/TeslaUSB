@@ -1,12 +1,12 @@
 <!doctype html>
-<html>
+<html lang="{{ current_locale() }}">
 <head>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% if auto_refresh %}
     <meta http-equiv="refresh" content="15">
     {% endif %}
-    <title>Tesla USB Gadget Control</title>
+    <title>{{ _('base.title') }}</title>
     <script>
         // Apply theme immediately before page renders to prevent flash
         (function() {
@@ -53,75 +53,79 @@
                       data-status-dot="health"></span>
             </a>
             <span class="status-dot {% if mode_token == 'present' %}status-present{% elif mode_token == 'edit' %}status-edit{% else %}status-unknown{% endif %}" title="{{ mode_label }}"></span>
-            <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle dark mode">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="{{ _('base.theme_toggle') }}">
                 <svg class="nav-icon" id="theme-icon-svg" aria-hidden="true">
                     <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-moon"></use>
                 </svg>
             </button>
+            {% set other_locale = 'en' if current_locale() == 'zh' else 'zh' %}
+            <a href="/lang/{{ other_locale }}" class="lang-switch-btn" title="{{ _('base.lang_switch_title') }}">
+                {{ 'EN' if current_locale() == 'zh' else '中文' }}
+            </a>
         </div>
     </header>
 
     <!-- Desktop Sidebar Rail -->
     <nav class="sidebar-rail" id="sidebarRail" aria-label="Main navigation">
         {% if map_available %}
-        <a href="{{ url_for('mapping.map_view') }}" class="nav-item{% if page == 'map' %} active{% endif %}" title="Map">
+        <a href="{{ url_for('mapping.map_view') }}" class="nav-item{% if page == 'map' %} active{% endif %}" title="{{ _('nav.map') }}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-map-pin"></use></svg>
-            <span class="nav-label">Map</span>
+            <span class="nav-label">{{ _('nav.map') }}</span>
         </a>
         {% endif %}
         {% if analytics_available %}
-        <a href="{{ url_for('analytics.dashboard') }}" class="nav-item{% if page == 'analytics' %} active{% endif %}" title="Analytics">
+        <a href="{{ url_for('analytics.dashboard') }}" class="nav-item{% if page == 'analytics' %} active{% endif %}" title="{{ _('nav.analytics') }}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-bar-chart-2"></use></svg>
-            <span class="nav-label">Analytics</span>
+            <span class="nav-label">{{ _('nav.analytics') }}</span>
         </a>
         {% endif %}
         {% if media_available %}
-        <a href="{{ url_for('media.media_home') }}" class="nav-item{% if page == 'media' %} active{% endif %}" title="Media">
+        <a href="{{ url_for('media.media_home') }}" class="nav-item{% if page == 'media' %} active{% endif %}" title="{{ _('nav.media') }}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-music"></use></svg>
-            <span class="nav-label">Media</span>
+            <span class="nav-label">{{ _('nav.media') }}</span>
         </a>
         {% endif %}
         {% if cloud_archive_available %}
-        <a href="{{ url_for('cloud_archive.index') }}" class="nav-item{% if page == 'cloud' %} active{% endif %}" title="Cloud">
+        <a href="{{ url_for('cloud_archive.index') }}" class="nav-item{% if page == 'cloud' %} active{% endif %}" title="{{ _('nav.cloud') }}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-cloud"></use></svg>
-            <span class="nav-label">Cloud</span>
+            <span class="nav-label">{{ _('nav.cloud') }}</span>
         </a>
         {% endif %}
-        <a href="{{ url_for('mode_control.index') }}" class="nav-item{% if page == 'settings' %} active{% endif %}" title="Settings">
+        <a href="{{ url_for('mode_control.index') }}" class="nav-item{% if page == 'settings' %} active{% endif %}" title="{{ _('nav.settings') }}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-settings"></use></svg>
-            <span class="nav-label">Settings</span>
+            <span class="nav-label">{{ _('nav.settings') }}</span>
         </a>
     </nav>
 
     <!-- Mobile Bottom Tab Bar -->
-    <nav class="bottom-tabs" aria-label="Main navigation">
+    <nav class="bottom-tabs" aria-label="{{ _('nav.map') }}">
         {% if map_available %}
         <a href="{{ url_for('mapping.map_view') }}" class="tab-item{% if page == 'map' %} active{% endif %}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-map-pin"></use></svg>
-            <span class="tab-label">Map</span>
+            <span class="tab-label">{{ _('nav.map') }}</span>
         </a>
         {% endif %}
         {% if analytics_available %}
         <a href="{{ url_for('analytics.dashboard') }}" class="tab-item{% if page == 'analytics' %} active{% endif %}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-bar-chart-2"></use></svg>
-            <span class="tab-label">Analytics</span>
+            <span class="tab-label">{{ _('nav.analytics') }}</span>
         </a>
         {% endif %}
         {% if media_available %}
         <a href="{{ url_for('media.media_home') }}" class="tab-item{% if page == 'media' %} active{% endif %}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-music"></use></svg>
-            <span class="tab-label">Media</span>
+            <span class="tab-label">{{ _('nav.media') }}</span>
         </a>
         {% endif %}
         {% if cloud_archive_available %}
         <a href="{{ url_for('cloud_archive.index') }}" class="tab-item{% if page == 'cloud' %} active{% endif %}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-cloud"></use></svg>
-            <span class="tab-label">Cloud</span>
+            <span class="tab-label">{{ _('nav.cloud') }}</span>
         </a>
         {% endif %}
         <a href="{{ url_for('mode_control.index') }}" class="tab-item{% if page == 'settings' %} active{% endif %}">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-settings"></use></svg>
-            <span class="tab-label">Settings</span>
+            <span class="tab-label">{{ _('nav.settings') }}</span>
         </a>
     </nav>
 

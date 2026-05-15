@@ -415,7 +415,7 @@ DEFAULT_THRESHOLDS = {
     'emergency_brake_threshold': -7.0,
     'hard_accel_threshold': 3.5,
     'sharp_turn_lateral_g': 4.0,          # m/s² (lateral)
-    'speed_limit_mps': 35.76,             # ~80 mph
+    'speed_limit_mps': 35.76,             # ~129 km/h
 }
 
 
@@ -495,7 +495,7 @@ def _detect_events(
                 'lat': wp['lat'], 'lon': wp['lon'],
                 'event_type': 'speeding',
                 'severity': 'info',
-                'description': f'Speed: {speed * 2.237:.0f} mph',
+                'description': f'Speed: {speed * 3.6:.0f} km/h',
                 'video_path': video_path,
                 'frame_offset': wp.get('frame_offset', 0),
                 'metadata': json.dumps({'speed_mps': speed, 'limit_mps': limit}),
@@ -2735,7 +2735,7 @@ def diagnose_video(teslacam_path: str, max_videos: int = 3) -> dict:
                 diag['sample_gps'] = {
                     'lat': first.latitude_deg,
                     'lon': first.longitude_deg,
-                    'speed_mph': round(first.speed_mph, 1),
+                    'speed_kph': round(first.speed_kph, 1),
                     'heading': first.heading_deg,
                     'gear': first.gear_state,
                 }
@@ -2745,7 +2745,7 @@ def diagnose_video(teslacam_path: str, max_videos: int = 3) -> dict:
                 diag['sample_sei_no_gps'] = {
                     'lat': first.latitude_deg,
                     'lon': first.longitude_deg,
-                    'speed_mph': round(first.speed_mph, 1),
+                    'speed_kph': round(first.speed_kph, 1),
                     'frame': first.frame_index,
                 }
 

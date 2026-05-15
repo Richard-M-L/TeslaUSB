@@ -690,7 +690,7 @@ def _get_mapping_config() -> dict:
     return {
         'enabled': MAPPING_ENABLED,
         'trip_gap_minutes': MAPPING_TRIP_GAP_MINUTES,
-        'speed_limit_mph': round(MAPPING_EVENT_THRESHOLDS.get('speed_limit_mps', 35.76) * 2.237, 0),
+        'speed_limit_kph': round(MAPPING_EVENT_THRESHOLDS.get('speed_limit_mps', 35.76) * 3.6, 0),
     }
 
 
@@ -733,8 +733,8 @@ def save_mapping_settings():
     from helpers.config_updater import update_config_yaml
 
     try:
-        speed_mph = float(request.form.get('speed_limit_mph', 80))
-        speed_mps = round(speed_mph / 2.237, 2)
+        speed_kph = float(request.form.get('speed_limit_kph', 130))
+        speed_mps = round(speed_kph / 3.6, 2)
 
         updates = {
             'mapping.enabled': 'enabled' in request.form,

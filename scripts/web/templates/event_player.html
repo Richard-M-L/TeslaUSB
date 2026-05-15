@@ -740,7 +740,7 @@
                     <!-- Speed -->
                     <div class="hud-speed">
                         <div class="hud-speed-value" id="hudSpeed">0</div>
-                        <div class="hud-speed-label">mph</div>
+                        <div class="hud-speed-label">km/h</div>
                     </div>
 
                     <!-- Right turn signal -->
@@ -807,18 +807,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.front %}
         <div class="camera-option encrypted" data-camera="front" title="Video file cannot be played">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">{{ _('player.camera_front') }}</div>
         </div>
             {% else %}
         <div class="camera-option active" onclick="switchCamera('{{ video_url(event.camera_videos.front) }}', this)" data-camera="front">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">{{ _('player.camera_front') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-up camera-icon"></i>
-            <div class="camera-label">Front</div>
+            <div class="camera-label">{{ _('player.camera_front') }}</div>
         </div>
         {% endif %}
 
@@ -826,18 +826,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.back %}
         <div class="camera-option encrypted" data-camera="rear" title="Video file cannot be played">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">{{ _('player.camera_rear') }}</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.back) }}', this)" data-camera="rear">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">{{ _('player.camera_rear') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-down camera-icon"></i>
-            <div class="camera-label">Rear</div>
+            <div class="camera-label">{{ _('player.camera_rear') }}</div>
         </div>
         {% endif %}
 
@@ -845,18 +845,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.left_repeater %}
         <div class="camera-option encrypted" data-camera="left" title="Video file cannot be played">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">{{ _('player.camera_left') }}</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.left_repeater) }}', this)" data-camera="left">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">{{ _('player.camera_left') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-left camera-icon"></i>
-            <div class="camera-label">Left</div>
+            <div class="camera-label">{{ _('player.camera_left') }}</div>
         </div>
         {% endif %}
 
@@ -864,18 +864,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.right_repeater %}
         <div class="camera-option encrypted" data-camera="right" title="Video file cannot be played">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">{{ _('player.camera_right') }}</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.right_repeater) }}', this)" data-camera="right">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">{{ _('player.camera_right') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-right camera-icon"></i>
-            <div class="camera-label">Right</div>
+            <div class="camera-label">{{ _('player.camera_right') }}</div>
         </div>
         {% endif %}
 
@@ -883,18 +883,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.left_pillar %}
         <div class="camera-option encrypted" data-camera="left-pillar" title="Video file cannot be played">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">{{ _('player.camera_left_pillar') }}</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.left_pillar) }}', this)" data-camera="left-pillar">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">{{ _('player.camera_left_pillar') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
-            <div class="camera-label">Left Pillar</div>
+            <div class="camera-label">{{ _('player.camera_left_pillar') }}</div>
         </div>
         {% endif %}
 
@@ -902,18 +902,18 @@
             {% if event.encrypted_videos and event.encrypted_videos.right_pillar %}
         <div class="camera-option encrypted" data-camera="right-pillar" title="Video file cannot be played">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">{{ _('player.camera_right_pillar') }}</div>
         </div>
             {% else %}
         <div class="camera-option" onclick="switchCamera('{{ video_url(event.camera_videos.right_pillar) }}', this)" data-camera="right-pillar">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">{{ _('player.camera_right_pillar') }}</div>
         </div>
             {% endif %}
         {% else %}
         <div class="camera-option unavailable">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
-            <div class="camera-label">Right Pillar</div>
+            <div class="camera-label">{{ _('player.camera_right_pillar') }}</div>
         </div>
         {% endif %}
 
@@ -1523,7 +1523,7 @@
     }
 
     // Update HUD with SEI data
-    // Reset HUD to default state (0 mph, Park, centered wheel, no indicators)
+    // Reset HUD to default state (0 km/h, Park, centered wheel, no indicators)
     function resetHUDToDefaults() {
         document.getElementById('hudSpeed').textContent = '0';
         document.getElementById('hudGear').textContent = 'P';
@@ -1552,10 +1552,10 @@
 
         const sei = frame.sei;
 
-        // Speed (convert m/s to mph, always show positive value)
+        // Speed (convert m/s to km/h, always show positive value)
         if (sei.vehicleSpeedMps !== undefined) {
-            const mph = Math.round(Math.abs(sei.vehicleSpeedMps) * 2.23694);
-            document.getElementById('hudSpeed').textContent = mph;
+            const kph = Math.round(Math.abs(sei.vehicleSpeedMps) * 3.6);
+            document.getElementById('hudSpeed').textContent = kph;
         } else {
             document.getElementById('hudSpeed').textContent = '0';
         }

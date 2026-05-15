@@ -84,6 +84,43 @@ app.register_blueprint(settings_advanced_bp)
 app.register_blueprint(captive_portal_bp)
 
 
+# ---------------------------------------------------------------------------
+# i18n initialisation — load translations once at startup
+# ---------------------------------------------------------------------------
+from services.i18n_service import load_translations, get_text, detect_locale, supported_locales
+_translations_dir = os.path.join(os.path.dirname(__file__), 'translations')
+load_translations(_translations_dir)
+
+
+@app.before_request
+def set_locale():
+    """Detect locale on every request; stored in Flask g for the template _() helper."""
+    from flask import g
+    g.lang = detect_locale(request)
+
+
+@app.context_processor
+def inject_i18n():
+    """Inject translation helper and locale info into all Jinja templates."""
+    from flask import g
+    return {
+        '_': lambda key: get_text(key, getattr(g, 'lang', 'zh')),
+        'current_locale': lambda: getattr(g, 'lang', 'zh'),
+        'supported_locales': supported_locales,
+    }
+
+
+@app.route('/lang/<locale>')
+def switch_lang(locale):
+    """Set the language cookie and redirect back to the referring page."""
+    from flask import redirect, request
+    if locale in supported_locales():
+        resp = redirect(request.referrer or '/')
+        resp.set_cookie('lang', locale, max_age=365 * 24 * 3600, samesite='Lax')
+        return resp
+    return redirect('/')
+
+
 # Global error handler for upload space exhaustion
 @app.errorhandler(OSError)
 def handle_os_error(e):

@@ -105,7 +105,7 @@ mapping:
     emergency_brake_threshold: -7.0      # m/s² longitudinal
     hard_accel_threshold: 3.5            # m/s² longitudinal (positive = accelerating)
     sharp_turn_lateral_g: 4.0            # m/s² lateral
-    speed_limit_mps: 35.76              # ~80 mph speed alert threshold (0 = disabled)
+    speed_limit_mps: 35.76              # ~129 km/h speed alert threshold (0 = disabled)
 
 # ============================================================================
 # Cloud Archive Configuration

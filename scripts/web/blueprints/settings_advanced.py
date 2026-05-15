@@ -200,7 +200,7 @@ def _build_tunables() -> List[Dict[str, Any]]:
             'label': 'Trip-merge speed limit (m/s)',
             'description': (
                 'Speed alert + trip-merge threshold in m/s '
-                '(35.76 ≈ 80 mph). Set 0 to disable speed events.'
+                '(35.76 ≈ 129 km/h). Set 0 to disable speed events.'
             ),
             'current': float(
                 config.MAPPING_EVENT_THRESHOLDS.get('speed_limit_mps', 35.76)

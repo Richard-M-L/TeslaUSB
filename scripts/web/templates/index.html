@@ -674,8 +674,8 @@
                         </p>
                     </div>
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Speed alert (mph)</strong></label>
-                        <input type="number" name="speed_limit_mph" value="{{ cfg_mapping.speed_limit_mph|int }}" min="0" max="200" step="5" class="settings-form-input">
+                        <label style="font-size:0.85rem"><strong>Speed alert (km/h)</strong></label>
+                        <input type="number" name="speed_limit_kph" value="{{ cfg_mapping.speed_limit_kph|int }}" min="0" max="300" step="5" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
                             Marks a driving event on the map when your speed exceeds this threshold.
                             Set to 0 to disable speed alerts entirely.

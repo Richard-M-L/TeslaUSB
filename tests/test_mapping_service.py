@@ -414,12 +414,12 @@ class TestEventDetection:
         assert any(e['event_type'] == 'sharp_turn' for e in events)
 
     def test_speeding_detected(self):
-        wps = [self._make_waypoint(speed_mps=40.0)]  # ~89 mph
+        wps = [self._make_waypoint(speed_mps=40.0)]  # ~144 km/h
         events = _detect_events(wps, DEFAULT_THRESHOLDS, 'test.mp4')
         assert any(e['event_type'] == 'speeding' for e in events)
 
     def test_no_speeding_below_threshold(self):
-        wps = [self._make_waypoint(speed_mps=30.0)]  # ~67 mph
+        wps = [self._make_waypoint(speed_mps=30.0)]  # ~108 km/h
         events = _detect_events(wps, DEFAULT_THRESHOLDS, 'test.mp4')
         assert not any(e['event_type'] == 'speeding' for e in events)
 

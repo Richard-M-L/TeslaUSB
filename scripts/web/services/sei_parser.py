@@ -1151,7 +1151,7 @@ if __name__ == '__main__':
                 'lat': msg.latitude_deg,
                 'lon': msg.longitude_deg,
                 'heading': round(msg.heading_deg, 1),
-                'speed_mph': round(msg.speed_mph, 1),
+                'speed_kph': round(msg.speed_kph, 1),
                 'gear': msg.gear_state,
                 'autopilot': msg.autopilot_state,
                 'brake': msg.brake_applied,

@@ -63,6 +63,31 @@ US_HOLIDAYS = {
     "New Year's Eve": (12, 31),
 }
 
+# Chinese fixed solar holidays (month, day)
+ZH_HOLIDAYS = {
+    "元旦": (1, 1),
+    "妇女节": (3, 8),
+    "劳动节": (5, 1),
+    "青年节": (5, 4),
+    "儿童节": (6, 1),
+    "建党节": (7, 1),
+    "建军节": (8, 1),
+    "国庆节": (10, 1),
+}
+
+# Chinese lunar-based holidays lookup (2025-2030)
+# Dates pre-computed from Chinese lunar calendar; update after 2030.
+ZH_LUNAR_HOLIDAYS_LOOKUP = {
+    2025: [("春节", 1, 29), ("元宵节", 2, 12), ("清明节", 4, 4), ("端午节", 5, 31), ("七夕", 8, 29), ("中秋节", 10, 6), ("重阳节", 10, 29)],
+    2026: [("春节", 2, 17), ("元宵节", 3, 3), ("清明节", 4, 5), ("端午节", 6, 19), ("七夕", 8, 19), ("中秋节", 9, 27), ("重阳节", 10, 17)],
+    2027: [("春节", 2, 6), ("元宵节", 2, 20), ("清明节", 4, 5), ("端午节", 6, 8), ("七夕", 8, 8), ("中秋节", 9, 15), ("重阳节", 10, 7)],
+    2028: [("春节", 1, 26), ("元宵节", 2, 9), ("清明节", 4, 4), ("端午节", 5, 27), ("七夕", 7, 27), ("中秋节", 10, 3), ("重阳节", 10, 25)],
+    2029: [("春节", 2, 13), ("元宵节", 2, 27), ("清明节", 4, 4), ("端午节", 6, 16), ("七夕", 8, 16), ("中秋节", 9, 22), ("重阳节", 10, 13)],
+    2030: [("春节", 2, 3), ("元宵节", 2, 17), ("清明节", 4, 5), ("端午节", 6, 5), ("七夕", 8, 5), ("中秋节", 9, 12), ("重阳节", 10, 4)],
+}
+
+ZH_MOVABLE_HOLIDAY_NAMES = ["春节", "元宵节", "清明节", "端午节", "七夕", "中秋节", "重阳节"]
+
 # Movable holidays (calculated)
 def get_movable_holiday_date(year: int, holiday_name: str) -> Optional[tuple]:
     """Calculate date for movable US holidays."""
@@ -151,14 +176,130 @@ ALL_HOLIDAYS = list(US_HOLIDAYS.keys()) + [
 ]
 ALL_HOLIDAYS.sort()
 
+# Complete list of all Chinese holidays
+ZH_ALL_HOLIDAYS = list(ZH_HOLIDAYS.keys()) + ZH_MOVABLE_HOLIDAY_NAMES
+ZH_ALL_HOLIDAYS.sort()
+
+
+def get_chinese_lunar_holidays(year: int) -> List[tuple]:
+    """Return Chinese lunar-based holidays for the given year.
+
+    Returns list of (holiday_name, month, day) tuples, or empty list
+    if the year is outside the hardcoded lookup table range.
+    """
+    return ZH_LUNAR_HOLIDAYS_LOOKUP.get(year, [])
+
+
+def get_all_holidays_for_locale(locale: str = 'zh') -> List[str]:
+    """Return sorted list of all holiday names for the given locale."""
+    if locale == 'zh':
+        return ZH_ALL_HOLIDAYS.copy()
+    return ALL_HOLIDAYS.copy()
+
+
+def get_holidays_with_dates_for_locale(year: int = None, locale: str = 'zh') -> List[Dict[str, any]]:
+    """Get list of all holidays with their dates for a specific year and locale.
+
+    For 'zh' locale: returns Chinese fixed solar + lunar-based holidays.
+    For 'en' locale: returns US fixed + movable holidays.
+    """
+    if year is None:
+        year = datetime.now().year
+
+    holidays_with_dates = []
+
+    if locale == 'zh':
+        # Fixed solar holidays
+        for holiday_name, (month, day) in ZH_HOLIDAYS.items():
+            holidays_with_dates.append({
+                'name': holiday_name,
+                'month': month,
+                'day': day
+            })
+        # Lunar-based holidays
+        for holiday_name, month, day in get_chinese_lunar_holidays(year):
+            holidays_with_dates.append({
+                'name': holiday_name,
+                'month': month,
+                'day': day
+            })
+    else:
+        # US fixed holidays
+        for holiday_name, (month, day) in US_HOLIDAYS.items():
+            holidays_with_dates.append({
+                'name': holiday_name,
+                'month': month,
+                'day': day
+            })
+        # US movable holidays
+        movable_holiday_names = [
+            "Martin Luther King Jr. Day",
+            "Presidents' Day",
+            "Easter",
+            "Mother's Day",
+            "Memorial Day",
+            "Father's Day",
+            "Labor Day",
+            "Columbus Day",
+            "Thanksgiving"
+        ]
+        for holiday_name in movable_holiday_names:
+            date = get_movable_holiday_date(year, holiday_name)
+            if date:
+                month, day = date
+                holidays_with_dates.append({
+                    'name': holiday_name,
+                    'month': month,
+                    'day': day
+                })
+
+    holidays_with_dates.sort(key=lambda h: (h['month'], h['day']))
+    return holidays_with_dates
+
+
+def is_holiday_for_date(year: int, month: int, day: int, locale: str = 'zh') -> List[str]:
+    """Get list of holidays that fall on the given date for the given locale.
+
+    Returns list of holiday name strings (empty list if none match).
+    """
+    holidays = []
+
+    if locale == 'zh':
+        # Check fixed solar holidays
+        for holiday_name, (h_month, h_day) in ZH_HOLIDAYS.items():
+            if h_month == month and h_day == day:
+                holidays.append(holiday_name)
+        # Check lunar-based holidays
+        for holiday_name, h_month, h_day in get_chinese_lunar_holidays(year):
+            if h_month == month and h_day == day:
+                holidays.append(holiday_name)
+    else:
+        # Check US fixed holidays
+        for holiday_name, (h_month, h_day) in US_HOLIDAYS.items():
+            if h_month == month and h_day == day:
+                holidays.append(holiday_name)
+        # Check US movable holidays
+        movable_names = [
+            "Martin Luther King Jr. Day", "Presidents' Day",
+            "Easter", "Mother's Day", "Memorial Day",
+            "Father's Day", "Labor Day", "Columbus Day", "Thanksgiving"
+        ]
+        for holiday_name in movable_names:
+            holiday_date = get_movable_holiday_date(year, holiday_name)
+            if holiday_date and holiday_date[0] == month and holiday_date[1] == day:
+                holidays.append(holiday_name)
+
+    return holidays
+
 
 class ChimeScheduler:
     """Manages chime schedules and determines active chime."""
     
-    def __init__(self, schedule_file=None):
-        """Initialize scheduler with schedule file path."""
+    def __init__(self, schedule_file=None, locale='zh'):
+        """Initialize scheduler with schedule file path and locale."""
         self.schedule_file = schedule_file or SCHEDULE_FILE
         self.schedules = self._load_schedules()
+        self.locale = locale
     
     def _load_schedules(self) -> List[Dict]:
         """Load schedules from JSON file."""
@@ -1162,41 +1303,11 @@ class ChimeScheduler:
     def _get_holidays_for_date(self, year: int, month: int, day: int) -> List[str]:
         """
         Get list of holidays that fall on the given date.
-        
-        Args:
-            year: Year
-            month: Month (1-12)
-            day: Day of month
-        
-        Returns:
-            List of holiday names
+
+        Uses the scheduler's configured locale (default 'zh') to determine
+        which holiday set to consult.
         """
-        holidays = []
-        
-        # Check fixed holidays
-        for holiday_name, (h_month, h_day) in US_HOLIDAYS.items():
-            if h_month == month and h_day == day:
-                holidays.append(holiday_name)
-        
-        # Check movable holidays
-        movable_holiday_names = [
-            "Martin Luther King Jr. Day",
-            "Presidents' Day",
-            "Easter",
-            "Mother's Day",
-            "Memorial Day",
-            "Father's Day",
-            "Labor Day",
-            "Columbus Day",
-            "Thanksgiving"
-        ]
-        
-        for holiday_name in movable_holiday_names:
-            holiday_date = get_movable_holiday_date(year, holiday_name)
-            if holiday_date and holiday_date[0] == month and holiday_date[1] == day:
-                holidays.append(holiday_name)
-        
-        return holidays
+        return is_holiday_for_date(year, month, day, self.locale)
 
 
 def cleanup_expired_date_schedules(scheduler: ChimeScheduler, check_time: Optional[datetime] = None) -> int:
@@ -1268,14 +1379,14 @@ def cleanup_expired_date_schedules(scheduler: ChimeScheduler, check_time: Option
     return deleted_count
 
 
-def get_scheduler(schedule_file=None) -> ChimeScheduler:
-    """Get a ChimeScheduler instance."""
-    return ChimeScheduler(schedule_file)
+def get_scheduler(schedule_file=None, locale='zh') -> ChimeScheduler:
+    """Get a ChimeScheduler instance with the given locale."""
+    return ChimeScheduler(schedule_file, locale=locale)
 
 
-def get_holidays_list() -> List[str]:
-    """Get sorted list of all US holidays."""
-    return ALL_HOLIDAYS.copy()
+def get_holidays_list(locale: str = 'zh') -> List[str]:
+    """Get sorted list of all holidays for the given locale (default 'zh')."""
+    return get_all_holidays_for_locale(locale)
 
 
 def get_recurring_intervals() -> Dict[str, str]:
@@ -1283,54 +1394,13 @@ def get_recurring_intervals() -> Dict[str, str]:
     return RECURRING_INTERVALS.copy()
 
 
-def get_holidays_with_dates(year: int = None) -> List[Dict[str, any]]:
+def get_holidays_with_dates(year: int = None, locale: str = 'zh') -> List[Dict[str, any]]:
     """
-    Get list of all US holidays with their dates for a specific year.
-    
-    Args:
-        year: Year to calculate dates for (default: current year)
-    
-    Returns:
-        List of dicts with 'name', 'month', 'day' keys
+    Get list of all holidays with their dates for a specific year and locale.
+
+    Delegates to ``get_holidays_with_dates_for_locale``.
     """
-    if year is None:
-        year = datetime.now().year
-    
-    holidays_with_dates = []
-    
-    # Add fixed holidays
-    for holiday_name, (month, day) in US_HOLIDAYS.items():
-        holidays_with_dates.append({
-            'name': holiday_name,
-            'month': month,
-            'day': day
-        })
-    
-    # Add movable holidays
-    movable_holiday_names = [
-        "Martin Luther King Jr. Day",
-        "Presidents' Day",
-        "Easter",
-        "Mother's Day",
-        "Memorial Day",
-        "Father's Day",
-        "Labor Day",
-        "Columbus Day",
-        "Thanksgiving"
-    ]
-    
-    for holiday_name in movable_holiday_names:
-        date = get_movable_holiday_date(year, holiday_name)
-        if date:
-            month, day = date
-            holidays_with_dates.append({
-                'name': holiday_name,
-                'month': month,
-                'day': day
-            })
-    
-    # Sort by date (month, then day)
-    holidays_with_dates.sort(key=lambda h: (h['month'], h['day']))
+    return get_holidays_with_dates_for_locale(year, locale)
     
     return holidays_with_dates
 

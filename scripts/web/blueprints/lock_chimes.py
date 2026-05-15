@@ -143,11 +143,12 @@ def lock_chimes():
     chime_files.sort(key=lambda x: x["filename"].lower())
 
     # Load schedules
-    scheduler = get_scheduler()
+    locale = request.cookies.get('lang', 'zh')
+    scheduler = get_scheduler(locale=locale)
     schedules = scheduler.list_schedules()
 
     # Get holidays list with dates for current year
-    holidays = get_holidays_with_dates()
+    holidays = get_holidays_with_dates(locale=locale)
 
     # Get recurring intervals for the dropdown
     recurring_intervals = get_recurring_intervals()
@@ -607,7 +608,8 @@ def add_schedule():
             return redirect(url_for("lock_chimes.lock_chimes"))
 
         # Add schedule
-        scheduler = get_scheduler()
+        locale = request.cookies.get('lang', 'zh')
+        scheduler = get_scheduler(locale=locale)
 
         # Handle recurring schedules specially if enabled
         if schedule_type == 'recurring' and enabled:
@@ -659,7 +661,8 @@ def add_schedule():
 def toggle_schedule(schedule_id):
     """Enable or disable a schedule."""
     try:
-        scheduler = get_scheduler()
+        locale = request.cookies.get('lang', 'zh')
+        scheduler = get_scheduler(locale=locale)
         schedule = scheduler.get_schedule(schedule_id)
 
         if not schedule:
@@ -694,7 +697,8 @@ def toggle_schedule(schedule_id):
 def delete_schedule(schedule_id):
     """Delete a schedule."""
     try:
-        scheduler = get_scheduler()
+        locale = request.cookies.get('lang', 'zh')
+        scheduler = get_scheduler(locale=locale)
         schedule = scheduler.get_schedule(schedule_id)
 
         if not schedule:
@@ -717,7 +721,8 @@ def delete_schedule(schedule_id):
 @lock_chimes_bp.route("/schedule/<int:schedule_id>/edit", methods=["GET", "POST"])
 def edit_schedule(schedule_id):
     """Edit an existing schedule (GET returns JSON, POST updates)."""
-    scheduler = get_scheduler()
+    locale = request.cookies.get('lang', 'zh')
+    scheduler = get_scheduler(locale=locale)
     schedule = scheduler.get_schedule(schedule_id)
 
     if not schedule:
