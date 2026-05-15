@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_locale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tesla USB Gadget</title>
+    <title>{{ _('captive.title') }}</title>
     <style>
         * {
             margin: 0;
@@ -140,37 +140,37 @@
             </svg>
         </div>
 
-        <h1>Tesla USB Gadget</h1>
-        <p class="subtitle">Manage Your TeslaCam & Lightshow Content</p>
+        <h1>{{ _('captive.title') }}</h1>
+        <p class="subtitle">{{ _('captive.subtitle') }}</p>
 
         <div class="features">
             <div class="feature">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm-1 14.5l-3.5-3.5L8.91 11.59 11 13.67l6.09-6.09L18.5 9l-7.5 7.5z"/>
                 </svg>
-                <span>View & manage dashcam footage</span>
+                <span>{{ _('nav.map') }}</span>
             </div>
             <div class="feature">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>
                 </svg>
-                <span>Upload custom lock chimes</span>
+                <span>{{ _('media.chimes') }}</span>
             </div>
             <div class="feature">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
                 </svg>
-                <span>Manage lightshow files</span>
+                <span>{{ _('media.shows') }}</span>
             </div>
             <div class="feature">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
                 </svg>
-                <span>View storage analytics</span>
+                <span>{{ _('nav.analytics') }}</span>
             </div>
         </div>
 
-        <a href="/" class="continue-btn">Access Web Interface</a>
+        <a href="/" class="continue-btn">{{ _('captive.open_interface') }}</a>
 
         <div class="network-info">
             Connected to {{ ssid }}

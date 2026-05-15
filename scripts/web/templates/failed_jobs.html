@@ -4,15 +4,15 @@
 
     <header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
         <div>
-            <h1 style="margin: 0 0 4px; font-size: 1.5rem;">Failed Jobs</h1>
+            <h1 style="margin: 0 0 4px; font-size: 1.5rem;">{{ _('jobs.title') }}</h1>
             <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">
-                Tasks that hit their retry cap. Review the error, fix the cause, then retry.
+                {{ _('jobs.subtitle') }}
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
-            <button type="button" id="refreshBtn" class="btn btn-secondary" aria-label="Refresh failed jobs list">
+            <button type="button" id="refreshBtn" class="btn btn-secondary" aria-label="{{ _('jobs.refresh') }}">
                 <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-refresh-cw"></use></svg>
-                <span>Refresh</span>
+                <span>{{ _('jobs.refresh') }}</span>
             </button>
         </div>
     </header>
@@ -22,36 +22,36 @@
     <details id="jobsHelp" style="margin-bottom: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px;">
         <summary style="cursor: pointer; padding: 12px 14px; font-weight: 600; font-size: 0.9375rem; display: flex; align-items: center; gap: 8px;">
             <svg class="nav-icon" aria-hidden="true" style="width: 16px; height: 16px;"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
-            <span>What does this mean?</span>
+            <span>{{ _('jobs.what_does_this_mean') }}</span>
         </summary>
         <div style="padding: 0 14px 14px; font-size: 0.875rem; color: var(--text-primary); line-height: 1.5;">
-            <p style="margin: 8px 0;">A <strong>failed job</strong> is a background task — archive copy, video index, cloud upload, or live event upload — that retried multiple times and gave up. Each card shows what failed and a recommendation for what to do.</p>
-            <p style="margin: 8px 0;"><strong>Failed</strong> vs <strong>queued</strong>: a failed job has stopped retrying and needs your decision. A "queued" or "pending" item on the Health card is just waiting in line for the worker — it isn't failed, it'll process when the worker reaches it. Big queue numbers (hundreds queued) mean the worker is catching up after a backlog, not that anything is broken.</p>
-            <p style="margin: 8px 0;"><strong>Retry</strong> resets the row so the worker picks it up again. Use this when the underlying cause is fixed (network is back, free space is restored, permissions corrected).</p>
-            <p style="margin: 8px 0;"><strong>Delete</strong> removes the queue row only — it never deletes the underlying video file from disk. Producers (file watcher, boot scan, archive worker) may legitimately re-enqueue the same file later if it still exists.</p>
-            <p style="margin: 8px 0;"><strong>Clip value</strong> badge: <span class="job-value job-value-event" style="display:inline-flex; vertical-align:middle;">Event clip</span> = Tesla recorded it because something happened (high value). <span class="job-value job-value-recent" style="display:inline-flex; vertical-align:middle;">Rolling buffer</span> = RecentClips, written continuously while the car is powered (driving or Sentry standby) and rotated hourly. <span class="job-value job-value-index" style="display:inline-flex; vertical-align:middle;">Map / trip data</span> = re-derivable from the video.</p>
+            <p style="margin: 8px 0;">{{ _('jobs.help_intro') }}</p>
+            <p style="margin: 8px 0;">{{ _('jobs.help_failed_vs_queued') }}</p>
+            <p style="margin: 8px 0;">{{ _('jobs.help_retry') }}</p>
+            <p style="margin: 8px 0;">{{ _('jobs.help_delete') }}</p>
+            <p style="margin: 8px 0;">{{ _('jobs.help_clip_value') }}</p>
         </div>
     </details>
 
     <!-- Subsystem filter pills -->
     <nav aria-label="Filter by subsystem" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
         <button type="button" class="failed-pill" data-subsystem="all" aria-pressed="true">
-            <span class="pill-label">All</span>
+            <span class="pill-label">{{ _('jobs.all') }}</span>
             <span class="pill-count" id="count-all">0</span>
         </button>
         <button type="button" class="failed-pill" data-subsystem="archive" aria-pressed="false">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-hard-drive"></use></svg>
-            <span class="pill-label">Archive</span>
+            <span class="pill-label">{{ _('jobs.archive') }}</span>
             <span class="pill-count" id="count-archive">0</span>
         </button>
         <button type="button" class="failed-pill" data-subsystem="indexer" aria-pressed="false">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-map-pin"></use></svg>
-            <span class="pill-label">Indexer</span>
+            <span class="pill-label">{{ _('jobs.indexer') }}</span>
             <span class="pill-count" id="count-indexer">0</span>
         </button>
         <button type="button" class="failed-pill" data-subsystem="cloud_sync" aria-pressed="false">
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-cloud-upload"></use></svg>
-            <span class="pill-label">Cloud</span>
+            <span class="pill-label">{{ _('jobs.cloud') }}</span>
             <span class="pill-count" id="count-cloud_sync">0</span>
         </button>
     </nav>
@@ -63,13 +63,13 @@
     <div id="retryAllBar" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; margin-bottom: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap;">
         <span id="retryAllLabel" style="font-size: 0.875rem; color: var(--text-secondary);"></span>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button type="button" id="retryAllBtn" class="btn btn-primary" aria-label="Retry all failed jobs">
+            <button type="button" id="retryAllBtn" class="btn btn-primary" aria-label="{{ _('jobs.retry_all') }}">
                 <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-refresh-cw"></use></svg>
-                <span>Retry all</span>
+                <span>{{ _('jobs.retry_all') }}</span>
             </button>
-            <button type="button" id="deleteAllBtn" class="btn btn-danger" aria-label="Permanently delete all failed jobs">
+            <button type="button" id="deleteAllBtn" class="btn btn-danger" aria-label="{{ _('jobs.delete_all') }}">
                 <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-trash-2"></use></svg>
-                <span>Delete all</span>
+                <span>{{ _('jobs.delete_all') }}</span>
             </button>
         </div>
     </div>
@@ -77,12 +77,12 @@
     <!-- Empty state / loading state -->
     <div id="emptyState" style="display: none; padding: 40px 20px; text-align: center; background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: 8px;">
         <svg aria-hidden="true" style="width: 48px; height: 48px; color: var(--accent-success, #22C55E); margin: 0 auto 12px;"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-check-circle"></use></svg>
-        <h2 style="margin: 0 0 4px; font-size: 1.125rem;">No failed jobs</h2>
-        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">Every background task is healthy.</p>
+        <h2 style="margin: 0 0 4px; font-size: 1.125rem;">{{ _('jobs.no_failed') }}</h2>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">{{ _('jobs.all_healthy') }}</p>
     </div>
 
     <div id="loadingState" style="display: none; padding: 40px 20px; text-align: center; color: var(--text-secondary); font-size: 0.875rem;">
-        Loading…
+        {{ _('common.loading') }}
     </div>
 
     <div id="errorState" style="display: none; padding: 16px; background: var(--bg-secondary); border-left: 4px solid var(--accent-danger, #EF4444); border-radius: 4px; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-primary);"></div>
@@ -292,9 +292,9 @@
     };
 
     const SUBSYSTEM_META = {
-        archive:        { label: 'Archive',      icon: 'icon-hard-drive' },
-        indexer:        { label: 'Indexer',      icon: 'icon-map-pin' },
-        cloud_sync:     { label: 'Cloud',        icon: 'icon-cloud-upload' },
+        archive:        { label: _t('jobs.archive'),      icon: 'icon-hard-drive' },
+        indexer:        { label: _t('jobs.indexer'),      icon: 'icon-map-pin' },
+        cloud_sync:     { label: _t('jobs.cloud'),        icon: 'icon-cloud-upload' },
     };
 
     const SPRITE_URL = {{ url_for('static', filename='icons/lucide-sprite.svg')|tojson }};
@@ -329,13 +329,13 @@
         // there is nothing to act on.
         if (state.subsystem === 'all') {
             const total = state.counts.total || 0;
-            $('retryAllLabel').textContent = total + ' job' + (total === 1 ? '' : 's') + ' failed across all subsystems';
+            $('retryAllLabel').textContent = (_t('jobs.retryall_all') || '{n} jobs failed across all subsystems').replace('{n}', total);
             $('retryAllBtn').disabled = total === 0;
             $('deleteAllBtn').disabled = total === 0;
         } else {
             const meta = SUBSYSTEM_META[state.subsystem];
             const n = state.counts[state.subsystem] || 0;
-            $('retryAllLabel').textContent = n + ' ' + (meta ? meta.label : state.subsystem) + ' job' + (n === 1 ? '' : 's') + ' failed';
+            $('retryAllLabel').textContent = (_t('jobs.retryall_sub') || '{n} {sub} jobs failed').replace('{n}', n).replace('{sub}', meta ? meta.label : state.subsystem);
             $('retryAllBtn').disabled = n === 0;
             $('deleteAllBtn').disabled = n === 0;
         }
@@ -363,9 +363,15 @@
         either: 'icon-alert-circle',
     };
     const RECOMMENDATION_LABEL = {
-        retry:  'Try retry',
-        delete: 'Delete is OK',
-        either: 'Your call',
+        retry:  _t('jobs.try_retry'),
+        delete: _t('jobs.delete_is_ok'),
+        either: _t('jobs.your_call'),
+    };
+
+    const VALUE_TIER_I18N = {
+        event: 'jobs.event_clip',
+        recent: 'jobs.rolling_buffer',
+        index: 'jobs.map_trip_data',
     };
 
     function escapeHtml(s) {
@@ -395,7 +401,7 @@
             // 'unknown' if the backend somehow omitted the value
             // field, keeping the page renderable on a partial
             // payload.
-            const value = r.value || { tier: 'unknown', label: 'Background task', description: '' };
+            const value = r.value || { tier: 'unknown', label: _t('jobs.background_task'), description: '' };
             const valueClass = 'job-value job-value-' + (value.tier || 'unknown');
 
             const header = document.createElement('div');
@@ -406,17 +412,17 @@
                   escapeHtml(meta.label) +
                 '</span>' +
                 '<span class="' + valueClass + '" title="' + escapeHtml(value.description || '') + '">' +
-                  escapeHtml(value.label || '') +
+                  escapeHtml((value.tier && VALUE_TIER_I18N[value.tier] ? _t(VALUE_TIER_I18N[value.tier]) : value.label) || _t('jobs.background_task')) +
                 '</span>' +
                 '<span class="job-attempts">' + fmtAttempts(r.attempts) + '</span>';
 
             const identifier = document.createElement('div');
             identifier.className = 'job-identifier';
-            identifier.textContent = r.identifier || '(no identifier)';
+            identifier.textContent = r.identifier || _t('jobs.no_identifier');
 
             const error = document.createElement('div');
             error.className = 'job-error';
-            error.textContent = r.last_error || '(no error message)';
+            error.textContent = r.last_error || _t('jobs.no_error_message');
 
             // Issue #180 — recommendation chip. Tells the operator
             // which action is most likely correct for this failure
@@ -427,7 +433,7 @@
                 const rec = r.recommendation;
                 const recClass = 'job-recommendation job-recommendation-' + rec.action;
                 const recIcon = RECOMMENDATION_ICON[rec.action] || 'icon-alert-circle';
-                const recLabel = RECOMMENDATION_LABEL[rec.action] || 'Suggested';
+                const recLabel = RECOMMENDATION_LABEL[rec.action] || (_t('jobs.suggested') || 'Suggested');
                 recommendation = document.createElement('div');
                 recommendation.className = recClass;
                 recommendation.setAttribute('role', 'note');
@@ -449,9 +455,9 @@
                 prevToggle.type = 'button';
                 prevToggle.className = 'job-prev-toggle';
                 prevToggle.setAttribute('aria-expanded', 'false');
-                prevToggle.setAttribute('aria-label', 'Show previous failure');
+                prevToggle.setAttribute('aria-label', _t('jobs.show_previous_failure'));
                 prevToggle.innerHTML =
-                    '<span>Previous failure</span>' +
+                    '<span>' + _t('jobs.previous_failure') + '</span>' +
                     '<svg class="nav-icon" aria-hidden="true"><use href="' + SPRITE_URL + '#icon-chevron-down"></use></svg>';
 
                 prevError = document.createElement('div');
@@ -459,7 +465,7 @@
                 prevError.style.display = 'none';
                 const label = document.createElement('span');
                 label.className = 'job-prev-error-label';
-                label.textContent = 'Before last retry';
+                label.textContent = _t('jobs.before_last_retry');
                 const body = document.createElement('div');
                 body.textContent = r.previous_last_error;
                 prevError.appendChild(label);
@@ -469,7 +475,7 @@
                     const open = prevToggle.getAttribute('aria-expanded') === 'true';
                     prevToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
                     prevToggle.setAttribute('aria-label',
-                        open ? 'Show previous failure' : 'Hide previous failure');
+                        open ? _t('jobs.show_previous_failure') : _t('jobs.hide_previous_failure'));
                     prevError.style.display = open ? 'none' : '';
                 });
             }
@@ -480,15 +486,15 @@
             const retryBtn = document.createElement('button');
             retryBtn.type = 'button';
             retryBtn.className = 'btn btn-primary';
-            retryBtn.setAttribute('aria-label', 'Retry this job');
-            retryBtn.innerHTML = '<svg class="nav-icon" aria-hidden="true"><use href="' + SPRITE_URL + '#icon-refresh-cw"></use></svg><span>Retry</span>';
+            retryBtn.setAttribute('aria-label', _t('common.retry'));
+            retryBtn.innerHTML = '<svg class="nav-icon" aria-hidden="true"><use href="' + SPRITE_URL + '#icon-refresh-cw"></use></svg><span>' + _t('common.retry') + '</span>';
             retryBtn.addEventListener('click', function () { retryRow(r); });
 
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
             deleteBtn.className = 'btn btn-danger';
-            deleteBtn.setAttribute('aria-label', 'Permanently delete this failed job');
-            deleteBtn.innerHTML = '<svg class="nav-icon" aria-hidden="true"><use href="' + SPRITE_URL + '#icon-trash-2"></use></svg><span>Delete</span>';
+            deleteBtn.setAttribute('aria-label', _t('common.delete'));
+            deleteBtn.innerHTML = '<svg class="nav-icon" aria-hidden="true"><use href="' + SPRITE_URL + '#icon-trash-2"></use></svg><span>' + _t('common.delete') + '</span>';
             deleteBtn.addEventListener('click', function () { deleteRow(r); });
 
             actions.appendChild(retryBtn);
@@ -528,7 +534,7 @@
                 renderRows();
             })
             .catch(function (err) {
-                showError('Could not load failed jobs: ' + err.message);
+                showError((_t('jobs.error_load') || 'Could not load failed jobs: ') + err.message);
                 state.rows = [];
                 renderRows();
             })
@@ -549,7 +555,7 @@
         retry({ subsystem: row.subsystem, id: row.id })
             .then(function (res) {
                 if (!res.ok) {
-                    showError('Retry failed: ' + (res.body && res.body.error ? res.body.error : 'unknown'));
+                    showError((_t('jobs.error_retry') || 'Retry failed: ') + (res.body && res.body.error ? res.body.error : 'unknown'));
                     return;
                 }
                 return refresh();
@@ -565,14 +571,14 @@
             ? (state.counts.total || 0)
             : (state.counts[sub] || 0);
         if (total === 0) return;
-        const label = sub === 'all'
-            ? 'every failed job across every subsystem'
-            : ((SUBSYSTEM_META[sub] ? SUBSYSTEM_META[sub].label : sub) + ' jobs');
-        if (!window.confirm('Retry all ' + total + ' ' + label + '?')) return;
+        const msg = sub === 'all'
+            ? (_t('jobs.confirm_retry_all') || 'Retry all {n} failed jobs across every subsystem?').replace('{n}', total)
+            : (_t('jobs.confirm_retry_sub') || 'Retry all {n} {sub} jobs?').replace('{n}', total).replace('{sub}', SUBSYSTEM_META[sub] ? SUBSYSTEM_META[sub].label : sub);
+        if (!window.confirm(msg)) return;
         retry({ subsystem: sub, id: null })
             .then(function (res) {
                 if (!res.ok) {
-                    showError('Retry-all failed: ' + (res.body && res.body.error ? res.body.error : 'unknown'));
+                    showError((_t('jobs.error_retry_all') || 'Retry-all failed: ') + (res.body && res.body.error ? res.body.error : 'unknown'));
                     return;
                 }
                 return refresh();
@@ -588,11 +594,11 @@
     }
 
     function deleteRow(row) {
-        if (!window.confirm('Permanently delete this failed job?\n\nThe row will be removed from the queue. The underlying source file is NOT deleted from disk; if a watcher re-discovers it later it may be re-enqueued automatically.')) return;
+        if (!window.confirm(_t('jobs.confirm_delete_one') || 'Permanently delete this failed job?\n\nThe row will be removed from the queue. The underlying source file is NOT deleted from disk; if a watcher re-discovers it later it may be re-enqueued automatically.')) return;
         del({ subsystem: row.subsystem, id: row.id })
             .then(function (res) {
                 if (!res.ok) {
-                    showError('Delete failed: ' + (res.body && res.body.error ? res.body.error : 'unknown'));
+                    showError((_t('jobs.error_delete') || 'Delete failed: ') + (res.body && res.body.error ? res.body.error : 'unknown'));
                     return;
                 }
                 return refresh();
@@ -609,16 +615,14 @@
             ? (state.counts.total || 0)
             : (state.counts[sub] || 0);
         if (total === 0) return;
-        const label = sub === 'all'
-            ? 'failed job' + (total === 1 ? '' : 's') + ' across every subsystem'
-            : 'failed ' + (SUBSYSTEM_META[sub] ? SUBSYSTEM_META[sub].label : sub) + ' job' + (total === 1 ? '' : 's');
-        const msg = 'Permanently delete all ' + total + ' ' + label + '?\n\n' +
-                    'The rows will be removed from the queue. Underlying source files are NOT deleted from disk.';
+        const msg = sub === 'all'
+            ? (_t('jobs.confirm_delete_all') || 'Permanently delete all {n} failed jobs across every subsystem?\n\nThe rows will be removed from the queue. Underlying source files are NOT deleted from disk.').replace('{n}', total)
+            : (_t('jobs.confirm_delete_sub') || 'Permanently delete all {n} failed {sub} jobs?\n\nThe rows will be removed from the queue. Underlying source files are NOT deleted from disk.').replace('{n}', total).replace('{sub}', SUBSYSTEM_META[sub] ? SUBSYSTEM_META[sub].label : sub);
         if (!window.confirm(msg)) return;
         del({ subsystem: sub, id: null })
             .then(function (res) {
                 if (!res.ok) {
-                    showError('Delete-all failed: ' + (res.body && res.body.error ? res.body.error : 'unknown'));
+                    showError((_t('jobs.error_delete_all') || 'Delete-all failed: ') + (res.body && res.body.error ? res.body.error : 'unknown'));
                     return;
                 }
                 return refresh();

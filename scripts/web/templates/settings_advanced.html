@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Advanced Settings - Tesla USB Gadget Control{% endblock %}
+{% block title %}{{ _('settings.advanced_title') }} - Tesla USB{% endblock %}
 
 {% block content %}
 <div class="settings-container" style="max-width:900px; margin:0 auto; padding:16px;">
@@ -8,12 +8,11 @@
     <header style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
         <a href="{{ url_for('mode_control.index') }}"
            style="color:var(--text-secondary); text-decoration:none; font-size:0.9rem;">
-            &larr; Back to Settings
+            {{ _('settings.back_to_settings') }}
         </a>
-        <h2 style="margin:0; flex:1;">Advanced Settings</h2>
+        <h2 style="margin:0; flex:1;">{{ _('settings.advanced_title') }}</h2>
     </header>
 
-    {# Persistent banner — visible at all times so users can't miss it. #}
     <div role="alert"
          style="background:rgba(217, 119, 6, 0.08);
                 color:var(--ds-accent-warning, #D97706);
@@ -26,10 +25,8 @@
             <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use>
         </svg>
         <span>
-            <strong>Advanced settings affect background workers.</strong>
-            Most users should leave these at their defaults. Incorrect values can
-            starve the SDIO bus, trigger the hardware watchdog, or cause clips
-            to be skipped during indexing.
+            <strong>{{ _('settings.advanced_warning_title') }}</strong>
+            {{ _('settings.advanced_warning_body') }}
         </span>
     </div>
 
@@ -98,8 +95,8 @@
             <div style="display:flex; gap:14px; margin-top:6px;
                         font-size:0.8rem; color:var(--text-secondary);
                         flex-wrap:wrap;">
-                <span>Default: <strong>{{ '%g'|format(t.default) }} {{ t.unit }}</strong></span>
-                <span>Range: {{ '%g'|format(t.min) }} – {{ '%g'|format(t.max) }} {{ t.unit }}</span>
+                <span>{{ _('settings.default') }}: <strong>{{ '%g'|format(t.default) }} {{ t.unit }}</strong></span>
+                <span>{{ _('settings.range') }}: {{ '%g'|format(t.min) }} – {{ '%g'|format(t.max) }} {{ t.unit }}</span>
                 <button type="button"
                         onclick="resetAdvancedField('{{ t.form_name }}', '{{ t.default }}')"
                         style="background:none; border:none;
@@ -107,7 +104,7 @@
                                cursor:pointer; padding:0; font-size:0.8rem;
                                text-decoration:underline;"
                         aria-label="Reset {{ t.label }} to default">
-                    Reset to default
+                    {{ _('settings.reset_to_default') }}
                 </button>
             </div>
         </div>
@@ -120,7 +117,7 @@
                            color:white; border:none; border-radius:8px;
                            font-size:0.95rem; font-weight:600; cursor:pointer;
                            min-height:44px;">
-                Save advanced settings
+                {{ _('settings.save_advanced_settings') }}
             </button>
             <a href="{{ url_for('mode_control.index') }}"
                style="padding:10px 24px; background:var(--bg-secondary, #f5f5f5);
@@ -129,7 +126,7 @@
                       border-radius:8px; font-size:0.95rem; text-decoration:none;
                       display:inline-flex; align-items:center;
                       min-height:44px; box-sizing:border-box;">
-                Cancel
+                {{ _('common.cancel') }}
             </a>
         </div>
     </form>

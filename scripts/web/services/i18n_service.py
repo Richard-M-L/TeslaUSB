@@ -74,6 +74,13 @@ def detect_locale(request) -> str:
     return _default_locale
 
 
+def get_all_translations(locale: str = None) -> dict:
+    """Return all translations for a locale as a flat dict (for JS bridge)."""
+    if locale is None:
+        locale = _default_locale
+    return _translations.get(locale, {}).copy()
+
+
 def supported_locales() -> List[str]:
     """Return list of supported locale codes."""
     return _supported_locales.copy()

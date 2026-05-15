@@ -87,7 +87,7 @@ app.register_blueprint(captive_portal_bp)
 # ---------------------------------------------------------------------------
 # i18n initialisation — load translations once at startup
 # ---------------------------------------------------------------------------
-from services.i18n_service import load_translations, get_text, detect_locale, supported_locales
+from services.i18n_service import load_translations, get_text, detect_locale, supported_locales, get_all_translations
 _translations_dir = os.path.join(os.path.dirname(__file__), 'translations')
 load_translations(_translations_dir)
 
@@ -95,7 +95,7 @@ load_translations(_translations_dir)
 @app.before_request
 def set_locale():
     """Detect locale on every request; stored in Flask g for the template _() helper."""
-    from flask import g
+    from flask import g, request
     g.lang = detect_locale(request)
 
 
@@ -103,10 +103,17 @@ def set_locale():
 def inject_i18n():
     """Inject translation helper and locale info into all Jinja templates."""
     from flask import g
+    lang = getattr(g, 'lang', 'zh')
+    def _(key, **kwargs):
+        text = get_text(key, lang)
+        if kwargs:
+            return text.format(**kwargs)
+        return text
     return {
-        '_': lambda key: get_text(key, getattr(g, 'lang', 'zh')),
-        'current_locale': lambda: getattr(g, 'lang', 'zh'),
+        '_': _,
+        'current_locale': lambda: lang,
         'supported_locales': supported_locales,
+        '_translations_js': get_all_translations(lang),
     }
 
 

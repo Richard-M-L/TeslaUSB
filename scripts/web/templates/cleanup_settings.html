@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cleanup Settings - Tesla USB Gadget Control{% endblock %}
+{% block title %}{{ _('cleanup.settings_title') }} - Tesla USB{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cleanup.css') }}?v=20251108">
@@ -11,8 +11,8 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="{{ url_for('mode_control.index') }}" class="btn btn-back">← Back to Settings</a>
-        <h2>Auto-Cleanup Settings</h2>
+        <a href="{{ url_for('mode_control.index') }}" class="btn btn-back">{{ _('cleanup.back_to_settings') }}</a>
+        <h2>{{ _('cleanup.settings_title') }}</h2>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -24,7 +24,6 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('cleanup.save_settings') }}" class="cleanup-form">
-        <!-- Dynamic folder settings based on detected folders -->
         {% for folder_name, policy in policies.items() %}
         <div class="cleanup-card folder-card">
             <div class="folder-header">
@@ -37,9 +36,9 @@
 >
                     <span class="toggle-slider"></span>
                     <span class="toggle-label">
-                        Run cleanup on boot
+                        {{ _('cleanup.run_cleanup_on_boot') }}
                         {% if folder_name in ['SavedClips', 'SentryClips', 'EncryptedClips'] %}
-                        (⚠️ Not recommended)
+                        {{ _('cleanup.not_recommended') }}
                         {% endif %}
                     </span>
                 </label>
@@ -51,12 +50,12 @@
                         <input type="checkbox" name="{{ folder_name }}_age_enabled"
                                {% if policy['age_based']['enabled'] %}checked{% endif %}
 >
-                        Age-based: Delete videos older than
+                        {{ _('cleanup.age_based') }}
                     </label>
                     <input type="number" name="{{ folder_name }}_age_days"
                            value="{{ policy['age_based']['days'] }}"
                            min="1" max="3650" class="number-input"
-> days
+> {{ _('cleanup.days') }}
                 </div>
 
                 {% if 'size_based' in policy %}
@@ -65,7 +64,7 @@
                         <input type="checkbox" name="{{ folder_name }}_size_enabled"
                                {% if policy['size_based']['enabled'] %}checked{% endif %}
 >
-                        Size-based: Keep maximum of
+                        {{ _('cleanup.size_based') }}
                     </label>
                     <input type="number" name="{{ folder_name }}_size_gb"
                            value="{{ policy['size_based']['max_gb'] }}"
@@ -80,37 +79,35 @@
                         <input type="checkbox" name="{{ folder_name }}_count_enabled"
                                {% if policy['count_based']['enabled'] %}checked{% endif %}
 >
-                        Count-based: Keep only newest
+                        {{ _('cleanup.count_based') }}
                     </label>
                     <input type="number" name="{{ folder_name }}_count_videos"
                            value="{{ policy['count_based']['max_videos'] }}"
                            min="1" max="10000" class="number-input"
-> videos
+> {{ _('cleanup.videos_unit') }}
                 </div>
                 {% endif %}
             </div>
         </div>
         {% endfor %}
 
-        <!-- Action Buttons -->
         <div class="button-group">
-            <button type="submit" class="btn btn-primary">Save Settings</button>
-            <a href="{{ url_for('cleanup.preview') }}" class="btn btn-secondary">Preview Cleanup</a>
+            <button type="submit" class="btn btn-primary">{{ _('cleanup.save_settings') }}</button>
+            <a href="{{ url_for('cleanup.preview') }}" class="btn btn-secondary">{{ _('cleanup.preview_cleanup') }}</a>
         </div>
     </form>
 
-    <!-- Help Card -->
     <div class="cleanup-card help-card">
-        <h3>How Auto-Cleanup Works</h3>
+        <h3>{{ _('cleanup.how_it_works') }}</h3>
         <ul>
-            <li><strong>Manual Cleanup:</strong> Use "Preview Cleanup" to see what will be deleted, then choose to execute. This works regardless of the "Run cleanup on boot" setting.</li>
-            <li><strong>Automatic Cleanup:</strong> When "Run cleanup on boot" is enabled for a folder, the system will automatically delete matching files during the boot sequence, before presenting the USB drive to Tesla.</li>
-            <li><strong>RecentClips:</strong> Normal dashcam footage - safe to auto-delete after a period</li>
-            <li><strong>SavedClips:</strong> Videos you manually saved - disabled by default to protect important clips</li>
-            <li><strong>SentryClips:</strong> Security event recordings - disabled by default for safety</li>
-            <li><strong>EncryptedClips:</strong> Cybertruck encrypted footage - disabled by default</li>
-            <li><strong>Protected videos:</strong> Videos from the past hour are never deleted (might still be recording)</li>
-            <li><strong>Boot sequence:</strong> On startup, the system mounts drives read-write, runs cleanup for enabled folders, then unmounts and presents the USB gadget to Tesla</li>
+            <li><strong>{{ _('cleanup.manual_cleanup') }}</strong></li>
+            <li><strong>{{ _('cleanup.auto_cleanup') }}</strong></li>
+            <li><strong>RecentClips:</strong> {{ _('cleanup.recentclips_desc') }}</li>
+            <li><strong>SavedClips:</strong> {{ _('cleanup.savedclips_desc') }}</li>
+            <li><strong>SentryClips:</strong> {{ _('cleanup.sentryclips_desc') }}</li>
+            <li><strong>EncryptedClips:</strong> {{ _('cleanup.encryptedclips_desc') }}</li>
+            <li><strong>{{ _('cleanup.protected_videos') }}</strong></li>
+            <li><strong>{{ _('cleanup.boot_sequence') }}</strong></li>
         </ul>
     </div>
 </div>

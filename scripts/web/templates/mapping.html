@@ -1536,7 +1536,7 @@ function showDisambigPopup(latlng, candidates) {
         if (!seed || !seed.video_path) {
             closeDisambigPopup();
             if (typeof showToast === 'function') {
-                showToast('No video available for this trip near this point.', 'warning');
+                showToast(_t('mapping.toast_no_video'), 'warning');
             }
             return;
         }
@@ -1795,7 +1795,7 @@ async function loadDay(date, options) {
         allEvents = [];
         rebuildEventFilterPills();
         if (typeof showToast === 'function') {
-            showToast('Could not load this day. Try again.', 'warning');
+            showToast(_t('mapping.toast_load_day_fail'), 'warning');
         }
     } finally {
         endMapLoading();
@@ -1945,7 +1945,7 @@ function cycleDay(direction) {
 
 function showAllTime(options) {
     if (!allDays.length) {
-        showToast('No mapped drives yet. Try indexing videos first.', 'warning');
+        showToast(_t('mapping.toast_no_mapped_drives'), 'warning');
         return;
     }
     const opts = options || {};
@@ -2277,7 +2277,7 @@ function renderTripOnDay(trip, bounds) {
             // nearest playable waypoint.
             if (candidates.length > 0) {
                 if (typeof showToast === 'function') {
-                    showToast('No clips available for this location.', 'warning');
+                    showToast(_t('mapping.toast_no_clips'), 'warning');
                 }
                 return;
             }
@@ -2395,7 +2395,7 @@ async function renderAllTime() {
         if (seq !== dayLoadSeq || !showingAllTime) return;
         renderAllTimeCard();
         if (typeof showToast === 'function') {
-            showToast('Could not load All time view. Try again.', 'warning');
+            showToast(_t('mapping.toast_load_all_time_fail'), 'warning');
         }
         return;
     }
@@ -2676,7 +2676,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
         const rawSrc = video.getAttribute('src');
         if (!rawSrc) return;
         if (typeof showToast === 'function') {
-            showToast('Video file not found — Tesla may have overwritten it.', 'warning');
+            showToast(_t('mapping.toast_file_not_found'), 'warning');
         }
     }, { once: true });
 
@@ -3141,7 +3141,7 @@ async function overlayDelete() {
         if (typeof showToast === 'function') showToast('Cannot determine clip to delete', 'warning');
         return;
     }
-    if (!confirm('Delete "' + evt + '" and all camera angles?')) return;
+    if (!confirm(_t('mapping.confirm_delete_clip').replace('{name}', evt))) return;
     try {
         const resp = await fetch('/videos/delete_event/' + encodeURIComponent(folder) + '/' + encodeURIComponent(evt), { method: 'POST' });
         const data = await resp.json();

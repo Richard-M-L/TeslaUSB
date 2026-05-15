@@ -20,6 +20,19 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons-subset.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // i18n bridge — exposes translations to JavaScript as window._t(key)
+        (function() {
+            const locale = '{{ current_locale() }}';
+            // Embedded translation table (populated at template render time)
+            const _translations = {{ _translations_js|default({})|tojson }};
+            window._t = function(key) {
+                if (_translations[key]) return _translations[key];
+                return key; // fallback: return the key itself
+            };
+            window._locale = locale;
+        })();
+    </script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -144,20 +157,20 @@
                     </svg>
                 </div>
                 <div class="archive-watchdog-message" id="archive-watchdog-message">
-                    Archive subsystem health degraded.
+                    {{ _('base.archive_banner') }}
                 </div>
                 <div class="archive-watchdog-actions">
                     <button type="button"
                             class="archive-watchdog-btn"
                             id="archive-watchdog-run-btn"
-                            aria-label="Run archive now">
-                        Run archive now
+                            aria-label="{{ _('base.run_archive_now') }}">
+                        {{ _('base.run_archive_now') }}
                     </button>
                     <button type="button"
                             class="archive-watchdog-btn archive-watchdog-btn-secondary"
                             id="archive-watchdog-dismiss-btn"
-                            aria-label="Dismiss banner for 1 hour">
-                        Dismiss
+                            aria-label="{{ _('base.dismiss_banner') }}">
+                        {{ _('base.dismiss_banner') }}
                     </button>
                 </div>
             </div>
@@ -171,12 +184,12 @@
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use></svg>
                 </div>
                 <div class="operation-message">
-                    <strong>File operation in progress...</strong>
+                    <strong>{{ _('base.operation_in_progress') }}</strong>
                     <span id="operation-details">
                         {% if estimated_completion > 0 %}
                         Estimated completion: {{ estimated_completion }}s
                         {% else %}
-                        Completing soon...
+                        {{ _('base.completing_soon') }}
                         {% endif %}
                     </span>
                 </div>
@@ -300,13 +313,13 @@
                         if (typeof showToast === 'function') {
                             showToast(
                                 r.ok
-                                ? 'Archive run triggered.'
-                                : 'Failed to trigger archive run.',
+                                ? _t('cloud.sync_started')
+                                : _t('cloud.sync_failed'),
                                 r.ok ? 'success' : 'error');
                         }
                     } catch (e) {
                         if (typeof showToast === 'function') {
-                            showToast('Network error triggering archive.',
+                            showToast(_t('cloud.network_error'),
                                 'error');
                         }
                     } finally {

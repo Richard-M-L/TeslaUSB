@@ -3,12 +3,12 @@
 <div class="container">
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
-        <div class="loading-text">Switching modes, please wait...</div>
+        <div class="loading-text">{{ _('index.switching_mode') }}</div>
     </div>
 
     <div id="apLoadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
-        <div class="loading-text">Updating AP settings, please wait...</div>
+        <div class="loading-text">{{ _('index.updating_ap') }}</div>
     </div>
 
     <!-- Device Status Card -->
@@ -17,19 +17,19 @@
         <div class="device-status-header">
             <span class="status-dot status-present"></span>
             <div class="device-status-info">
-                <strong>Connected to Tesla</strong>
-                <p>USB drive is active and accessible by your vehicle.</p>
+                <strong>{{ _('index.connected_tesla') }}</strong>
+                <p>{{ _('index.usb_active') }}</p>
             </div>
         </div>
-        <button type="button" class="edit-btn" id="modeActionBtn">Enable Network Sharing</button>
-        <p class="device-status-hint">Access USB drive files from your computer via network. Tesla USB will be temporarily disconnected.</p>
+        <button type="button" class="edit-btn" id="modeActionBtn">{{ _('index.enable_network_sharing') }}</button>
+        <p class="device-status-hint">{{ _('index.network_sharing_desc') }}</p>
     </div>
     {% elif mode_token == 'edit' %}
     <div class="device-status-card device-status-edit">
         <div class="device-status-header">
             <span class="status-dot status-edit"></span>
             <div class="device-status-info">
-                <strong>Network Sharing Active</strong>
+                <strong>{{ _('index.network_sharing_active') }}</strong>
                 <p>Tesla USB disconnected — files accessible via network.</p>
             </div>
         </div>
@@ -43,14 +43,14 @@
             </ul>
         </div>
         {% endif %}
-        <button type="button" class="present-btn" id="modeActionBtn">Reconnect to Tesla</button>
+        <button type="button" class="present-btn" id="modeActionBtn">{{ _('index.reconnect_tesla') }}</button>
     </div>
     {% else %}
     <div class="device-status-card device-status-unknown">
         <div class="device-status-header">
             <span class="status-dot status-unknown"></span>
             <div class="device-status-info">
-                <strong>Status Unknown</strong>
+                <strong>{{ _('index.status_unknown') }}</strong>
                 <p>Unable to determine current device status.</p>
             </div>
         </div>
@@ -98,13 +98,12 @@
         </svg>
         <div style="flex:1;">
             <strong id="files-lost-title">
-                Footage may have been lost
+                {{ _('index.footage_may_be_lost') }}
             </strong>
             <div id="files-lost-detail"
                  style="font-size:0.9rem; margin-top:2px;
                         opacity:0.92;">
-                Tesla rotated clips out of RecentClips before
-                we could copy them. Check Failed Jobs for details.
+                {{ _('index.footage_lost_detail') }}
             </div>
         </div>
         <a id="files-lost-link" href="#"
@@ -112,22 +111,22 @@
                   font-size:0.9rem; min-height:44px; min-width:44px;
                   display:inline-flex; align-items:center;
                   padding:0 10px;">
-            Details
+            {{ _('index.details') }}
         </a>
         <button id="files-lost-dismiss" type="button"
-                aria-label="Dismiss footage-lost banner"
+                aria-label="{{ _('index.dismiss') }}"
                 style="background:transparent; color:inherit;
                        border:1px solid currentColor; border-radius:6px;
                        cursor:pointer; font-size:0.9rem;
                        min-height:44px; min-width:44px;
                        padding:0 12px;">
-            Dismiss
+            {{ _('index.dismiss') }}
         </button>
     </div>
 
     <!-- System Health (Phase 4.2 — issue #101) -->
     <details class="settings-section" id="system-health-section" open>
-        <summary>System Health</summary>
+        <summary>{{ _('index.system_health') }}</summary>
         <div class="section-content">
             <div id="system-health-card"
                  data-poll-url="{{ url_for('system_health.api_system_health') }}"
@@ -172,7 +171,7 @@
 
     <!-- WiFi Networks -->
     <details class="settings-section" open>
-        <summary>WiFi Networks</summary>
+        <summary>{{ _('index.wifi_networks') }}</summary>
         <div class="section-content">
             {% if wifi_change_status %}
             <div id="wifiStatusAlert" style="margin: 0 0 12px; padding: 12px; border-radius: 6px; position: relative;
@@ -241,7 +240,7 @@
 
     <!-- Access Point -->
     <details class="settings-section" open>
-        <summary>Access Point</summary>
+        <summary>{{ _('index.access_point') }}</summary>
         <div class="section-content">
             {% if ap_status.error %}
                 <div style="color: var(--error-text);">AP status unavailable ({{ ap_status.error }})</div>
@@ -295,7 +294,7 @@
 
     <!-- Storage Maintenance -->
     <details class="settings-section">
-        <summary>Auto-Cleanup Settings</summary>
+        <summary>{{ _('index.auto_cleanup_settings') }}</summary>
         <div class="section-content">
             <a href="{{ url_for('cleanup.settings') }}" class="action-card" style="display:flex; align-items:center; gap:12px; padding:14px; text-decoration:none; color:inherit; border:1px solid var(--border-color); border-radius:8px; min-height:44px;">
                 <svg class="inline-icon" width="24" height="24" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-sparkles"></use></svg>
@@ -310,7 +309,7 @@
 
     <!-- Storage & Retention (Phase 3a.2 — closes part of #98) -->
     <details class="settings-section" id="storage-retention-section" open>
-        <summary>Storage &amp; Retention</summary>
+        <summary>{{ _('index.storage_retention') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
                 Controls how long archived dashcam clips are kept on the Pi's SD card and how
@@ -449,7 +448,7 @@
 
     <!-- Archive Settings -->
     <details class="settings-section">
-        <summary>Archive Settings</summary>
+        <summary>{{ _('index.archive_settings') }}</summary>
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_archive_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 16px">
@@ -492,7 +491,7 @@
     {% if videos_available %}
     <!-- Archive Status (Phase 2c — issue #76) -->
     <details class="settings-section">
-        <summary>Archive Status</summary>
+        <summary>{{ _('index.archive_status') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
                 Live view of the RecentClips archive subsystem. Updates every 30 seconds.
@@ -547,13 +546,13 @@
                         id="archive-run-now-btn"
                         style="min-height:44px">
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-refresh-cw"></use></svg>
-                    Run archive now
+                    {{ _('index.run_archive_now') }}
                 </button>
                 <a href="{{ url_for('jobs.failed_jobs_page') }}"
                    class="btn btn-secondary"
                    style="min-height:44px; text-decoration:none;">
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
-                    Failed jobs
+                    {{ _('index.failed_jobs') }}
                 </a>
                 <button type="button" class="btn btn-secondary"
                         id="archive-view-dl-btn"
@@ -579,7 +578,7 @@
 
     <!-- Storage (Phase 2c — issue #76) -->
     <details class="settings-section">
-        <summary>Storage</summary>
+        <summary>{{ _('index.storage') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
                 SD card disk usage for ArchivedClips. Files older than the retention window
@@ -644,7 +643,7 @@
 
     <!-- Mapping & Indexing Settings -->
     <details class="settings-section">
-        <summary>Mapping & Indexing</summary>
+        <summary>{{ _('index.mapping_indexing') }}</summary>
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_mapping_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 16px">
@@ -689,7 +688,7 @@
 
     <!-- Network Settings -->
     <details class="settings-section">
-        <summary>Network File Sharing</summary>
+        <summary>{{ _('index.network_file_sharing') }}</summary>
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_network_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
@@ -710,7 +709,7 @@
 
     <!-- Filesystem Health Check -->
     <details class="settings-section">
-        <summary>Filesystem Health Check</summary>
+        <summary>{{ _('index.filesystem_health_check') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
                 Run filesystem checks to detect and repair corruption.<br>
@@ -759,7 +758,7 @@
 
     <!-- System -->
     <details class="settings-section">
-        <summary>System</summary>
+        <summary>{{ _('index.system') }}</summary>
         <div class="section-content">
             {% if system_info %}
             <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:0.9rem;">

@@ -4,27 +4,26 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
 
 <div class="container">
-    <h2><svg class="nav-icon" style="width:20px;height:20px;vertical-align:middle;margin-right:4px" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-bar-chart-2"></use></svg> Storage Analytics Dashboard</h2>
+    <h2><svg class="nav-icon" style="width:20px;height:20px;vertical-align:middle;margin-right:4px" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-bar-chart-2"></use></svg> {{ _('analytics.storage_analytics_dashboard') }}</h2>
 
-    <!-- Storage Health Status -->
     {% set health = analytics.storage_health %}
     {% if health.status == 'critical' %}
         <div class="alert alert-critical">
-            <strong>⚠️ Critical Storage Alert!</strong>
+            <strong>{{ _('analytics.critical_storage_alert') }}</strong>
             {% for alert in health.alerts %}
                 <div>{{ alert }}</div>
             {% endfor %}
         </div>
     {% elif health.status == 'warning' %}
         <div class="alert alert-warning">
-            <strong>⚠️ Storage Warning</strong>
+            <strong>{{ _('analytics.storage_warning') }}</strong>
             {% for alert in health.alerts %}
                 <div>{{ alert }}</div>
             {% endfor %}
         </div>
     {% else %}
         <div class="alert alert-success">
-            <strong>✅ Storage Healthy</strong>
+            <strong>{{ _('analytics.storage_healthy') }}</strong>
         </div>
     {% endif %}
 
@@ -32,27 +31,26 @@
     <div class="analytics-grid analytics-grid-scroll">
         {% for partition_name, usage in analytics.partition_usage.items() %}
         <div class="analytics-card">
-            <h3>{% if partition_name == 'part1' %}📹 TeslaCam Drive{% elif partition_name == 'part3' %}🎵 Music Drive{% else %}💡 LightShow Drive{% endif %}</h3>
+            <h3>{% if partition_name == 'part1' %}{{ _('analytics.teslacam_drive') }}{% elif partition_name == 'part3' %}{{ _('analytics.music_drive') }}{% else %}{{ _('analytics.lightshow_drive') }}{% endif %}</h3>
 
             {% if 'error' in usage %}
                 <div class="error-message">{{ usage.error }}</div>
             {% else %}
                 <div class="usage-stats">
                     <div class="stat-row">
-                        <span class="stat-label">Total Space:</span>
+                        <span class="stat-label">{{ _('analytics.total_space') }}:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.total_gb) }} GB</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Used:</span>
+                        <span class="stat-label">{{ _('analytics.used') }}:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.used_gb) }} GB</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Free:</span>
+                        <span class="stat-label">{{ _('analytics.free') }}:</span>
                         <span class="stat-value">{{ "%.2f"|format(usage.free_gb) }} GB</span>
                     </div>
                 </div>
 
-                <!-- Progress Bar -->
                 <div class="progress-container">
                     <div class="progress-bar
                         {% if usage.percent_used >= 95 %}progress-critical
@@ -62,7 +60,7 @@
                          style="width: {{ usage.percent_used }}%">
                     </div>
                 </div>
-                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}% Used</div>
+                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}{{ _('analytics.percent_used') }}</div>
 
                 <div class="partition-path">{{ usage.path }}</div>
             {% endif %}
@@ -70,42 +68,41 @@
         {% endfor %}
     </div>
 
-    <!-- Recording Time Estimate -->
     {% set estimate = analytics.recording_estimate %}
     {% if estimate.teslacam_hours is not none %}
     <div class="info-card">
-        <h3>⏱️ Estimated Recording Time Remaining</h3>
+        <h3>{{ _('analytics.estimated_recording_time') }}</h3>
         <div class="estimate-value">
             {% if estimate.teslacam_hours >= 24 %}
-                {{ "%.1f"|format(estimate.teslacam_hours / 24) }} days
+                {{ "%.1f"|format(estimate.teslacam_hours / 24) }} {{ _('analytics.days') }}
             {% elif estimate.teslacam_hours >= 1 %}
-                {{ "%.1f"|format(estimate.teslacam_hours) }} hours
+                {{ "%.1f"|format(estimate.teslacam_hours) }} {{ _('analytics.hours') }}
             {% else %}
-                {{ "%.0f"|format(estimate.teslacam_hours * 60) }} minutes
+                {{ "%.0f"|format(estimate.teslacam_hours * 60) }} {{ _('analytics.minutes') }}
             {% endif %}
         </div>
         <div class="estimate-method">{{ estimate.method }}</div>
-        <div class="estimate-confidence">Confidence: {{ estimate.confidence }}</div>
+        <div class="estimate-confidence">{{ _('analytics.confidence') }}: {{ estimate.confidence }}</div>
     </div>
     {% endif %}
 
     <!-- Video Statistics -->
     <div class="analytics-section">
-        <h3>📹 Video Statistics</h3>
+        <h3>{{ _('analytics.video_statistics') }}</h3>
 
         {% set video_stats = analytics.video_statistics %}
         <div class="totals-row">
             <div class="total-stat">
                 <div class="total-number">{{ video_stats.totals.total_videos }}</div>
-                <div class="total-label">Total Files</div>
+                <div class="total-label">{{ _('analytics.total_files') }}</div>
             </div>
             <div class="total-stat">
                 <div class="total-number">{{ (video_stats.totals.total_videos / 6) | int }}</div>
-                <div class="total-label">Clips (≈6 angles)</div>
+                <div class="total-label">{{ _('analytics.clips_approx_6_angles') }}</div>
             </div>
             <div class="total-stat">
                 <div class="total-number">{{ "%.2f"|format(video_stats.totals.total_size_gb) }} GB</div>
-                <div class="total-label">Total Size</div>
+                <div class="total-label">{{ _('analytics.total_size') }}</div>
             </div>
         </div>
     </div>
@@ -113,18 +110,18 @@
     <!-- Folder Breakdown -->
     {% if analytics.folder_breakdown %}
     <div class="analytics-section">
-        <h3>📁 Folder Breakdown</h3>
+        <h3>{{ _('analytics.folder_breakdown') }}</h3>
 
         <div class="folder-table-container">
             <table class="analytics-table">
                 <thead>
                     <tr>
-                        <th>Folder</th>
-                        <th>Videos</th>
-                        <th>Size</th>
-                        <th>% of Total</th>
-                        <th>Oldest</th>
-                        <th>Newest</th>
+                        <th>{{ _('analytics.folder') }}</th>
+                        <th>{{ _('analytics.videos') }}</th>
+                        <th>{{ _('analytics.size') }}</th>
+                        <th>{{ _('analytics.pct_of_total') }}</th>
+                        <th>{{ _('analytics.oldest') }}</th>
+                        <th>{{ _('analytics.newest') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -164,15 +161,15 @@
                 </div>
                 <div class="folder-card-stats">
                     <div class="folder-stat">
-                        <span class="folder-stat-label">Videos:</span>
+                        <span class="folder-stat-label">{{ _('analytics.videos') }}:</span>
                         <span class="folder-stat-value">{{ folder.count }}</span>
                     </div>
                     <div class="folder-stat">
-                        <span class="folder-stat-label">Size:</span>
+                        <span class="folder-stat-label">{{ _('analytics.size') }}:</span>
                         <span class="folder-stat-value">{{ "%.2f"|format(folder.size_gb) }} GB</span>
                     </div>
                     <div class="folder-stat">
-                        <span class="folder-stat-label">% of Total:</span>
+                        <span class="folder-stat-label">{{ _('analytics.pct_of_total') }}:</span>
                         <span class="folder-stat-value">{{ "%.1f"|format(folder.size_percent) }}%</span>
                     </div>
                 </div>
@@ -180,8 +177,8 @@
                     <div class="mini-progress-bar" style="width: {{ folder.size_percent }}%"></div>
                 </div>
                 <div class="folder-card-dates">
-                    <div><small>Oldest: {{ folder.oldest or 'N/A' }}</small></div>
-                    <div><small>Newest: {{ folder.newest or 'N/A' }}</small></div>
+                    <div><small>{{ _('analytics.oldest') }}: {{ folder.oldest or 'N/A' }}</small></div>
+                    <div><small>{{ _('analytics.newest') }}: {{ folder.newest or 'N/A' }}</small></div>
                 </div>
             </div>
             {% endfor %}
@@ -192,7 +189,7 @@
     <!-- Recommendations -->
     {% if health.recommendations %}
     <div class="recommendations-section">
-        <h3>💡 Recommendations</h3>
+        <h3>{{ _('analytics.recommendations') }}</h3>
         <ul class="recommendations-list">
             {% for recommendation in health.recommendations %}
             <li>{{ recommendation }}</li>
@@ -204,51 +201,51 @@
     <!-- Driving Statistics & Event Analytics (from geo-index) -->
     {% if map_available %}
     <div class="analytics-section" id="drivingStatsSection">
-        <h3>🗺️ Driving Statistics</h3>
-        <p class="section-description">GPS and telemetry data extracted from dashcam videos. <a href="{{ url_for('mapping.map_view') }}">Open Map →</a></p>
+        <h3>{{ _('analytics.driving_stats') }}</h3>
+        <p class="section-description">{{ _('analytics.driving_stats_desc') }} <a href="{{ url_for('mapping.map_view') }}">{{ _('analytics.open_map') }}</a></p>
         <div id="drivingStatsContent">
             <div class="analytics-grid" id="drivingStatsGrid" style="display:none">
                 <div class="analytics-card">
-                    <div class="stat-row"><span class="stat-label">Total Distance</span><span class="stat-value" id="dsTotalDist">—</span></div>
-                    <div class="stat-row"><span class="stat-label">Total Drive Time</span><span class="stat-value" id="dsTotalTime">—</span></div>
-                    <div class="stat-row"><span class="stat-label">Total Trips</span><span class="stat-value" id="dsTripCount">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.total_distance') }}</span><span class="stat-value" id="dsTotalDist">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.total_drive_time') }}</span><span class="stat-value" id="dsTotalTime">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.total_trips') }}</span><span class="stat-value" id="dsTripCount">—</span></div>
                 </div>
                 <div class="analytics-card">
-                    <div class="stat-row"><span class="stat-label">Avg Speed</span><span class="stat-value" id="dsAvgSpeed">—</span></div>
-                    <div class="stat-row"><span class="stat-label">Max Speed</span><span class="stat-value" id="dsMaxSpeed">—</span></div>
-                    <div class="stat-row"><span class="stat-label">FSD Usage</span><span class="stat-value" id="dsFsdPct">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.avg_speed') }}</span><span class="stat-value" id="dsAvgSpeed">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.max_speed') }}</span><span class="stat-value" id="dsMaxSpeed">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.fsd_usage') }}</span><span class="stat-value" id="dsFsdPct">—</span></div>
                 </div>
                 <div class="analytics-card">
-                    <div class="stat-row"><span class="stat-label">Total Events</span><span class="stat-value" id="dsEventCount">—</span></div>
-                    <div class="stat-row"><span class="stat-label">Warnings/Critical</span><span class="stat-value" id="dsWarnCount">—</span></div>
-                    <div class="stat-row"><span class="stat-label">Events per 100 km</span><span class="stat-value" id="dsEvPer100">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.total_events') }}</span><span class="stat-value" id="dsEventCount">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.warnings_critical') }}</span><span class="stat-value" id="dsWarnCount">—</span></div>
+                    <div class="stat-row"><span class="stat-label">{{ _('analytics.events_per_100km') }}</span><span class="stat-value" id="dsEvPer100">—</span></div>
                 </div>
             </div>
             <div id="drivingStatsEmpty" style="text-align:center;padding:20px;color:var(--text-muted,#888);">
-                No driving data indexed yet. <a href="{{ url_for('mapping.map_view') }}">Go to Map</a> and click "Index Videos" to get started.
+                {{ _('analytics.no_driving_data') }} <a href="{{ url_for('mapping.map_view') }}">{{ _('analytics.go_to_map_hint') }}</a>
             </div>
         </div>
     </div>
 
     <div class="analytics-section" id="eventChartsSection" style="display:none">
-        <h3>⚡ Event Analytics</h3>
+        <h3>{{ _('analytics.event_analytics') }}</h3>
         <div class="analytics-grid" style="grid-template-columns: 1fr 1fr;">
             <div class="analytics-card">
-                <h4 style="margin:0 0 8px">Events by Type</h4>
+                <h4 style="margin:0 0 8px">{{ _('analytics.events_by_type') }}</h4>
                 <div style="position:relative; height:220px"><canvas id="chartByType"></canvas></div>
             </div>
             <div class="analytics-card">
-                <h4 style="margin:0 0 8px">Events by Severity</h4>
+                <h4 style="margin:0 0 8px">{{ _('analytics.events_by_severity') }}</h4>
                 <div style="position:relative; height:220px"><canvas id="chartBySeverity"></canvas></div>
             </div>
         </div>
         <div class="analytics-grid" style="grid-template-columns: 1fr 1fr; margin-top: 12px;">
             <div class="analytics-card">
-                <h4 style="margin:0 0 8px">Events Over Time (30 days)</h4>
+                <h4 style="margin:0 0 8px">{{ _('analytics.events_over_time') }}</h4>
                 <div style="position:relative; height:180px"><canvas id="chartOverTime"></canvas></div>
             </div>
             <div class="analytics-card">
-                <h4 style="margin:0 0 8px">FSD vs Manual Driving (30 days)</h4>
+                <h4 style="margin:0 0 8px">{{ _('analytics.fsd_vs_manual') }}</h4>
                 <div style="position:relative; height:180px"><canvas id="chartFsd"></canvas></div>
             </div>
         </div>
@@ -260,7 +257,6 @@
 {% if map_available %}
 <script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
 <script>
-// Driving Statistics & Event Charts
 const chartColors = {
     critical: '#dc3545', warning: '#ffc107', info: '#17a2b8',
     fsd: '#28a745', manual: '#6c757d', line: '#007bff',
@@ -284,7 +280,7 @@ async function loadDrivingStats() {
         document.getElementById('dsEventCount').textContent = data.total_events;
         document.getElementById('dsWarnCount').textContent = data.warning_events;
         document.getElementById('dsEvPer100').textContent = data.events_per_100km;
-    } catch(e) { console.error('Failed to load driving stats:', e); }
+    } catch(e) { console.error('{{ _('analytics.failed_to_load_driving_stats') }}:', e); }
 }
 
 async function loadEventCharts() {
@@ -295,7 +291,6 @@ async function loadEventCharts() {
 
         document.getElementById('eventChartsSection').style.display = '';
 
-        // Events by Type — horizontal bar
         new Chart(document.getElementById('chartByType'), {
             type: 'bar',
             data: {
@@ -309,7 +304,6 @@ async function loadEventCharts() {
             }
         });
 
-        // Events by Severity — doughnut
         new Chart(document.getElementById('chartBySeverity'), {
             type: 'doughnut',
             data: {
@@ -322,14 +316,13 @@ async function loadEventCharts() {
             }
         });
 
-        // Events over time — line
         if (data.over_time.labels.length > 0) {
             new Chart(document.getElementById('chartOverTime'), {
                 type: 'line',
                 data: {
                     labels: data.over_time.labels,
                     datasets: [{
-                        label: 'Events', data: data.over_time.values,
+                        label: '{{ _('analytics.events') }}', data: data.over_time.values,
                         borderColor: chartColors.line, backgroundColor: 'rgba(0,123,255,0.1)',
                         fill: true, tension: 0.3
                     }]
@@ -342,15 +335,14 @@ async function loadEventCharts() {
             });
         }
 
-        // FSD vs Manual — stacked bar
         if (data.fsd_timeline.labels.length > 0) {
             new Chart(document.getElementById('chartFsd'), {
                 type: 'bar',
                 data: {
                     labels: data.fsd_timeline.labels,
                     datasets: [
-                        { label: 'FSD', data: data.fsd_timeline.fsd, backgroundColor: chartColors.fsd },
-                        { label: 'Manual', data: data.fsd_timeline.manual, backgroundColor: chartColors.manual }
+                        { label: '{{ _('analytics.fsd') }}', data: data.fsd_timeline.fsd, backgroundColor: chartColors.fsd },
+                        { label: '{{ _('analytics.manual') }}', data: data.fsd_timeline.manual, backgroundColor: chartColors.manual }
                     ]
                 },
                 options: {
@@ -360,7 +352,7 @@ async function loadEventCharts() {
                 }
             });
         }
-    } catch(e) { console.error('Failed to load event charts:', e); }
+    } catch(e) { console.error('{{ _('analytics.failed_to_load_event_charts') }}:', e); }
 }
 
 loadDrivingStats();

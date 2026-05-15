@@ -15,7 +15,7 @@
         <div class="device-status-header">
             <span class="status-dot status-edit" id="syncDot"></span>
             <div class="device-status-info">
-                <strong id="syncTitle">Syncing to {{ provider or 'Cloud' }}</strong>
+                <strong id="syncTitle">{{ _('cloud.syncing_to', provider=provider or 'Cloud') }}</strong>
                 <p id="syncSubtitle">
                     {{ sync_status.files_done|default(0) }} of {{ sync_status.files_total|default('?') }} files
                     {% if sync_status.bytes_transferred %} &mdash; {{ sync_status.bytes_transferred|filesizeformat }}{% endif %}
@@ -39,12 +39,12 @@
         <div class="device-status-header">
             <span class="status-dot status-unknown"></span>
             <div class="device-status-info">
-                <strong>Sync Error</strong>
+                <strong>{{ _('cloud.sync_error') }}</strong>
                 <p id="syncError" style="color: var(--error-text);">{{ sync_status.error }}</p>
             </div>
         </div>
         <div style="margin-top: 8px;">
-            <button type="button" class="edit-btn" onclick="syncNow()" style="padding: 8px 16px; font-size: 14px;">Retry</button>
+            <button type="button" class="edit-btn" onclick="syncNow()" style="padding: 8px 16px; font-size: 14px;">{{ _('common.retry') }}</button>
         </div>
 
         {% else %}
@@ -52,12 +52,12 @@
         <div class="device-status-header">
             <span class="status-dot status-present" id="syncDot"></span>
             <div class="device-status-info">
-                <strong id="syncTitle">Cloud Sync</strong>
+                <strong id="syncTitle">{{ _('cloud.cloud_sync') }}</strong>
                 <p id="syncSubtitle">
                     {% if sync_status.last_run %}
-                        Last sync: <span id="lastSyncTime" data-ts="{{ sync_status.last_run }}">{{ sync_status.last_run }}</span>
+                        {{ _('cloud.last_sync') }}: <span id="lastSyncTime" data-ts="{{ sync_status.last_run }}">{{ sync_status.last_run }}</span>
                     {% else %}
-                        No syncs yet
+                        {{ _('cloud.no_syncs_yet') }}
                     {% endif %}
                     {% if sync_stats.total_pending %}
                         &mdash; {{ sync_stats.total_pending }} file{{ 's' if sync_stats.total_pending != 1 else '' }} pending
