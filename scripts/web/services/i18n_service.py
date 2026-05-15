@@ -84,3 +84,35 @@ def get_all_translations(locale: str = None) -> dict:
 def supported_locales() -> List[str]:
     """Return list of supported locale codes."""
     return _supported_locales.copy()
+
+
+def flash_t(key: str, **kwargs) -> str:
+    """Translate a key in the current locale and flash the result.
+
+    Usage in blueprints:
+        from services.i18n_service import flash_t
+        flash_t("key_name")
+        flash_t("key_with_placeholders", name=value)
+    """
+    from flask import flash, g
+    lang = getattr(g, 'lang', _default_locale)
+    text = get_text(key, lang)
+    if kwargs:
+        text = text.format(**kwargs)
+    flash(text)
+    return text
+
+
+def t(key: str, **kwargs) -> str:
+    """Translate a key in the current locale (no flash).
+
+    Usage in blueprints:
+        from services.i18n_service import t
+        msg = t("key_name")
+    """
+    from flask import g
+    lang = getattr(g, 'lang', _default_locale)
+    text = get_text(key, lang)
+    if kwargs:
+        text = text.format(**kwargs)
+    return text

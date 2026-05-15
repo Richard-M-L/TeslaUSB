@@ -8,6 +8,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 
 from config import GADGET_DIR
 from utils import get_base_context
+from services.i18n_service import flash_t
 from services.mode_service import mode_display
 from services.ap_service import ap_status, ap_force, get_ap_config, update_ap_config
 from services.wifi_service import get_current_wifi_connection, update_wifi_credentials, get_available_networks, get_wifi_status, clear_wifi_status, get_saved_networks, forget_network, reorder_networks, connect_to_network
@@ -400,13 +401,13 @@ def present_usb():
             with open(log_path, "r") as log:
                 log_content = log.read()
                 if "file operation still in progress" in log_content.lower():
-                    flash("Cannot switch modes - file operation in progress. Please wait for uploads/downloads to complete.", "warning")
+                    flash_t("flash.cannot_switch_operation_in_progress")
                     return redirect(url_for("mode_control.index"))
         except Exception:
             pass  # If we can't read the log, continue with normal error handling
 
         if result.returncode == 0:
-            flash("Successfully switched to Present Mode", "success")
+            flash_t("flash.switched_to_present")
             # Re-attach the watcher to the freshly-mounted RO partition,
             # then resume the worker. The catch-up scan inside resume
             # picks up any clips that landed during the switch.
@@ -415,7 +416,7 @@ def present_usb():
             flash(f"Present mode switch completed with warnings. Check {log_path} for details.", "info")
 
     except subprocess.TimeoutExpired:
-        flash("Error: Script timed out after 120 seconds", "error")
+        flash_t("flash.mode_switch_failed")
     except Exception as e:
         flash(f"Error: {str(e)}", "error")
     finally:
@@ -459,7 +460,7 @@ def edit_usb():
             pass  # If we can't read the log, continue with normal error handling
 
         if result.returncode == 0:
-            flash("Successfully switched to Edit Mode", "success")
+            flash_t("flash.switched_to_edit")
             _restart_watcher_after_mode_switch()
         else:
             flash(f"Edit mode switch completed with warnings. Check {log_path} for details.", "info")
@@ -503,7 +504,7 @@ def force_ap():
         "off": "force-auto",  # Stop AP and return to auto mode
     }
     if action not in allowed:
-        flash("Invalid AP action", "error")
+        flash_t("flash.invalid_request")
         return redirect(url_for("mode_control.index"))
 
     try:
@@ -525,7 +526,7 @@ def configure_ap():
     passphrase = request.form.get("passphrase", "").strip()
 
     if not ssid:
-        flash("SSID cannot be empty", "error")
+        flash_t("flash.ssid_cannot_be_empty")
         return redirect(url_for("mode_control.index"))
 
     try:
@@ -546,7 +547,7 @@ def configure_wifi():
     password = request.form.get("wifi_password", "").strip()
 
     if not ssid:
-        flash("WiFi SSID cannot be empty", "error")
+        flash_t("flash.ssid_cannot_be_empty")
         return redirect(url_for("mode_control.index"))
 
     try:
@@ -718,7 +719,7 @@ def save_archive_settings():
             'archive.min_free_space_gb': max(1, int(request.form.get('min_free_space_gb', 10))),
         }
         update_config_yaml(updates)
-        flash("Archive settings saved. Restart service to apply.", "success")
+        flash_t("flash.archive_settings_saved")
     except (ValueError, TypeError) as e:
         flash(f"Invalid value: {e}", "danger")
     except Exception as e:
@@ -742,7 +743,7 @@ def save_mapping_settings():
             'mapping.event_detection.speed_limit_mps': speed_mps,
         }
         update_config_yaml(updates)
-        flash("Mapping settings saved. Restart service to apply.", "success")
+        flash_t("flash.mapping_settings_saved")
     except (ValueError, TypeError) as e:
         flash(f"Invalid value: {e}", "danger")
     except Exception as e:
@@ -758,7 +759,7 @@ def save_network_settings():
 
     password = request.form.get('samba_password', '').strip()
     if not password:
-        flash("Samba password cannot be empty.", "danger")
+        flash_t("flash.ssid_cannot_be_empty")
         return redirect(url_for('mode_control.index'))
 
     try:
@@ -770,9 +771,9 @@ def save_network_settings():
             capture_output=True, text=True, timeout=10,
         )
         if result.returncode == 0:
-            flash("Samba password updated.", "success")
+            flash_t("flash.settings_saved")
         else:
-            flash("Password saved to config but Samba update failed. Run setup_usb.sh to apply.", "warning")
+            flash_t("flash.operation_failed")
     except Exception as e:
         flash(f"Failed to save: {e}", "danger")
 

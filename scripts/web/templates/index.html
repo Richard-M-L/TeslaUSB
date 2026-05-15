@@ -30,12 +30,12 @@
             <span class="status-dot status-edit"></span>
             <div class="device-status-info">
                 <strong>{{ _('index.network_sharing_active') }}</strong>
-                <p>Tesla USB disconnected — files accessible via network.</p>
+                <p>{{ _('index.device_disconnected') }}</p>
             </div>
         </div>
         {% if share_paths %}
         <div class="device-status-shares">
-            <strong>Network Shares:</strong>
+            <strong>{{ _('index.network_shares') }}</strong>
             <ul>
                 {% for path in share_paths %}
                 <li><code>{{ path }}</code></li>
@@ -51,7 +51,7 @@
             <span class="status-dot status-unknown"></span>
             <div class="device-status-info">
                 <strong>{{ _('index.status_unknown') }}</strong>
-                <p>Unable to determine current device status.</p>
+                <p>{{ _("index.status_undetermined") }}</p>
             </div>
         </div>
     </div>
@@ -208,11 +208,11 @@
             {% endif %}
 
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <p style="font-size:0.85em;color:var(--text-secondary);margin:0">Networks higher in the list are preferred when multiple are in range.</p>
+                <p style="font-size:0.85em;color:var(--text-secondary);margin:0">{{ _("index.wifi_priority_hint") }}</p>
                 <button class="edit-btn" onclick="scanAndRefreshNetworks()" id="btnWifiScan" style="padding:4px 10px;font-size:0.85em;white-space:nowrap">Scan</button>
             </div>
             <div id="savedNetworksList">
-                <div style="text-align:center;padding:12px;color:var(--text-secondary)">Loading...</div>
+                <div style="text-align:center;padding:12px;color:var(--text-secondary)">{{ _("common.loading") }}</div>
             </div>
             <div style="margin-top:12px">
                 <button class="edit-btn" onclick="toggleAddNetwork()" id="btnAddNetwork" style="padding:4px 10px;font-size:0.85em">+ Add Network</button>
@@ -299,8 +299,8 @@
             <a href="{{ url_for('cleanup.settings') }}" class="action-card" style="display:flex; align-items:center; gap:12px; padding:14px; text-decoration:none; color:inherit; border:1px solid var(--border-color); border-radius:8px; min-height:44px;">
                 <svg class="inline-icon" width="24" height="24" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-sparkles"></use></svg>
                 <div style="flex:1">
-                    <strong>Configure Auto-Cleanup</strong>
-                    <p style="margin:4px 0 0; font-size:0.85rem; color:var(--text-secondary)">Automatic deletion of old videos to free up space</p>
+                    <strong>{{ _("index.configure_auto_cleanup") }}</strong>
+                    <p style="margin:4px 0 0; font-size:0.85rem; color:var(--text-secondary)">{{ _("index.auto_cleanup_desc") }}</p>
                 </div>
                 <svg class="inline-icon" width="20" height="20" aria-hidden="true" style="color:var(--text-secondary)"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-chevron-right"></use></svg>
             </a>
@@ -397,14 +397,14 @@
 
                 <div style="display:flex; gap:10px; flex-wrap:wrap">
                     <button type="button" id="sr-save-btn" class="btn btn-primary"
-                            style="flex:1; min-width:160px">Save retention settings</button>
+                            style="flex:1; min-width:160px">{{ _("index.save_retention_btn") }}</button>
                     <button type="button" id="sr-run-now-btn" class="btn btn-secondary"
-                            style="flex:1; min-width:160px">Run cleanup now</button>
+                            style="flex:1; min-width:160px">{{ _("index.run_cleanup_btn") }}</button>
                 </div>
 
                 <div style="margin-top:14px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary)">
                     <div style="font-size:0.9rem; font-weight:600; margin-bottom:4px">
-                        Reclaim space from stationary RecentClips
+                        {{ _("index.reclaim_stationary_title") }}
                     </div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 10px">
                         Deletes archived RecentClips with no GPS movement (parked Sentry-mode footage,
@@ -413,12 +413,12 @@
                         on a typical install, RecentClips dominates the SD card.
                     </p>
                     <button type="button" id="sr-reclaim-stationary-btn" class="btn btn-secondary"
-                            style="width:100%; min-width:160px">Reclaim stationary RecentClips</button>
+                            style="width:100%; min-width:160px">{{ _("index.reclaim_stationary_btn") }}</button>
                 </div>
 
                 <div style="margin-top:14px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary)">
                     <div style="font-size:0.9rem; font-weight:600; margin-bottom:4px">
-                        Stationary RecentClips skipped (last 24h)
+                        {{ _("index.stationary_skipped_title") }}
                     </div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 10px">
                         The archive worker peeks at each new RecentClips file and skips
@@ -427,9 +427,9 @@
                         card. Sentry/Saved event clips are <strong>never</strong> skipped.
                     </p>
                     <div id="sr-skip-stationary-status" style="font-size:0.85rem; color:var(--text-secondary)">
-                        Skipped in last 24 hours: <strong><span id="sr-skip-stationary-count">—</span></strong>
+                        {{ _("index.skipped_last_24h") }}: <strong><span id="sr-skip-stationary-count">—</span></strong>
                         <button type="button" id="sr-skip-stationary-clear-btn" class="btn btn-link"
-                                style="padding:0 6px; font-size:0.8rem; vertical-align:baseline" hidden>Clear tally</button>
+                                style="padding:0 6px; font-size:0.8rem; vertical-align:baseline" hidden>{{ _("index.clear_tally") }}</button>
                     </div>
                     <div id="sr-skip-stationary-msg" style="font-size:0.8rem; margin-top:6px" hidden></div>
                 </div>
@@ -452,15 +452,12 @@
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_archive_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 16px">
-                    Tesla records dashcam footage to the USB drive in a circular buffer called RecentClips.
-                    After about an hour, older clips are automatically overwritten by new ones.
-                    The archive service copies these clips to the Pi's SD card before they're lost,
-                    so you can browse and cloud-sync them later.
+                    {{ _("index.archive_settings_desc") }}
                 </p>
                 <div class="form-group" style="margin-bottom:14px">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
                         <input type="checkbox" name="enabled" {% if cfg_archive.enabled %}checked{% endif %}>
-                        <strong>Enable RecentClips archival</strong>
+                        <strong>{{ _("index.enable_archival_label") }}</strong>
                     </label>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0 26px">
                         When enabled, clips are automatically copied from the USB drive to the SD card every 2 minutes.
@@ -469,21 +466,21 @@
                 </div>
                 <div class="settings-form-grid">
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Retention (days)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.retention_days_label") }}</strong></label>
                         <input type="number" name="retention_days" value="{{ cfg_archive.retention_days }}" min="1" max="365" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
                             Archived clips older than this are automatically deleted to free up SD card space.
                         </p>
                     </div>
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Min free space (GB)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.min_free_space_label") }}</strong></label>
                         <input type="number" name="min_free_space_gb" value="{{ cfg_archive.min_free_space_gb }}" min="1" max="100" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
                             Archival stops when SD card free space drops below this. Protects the OS and other services from running out of disk.
                         </p>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Save Archive Settings</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">{{ _("index.save_archive_settings") }}</button>
             </form>
         </div>
     </details>
@@ -494,32 +491,31 @@
         <summary>{{ _('index.archive_status') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
-                Live view of the RecentClips archive subsystem. Updates every 30 seconds.
-                If the worker stalls or dies, a banner appears at the top of every page.
+                {{ _("index.archive_status_desc") }}
             </p>
             <div class="archive-status-grid" id="archive-status-chips">
                 <div class="archive-status-chip">
-                    <span class="chip-label">Worker</span>
+                    <span class="chip-label">{{ _("index.chip_worker") }}</span>
                     <span class="chip-value" id="chip-worker">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Pending P1</span>
+                    <span class="chip-label">{{ _("index.chip_pending_p1") }}</span>
                     <span class="chip-value" id="chip-p1">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Pending P2</span>
+                    <span class="chip-label">{{ _("index.chip_pending_p2") }}</span>
                     <span class="chip-value" id="chip-p2">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Pending P3</span>
+                    <span class="chip-label">{{ _("index.chip_pending_p3") }}</span>
                     <span class="chip-value" id="chip-p3">—</span>
                 </div>
                 <div class="archive-status-chip" id="chip-dl-wrap">
-                    <span class="chip-label">Dead-letter</span>
+                    <span class="chip-label">{{ _("index.chip_dead_letter") }}</span>
                     <span class="chip-value" id="chip-dl">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Last copy</span>
+                    <span class="chip-label">{{ _("index.chip_last_copy") }}</span>
                     <span class="chip-value" id="chip-lastcopy" style="font-size:0.95rem">—</span>
                 </div>
                 <!-- Phase 4.4 (#101): drain-rate ETA chip. Hidden by
@@ -527,18 +523,18 @@
                      fresh samples to estimate a rate AND the queue
                      has work pending. -->
                 <div class="archive-status-chip" id="chip-eta-wrap" hidden>
-                    <span class="chip-label">Backlog ETA</span>
+                    <span class="chip-label">{{ _("index.chip_backlog_eta") }}</span>
                     <span class="chip-value" id="chip-eta" style="font-size:0.95rem">—</span>
                 </div>
             </div>
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 8px"
                id="archive-active-file-row" hidden>
-                <strong>Currently copying:</strong>
+                <strong>{{ _("index.currently_copying") }}:</strong>
                 <span id="archive-active-file" style="font-family:monospace"></span>
             </p>
             <p style="font-size:0.85rem; color:var(--msg-error-text); margin:0 0 8px"
                id="archive-last-error-row" hidden>
-                <strong>Last error:</strong>
+                <strong>{{ _("index.last_error") }}:</strong>
                 <span id="archive-last-error"></span>
             </p>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
@@ -558,16 +554,16 @@
                         id="archive-view-dl-btn"
                         style="min-height:44px">
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
-                    Archive dead letters
+                    {{ _("index.archive_dead_letters_btn") }}
                 </button>
             </div>
             <div id="archive-dl-modal" hidden
                  style="margin-top:12px; padding:12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-                    <strong>Dead-letter queue</strong>
+                    <strong>{{ _("index.dead_letter_queue_title") }}</strong>
                     <button type="button" class="btn btn-ghost"
                             id="archive-dl-close-btn"
-                            aria-label="Close dead-letter list">×</button>
+                            aria-label="{{ _('index.close_dl_list') }}">×</button>
                 </div>
                 <div id="archive-dl-content" style="font-size:0.85rem; max-height:300px; overflow:auto">
                     Loading…
@@ -581,8 +577,7 @@
         <summary>{{ _('index.storage') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
-                SD card disk usage for ArchivedClips. Files older than the retention window
-                are automatically deleted once a day.
+                {{ _("index.storage_desc") }}
             </p>
             <div class="storage-progress" style="margin-bottom:14px">
                 <div class="storage-progress-bar"
@@ -600,16 +595,16 @@
             </div>
             <div class="archive-status-grid" style="margin-bottom:12px">
                 <div class="archive-status-chip">
-                    <span class="chip-label">Retention</span>
+                    <span class="chip-label">{{ _("index.chip_retention") }}</span>
                     <span class="chip-value" id="chip-retention">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Last prune</span>
+                    <span class="chip-label">{{ _("index.chip_last_prune") }}</span>
                     <span class="chip-value" id="chip-lastprune"
                           style="font-size:0.95rem">—</span>
                 </div>
                 <div class="archive-status-chip">
-                    <span class="chip-label">Last freed</span>
+                    <span class="chip-label">{{ _("index.chip_last_freed") }}</span>
                     <span class="chip-value" id="chip-lastfreed"
                           style="font-size:0.95rem">—</span>
                 </div>
@@ -635,7 +630,7 @@
                     id="storage-prune-now-btn"
                     style="min-height:44px">
                 <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-trash-2"></use></svg>
-                Prune now
+                {{ _("index.prune_now_btn") }}
             </button>
         </div>
     </details>
@@ -647,15 +642,12 @@
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_mapping_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 16px">
-                    Tesla embeds GPS coordinates and telemetry data (speed, braking, steering) inside each dashcam video.
-                    The indexer extracts this data and builds a database of trips, routes, and driving events.
-                    This powers the map view — showing where you drove, plotting routes, and detecting events
-                    like hard braking or sharp turns.
+                    {{ _("index.mapping_desc") }}
                 </p>
                 <div class="form-group" style="margin-bottom:14px">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
                         <input type="checkbox" name="enabled" {% if cfg_mapping.enabled %}checked{% endif %}>
-                        <strong>Enable GPS indexing</strong>
+                        <strong>{{ _("index.enable_gps_label") }}</strong>
                     </label>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0 26px">
                         Scans dashcam videos to extract GPS waypoints and build trip routes.
@@ -664,7 +656,7 @@
                 </div>
                 <div class="settings-form-grid">
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Trip gap (minutes)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.trip_gap_label") }}</strong></label>
                         <input type="number" name="trip_gap_minutes" value="{{ cfg_mapping.trip_gap_minutes }}" min="1" max="60" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
                             If there's a gap longer than this between GPS waypoints, a new trip is started.
@@ -673,7 +665,7 @@
                         </p>
                     </div>
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Speed alert (km/h)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.speed_alert_label_km") }}</strong></label>
                         <input type="number" name="speed_limit_kph" value="{{ cfg_mapping.speed_limit_kph|int }}" min="0" max="300" step="5" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
                             Marks a driving event on the map when your speed exceeds this threshold.
@@ -681,7 +673,7 @@
                         </p>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Save Mapping Settings</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">{{ _("index.save_mapping_settings") }}</button>
             </form>
         </div>
     </details>
@@ -692,17 +684,17 @@
         <div class="section-content">
             <form method="post" action="{{ url_for('mode_control.save_network_settings') }}">
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
-                    Samba (SMB) password used when connecting to shared drives from your computer.
+                    {{ _("index.samba_password_desc") }}
                 </p>
                 <div class="form-group" style="margin-bottom:12px">
-                    <label style="font-size:0.85rem">Samba Password</label>
+                    <label style="font-size:0.85rem">{{ _("index.samba_password_label") }}</label>
                     <div style="display:flex; gap:8px">
                         <input type="password" name="samba_password" id="samba_password" value="{{ cfg_network.samba_password }}" class="settings-form-input" style="flex:1">
-                        <button type="button" onclick="toggleSambaPassword(this)" class="btn btn-secondary" style="padding:10px 14px; font-size:0.85rem; min-height:44px">Show</button>
+                        <button type="button" onclick="toggleSambaPassword(this)" class="btn btn-secondary" style="padding:10px 14px; font-size:0.85rem; min-height:44px">{{ _("index.show") }}</button>
                     </div>
-                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">Username: <code>pi</code></p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">{{ _("index.username_pi") | safe }}</p>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Save Network Settings</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">{{ _("index.save_network_settings") }}</button>
             </form>
         </div>
     </details>
@@ -712,43 +704,42 @@
         <summary>{{ _('index.filesystem_health_check') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
-                Run filesystem checks to detect and repair corruption.<br>
-                <strong>Quick Check:</strong> Any mode (read-only) | <strong>Repair:</strong> Requires Network Sharing mode
+                {{ _("index.fsck_desc") | safe }}
             </p>
 
             <div class="fsck-status-container" id="fsck-status-container"></div>
 
             <div class="fsck-partitions">
                 <div class="fsck-partition-card">
-                    <h4>📹 TeslaCam Drive</h4>
+                    <h4>📹 {{ _("index.fsck_teslacam") }}</h4>
                     <div id="part1-last-check" class="last-check-info">Loading...</div>
                     <div class="fsck-actions">
-                        <button onclick="startFsck(1, 'quick')" class="btn btn-secondary" id="btn-fsck-part1-quick">Quick Check</button>
-                        <button onclick="startFsck(1, 'repair')" class="btn btn-warning" id="btn-fsck-part1-repair">Check & Repair</button>
+                        <button onclick="startFsck(1, 'quick')" class="btn btn-secondary" id="btn-fsck-part1-quick">{{ _("index.fsck_quick") }}</button>
+                        <button onclick="startFsck(1, 'repair')" class="btn btn-warning" id="btn-fsck-part1-repair">{{ _("index.fsck_repair") }}</button>
                     </div>
                 </div>
                 <div class="fsck-partition-card">
-                    <h4>💡 LightShow Drive</h4>
+                    <h4>💡 {{ _("index.fsck_lightshow") }}</h4>
                     <div id="part2-last-check" class="last-check-info">Loading...</div>
                     <div class="fsck-actions">
-                        <button onclick="startFsck(2, 'quick')" class="btn btn-secondary" id="btn-fsck-part2-quick">Quick Check</button>
-                        <button onclick="startFsck(2, 'repair')" class="btn btn-warning" id="btn-fsck-part2-repair">Check & Repair</button>
+                        <button onclick="startFsck(2, 'quick')" class="btn btn-secondary" id="btn-fsck-part2-quick">{{ _("index.fsck_quick") }}</button>
+                        <button onclick="startFsck(2, 'repair')" class="btn btn-warning" id="btn-fsck-part2-repair">{{ _("index.fsck_repair") }}</button>
                     </div>
                 </div>
                 {% if music_available %}
                 <div class="fsck-partition-card">
-                    <h4>🎵 Music Drive</h4>
+                    <h4>🎵 {{ _("index.fsck_music") }}</h4>
                     <div id="part3-last-check" class="last-check-info">Loading...</div>
                     <div class="fsck-actions">
-                        <button onclick="startFsck(3, 'quick')" class="btn btn-secondary" id="btn-fsck-part3-quick">Quick Check</button>
-                        <button onclick="startFsck(3, 'repair')" class="btn btn-warning" id="btn-fsck-part3-repair">Check & Repair</button>
+                        <button onclick="startFsck(3, 'quick')" class="btn btn-secondary" id="btn-fsck-part3-quick">{{ _("index.fsck_quick") }}</button>
+                        <button onclick="startFsck(3, 'repair')" class="btn btn-warning" id="btn-fsck-part3-repair">{{ _("index.fsck_repair") }}</button>
                     </div>
                 </div>
                 {% endif %}
             </div>
 
             <div id="fsck-history-container" class="fsck-history-container" style="margin-top:12px">
-                <h4>Recent Checks</h4>
+                <h4>{{ _("index.fsck_recent_checks") }}</h4>
                 <div class="fsck-history-scroll">
                     <div id="fsck-history-list">Loading...</div>
                 </div>
@@ -762,28 +753,28 @@
         <div class="section-content">
             {% if system_info %}
             <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:0.9rem;">
-                <span style="color:var(--text-secondary)">Hostname</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.hostname") }}</span>
                 <strong>{{ system_info.hostname }}</strong>
 
-                <span style="color:var(--text-secondary)">IP Address</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.ip_address") }}</span>
                 <span>{{ system_info.ip_addresses | join(', ') if system_info.ip_addresses else 'N/A' }}</span>
 
-                <span style="color:var(--text-secondary)">Uptime</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.uptime") }}</span>
                 <span>{{ system_info.uptime }}</span>
 
-                <span style="color:var(--text-secondary)">Platform</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.platform") }}</span>
                 <span>{{ system_info.platform }} · Python {{ system_info.python }}</span>
 
-                <span style="color:var(--text-secondary)">Memory</span>
-                <span>{{ system_info.mem_avail_mb }} MB free / {{ system_info.mem_total_mb }} MB total</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.memory") }}</span>
+                <span>{{ _("index.memory_format", avail=system_info.mem_avail_mb, total=system_info.mem_total_mb) }}</span>
 
-                <span style="color:var(--text-secondary)">Version</span>
+                <span style="color:var(--text-secondary)">{{ _("index.system_labels.version") }}</span>
                 <code style="font-size:0.8rem">{{ system_info.version }}</code>
             </div>
 
             {% if system_info.disk_images %}
             <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);">
-                <strong style="font-size:0.9rem">USB Drive Images</strong>
+                <strong style="font-size:0.9rem">{{ _("index.usb_drive_images_label") }}</strong>
                 <div style="display:flex; gap:12px; margin-top:8px; flex-wrap:wrap;">
                     {% for img in system_info.disk_images %}
                     <div style="padding:8px 14px; background:var(--bg-secondary, #f5f5f5); border-radius:8px; font-size:0.85rem;">
@@ -795,7 +786,7 @@
             </div>
             {% endif %}
             {% else %}
-            <p style="color: var(--text-secondary); margin: 0;">System information unavailable.</p>
+            <p style="color: var(--text-secondary); margin: 0;">{{ _("index.system_info_unavailable") }}</p>
             {% endif %}
         </div>
     </details>
@@ -806,7 +797,7 @@
     <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color); text-align:right;">
         <a href="{{ url_for('settings_advanced.index') }}"
            style="color:var(--text-secondary); font-size:0.85rem; text-decoration:none;">
-            Advanced settings &rarr;
+            {{ _("index.advanced_settings_link") | safe }}
         </a>
     </div>
 </div>
@@ -816,10 +807,10 @@ function togglePassword(btn) {
     const passField = document.getElementById('ap_passphrase');
     if (passField.type === 'password') {
         passField.type = 'text';
-        btn.textContent = 'Hide';
+        btn.textContent = _t('index.hide');
     } else {
         passField.type = 'password';
-        btn.textContent = 'Show';
+        btn.textContent = _t('index.show');
     }
 }
 
@@ -827,10 +818,10 @@ function toggleSambaPassword(btn) {
     const passField = document.getElementById('samba_password');
     if (passField.type === 'password') {
         passField.type = 'text';
-        btn.textContent = 'Hide';
+        btn.textContent = _t('index.hide');
     } else {
         passField.type = 'password';
-        btn.textContent = 'Show';
+        btn.textContent = _t('index.show');
     }
 }
 
@@ -838,10 +829,10 @@ function toggleWifiPassword(btn) {
     const passField = document.getElementById('newWifiPassword');
     if (passField.type === 'password') {
         passField.type = 'text';
-        btn.textContent = 'Hide';
+        btn.textContent = _t('index.hide');
     } else {
         passField.type = 'password';
-        btn.textContent = 'Show';
+        btn.textContent = _t('index.show');
     }
 }
 
@@ -943,7 +934,7 @@ function connectToNetwork(name) {
     document.querySelectorAll('.wifi-connect-btn').forEach(b => {
         b.disabled = true;
         if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf(name) !== -1) {
-            b.textContent = 'Connecting…';
+            b.textContent = _t('index.connecting_button');
         }
     });
 
@@ -982,7 +973,7 @@ function addWifiNetwork() {
     const password = document.getElementById('newWifiPassword').value;
     if (!ssid) { alert('Please enter an SSID'); return; }
     const btn = document.getElementById('addWifiBtn');
-    btn.disabled = true; btn.textContent = 'Connecting...';
+    btn.disabled = true; btn.textContent = _t('index.connecting');
 
     const formData = new FormData();
     formData.append('wifi_ssid', ssid);
@@ -1009,11 +1000,11 @@ function addWifiNetwork() {
 
 function scanAndRefreshNetworks() {
     const btn = document.getElementById('btnWifiScan');
-    btn.disabled = true; btn.textContent = 'Scanning...';
+    btn.disabled = true; btn.textContent = _t('index.scanning');
     fetch('{{ url_for("mode_control.api_wifi_scan") }}')
     .then(r => r.json())
     .then(networks => {
-        btn.disabled = false; btn.textContent = 'Scan';
+        btn.disabled = false; btn.textContent = _t('index.scan');
         // Update datalist for add-network panel
         const dl = document.getElementById('wifiScanResults');
         if (dl && networks.length) {
@@ -1022,7 +1013,7 @@ function scanAndRefreshNetworks() {
         // Refresh the saved networks list (now with updated signal info)
         loadSavedNetworks();
     })
-    .catch(() => { btn.disabled = false; btn.textContent = 'Scan'; });
+    .catch(() => { btn.disabled = false; btn.textContent = _t('index.scan'); });
 }
 
 function confirmWifiUpdate() {
@@ -1185,7 +1176,7 @@ function executeFsck(partition, mode) {
 
 function startFsckWithModeSwitch(partition, mode) {
     const originalMode = currentMode;
-    const name = partition === 1 ? 'TeslaCam' : partition === 2 ? 'LightShow' : 'Music';
+    const name = partition === 1 ? _t('index.fsck_teslacam') : partition === 2 ? _t('index.fsck_lightshow') : _t('index.fsck_music');
     disableFsckButtons(true);
     showFsckStatus('Enabling Network Sharing...', 'info');
     fetch('/settings/edit_usb', { method: 'POST' })
@@ -1222,7 +1213,7 @@ function restoreMode(targetMode) {
 }
 
 function startFsckStatusPolling() { if (fsckCheckInterval) clearInterval(fsckCheckInterval); updateFsckStatus(); fsckCheckInterval = setInterval(updateFsckStatus, 2000); }
-function getFriendlyPartitionName(p) { return p === 'part1' ? 'TeslaCam' : p === 'part2' ? 'LightShow' : p === 'part3' ? 'Music' : p; }
+function getFriendlyPartitionName(p) { return p === 'part1' ? _t('index.fsck_teslacam') : p === 'part2' ? _t('index.fsck_lightshow') : p === 'part3' ? _t('index.fsck_music') : p; }
 
 function updateFsckStatus() {
     fetch('/fsck/api/status').then(r => r.json()).then(s => {
@@ -1348,9 +1339,9 @@ if (document.getElementById('fsck-status-container')) {
         // Worker chip
         const workerEl = document.getElementById('chip-worker');
         if (workerEl) {
-            let label = 'Stopped';
-            if (data.paused) label = 'Paused';
-            else if (data.worker_running) label = 'Running';
+            let label = _t('index.worker_stopped');
+            if (data.paused) label = _t('index.worker_paused');
+            else if (data.worker_running) label = _t('index.worker_running');
             workerEl.textContent = label;
             workerEl.parentElement.classList.toggle(
                 'has-issue', !data.worker_running);
@@ -2011,11 +2002,11 @@ if (document.getElementById('fsck-status-container')) {
     var pollHandle = null;
 
     var SUBSYSTEMS = [
-        { key: 'indexer',         label: 'Video Indexer' },
-        { key: 'archive',         label: 'Local Archive' },
-        { key: 'cloud',           label: 'Cloud Sync' },
-        { key: 'disk',            label: 'SD Card' },
-        { key: 'wifi',            label: 'WiFi' },
+        { key: 'indexer', label: _t('index.system_health_subsystems.indexer') },
+        { key: 'archive', label: _t('index.system_health_subsystems.archive') },
+        { key: 'cloud', label: _t('index.system_health_subsystems.cloud') },
+        { key: 'disk', label: _t('index.system_health_subsystems.disk') },
+        { key: 'wifi', label: _t('index.system_health_subsystems.wifi') },
     ];
 
     var SEV_COLORS = {
