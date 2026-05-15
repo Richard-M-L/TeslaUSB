@@ -13,6 +13,7 @@ from config import (GADGET_DIR, LOCK_CHIME_FILENAME, CHIMES_FOLDER, MAX_LOCK_CHI
 from utils import format_file_size, get_base_context
 from services.mode_service import current_mode
 from services.partition_service import get_mount_path
+from services.i18n_service import flash_t
 from services.partition_mount_service import check_operation_in_progress
 from services.samba_service import close_samba_share, restart_samba_services
 from services.lock_chime_service import (
@@ -36,7 +37,7 @@ def _require_lightshow_image():
     if not os.path.isfile(IMG_LIGHTSHOW_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable"}), 503
-        flash("This feature is not available because the required disk image has not been created.")
+        flash_t("flash.feature_unavailable")
         return redirect(url_for('mode_control.index'))
 
 # Volume preset mapping (LUFS values to friendly names)
@@ -200,12 +201,12 @@ def play_active_chime():
     """Stream the active LockChime.wav file from part2 root."""
     part2_mount = get_mount_path("part2")
     if not part2_mount:
-        flash("Drive not mounted", "error")
+        flash_t("flash.partition_not_mounted")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     file_path = os.path.join(part2_mount, LOCK_CHIME_FILENAME)
     if not os.path.isfile(file_path):
-        flash("Active lock chime not found", "error")
+        flash_t("flash.file_not_found")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     return send_file(file_path, mimetype="audio/wav")
@@ -226,7 +227,7 @@ def play_lock_chime(filename):
     file_path = os.path.join(chimes_dir, filename)
 
     if not os.path.isfile(file_path) or not filename.lower().endswith(".wav"):
-        flash("File not found", "error")
+        flash_t("flash.file_not_found")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     return send_file(file_path, mimetype="audio/wav")
@@ -261,7 +262,7 @@ def upload_lock_chime():
     if "chime_file" not in request.files:
         if is_ajax:
             return jsonify({"success": False, "error": "No file selected"}), 400
-        flash("No file selected", "error")
+        flash_t("flash.no_file_uploaded")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     file = request.files["chime_file"]
@@ -279,7 +280,7 @@ def upload_lock_chime():
     if file_ext not in [".wav", ".mp3"]:
         if is_ajax:
             return jsonify({"success": False, "error": "Only WAV and MP3 files are allowed"}), 400
-        flash("Only WAV and MP3 files are allowed", "error")
+        flash_t("flash.invalid_file_format")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     # Final filename will always be .wav
@@ -294,7 +295,7 @@ def upload_lock_chime():
     if normalize and target_lufs not in VOLUME_PRESETS:
         if is_ajax:
             return jsonify({"success": False, "error": "Invalid volume preset"}), 400
-        flash("Invalid volume preset", "error")
+        flash_t("flash.invalid_request")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     # Get part2 mount path (may be None in present mode, which is fine)
@@ -343,7 +344,7 @@ def upload_bulk_chimes():
     if not files or len(files) == 0:
         if is_ajax:
             return jsonify({"success": False, "error": "No files selected"}), 400
-        flash("No files selected", "error")
+        flash_t("flash.no_files_selected")
         return redirect(url_for("lock_chimes.lock_chimes"))
 
     # Get part2 mount path (may be None in present mode, which is fine)
@@ -445,12 +446,12 @@ def upload_bulk_chimes():
     # Non-AJAX fallback
     success_count = sum(1 for r in results if r['success'])
     if success_count > 0:
-        flash(f"Successfully uploaded {total_uploaded} chime(s)", "success")
+        flash_t("flash.uploaded_n_files", n=total_uploaded)
         if success_count < len(results):
             failed = [r['filename'] for r in results if not r['success']]
             flash(f"Failed: {', '.join(failed[:3])}" + (" and more" if len(failed) > 3 else ""), "warning")
     else:
-        flash("All files were rejected. Check file requirements.", "error")
+        flash_t("flash.all_files_rejected")
 
     return redirect(url_for("lock_chimes.lock_chimes"))
 
@@ -554,11 +555,11 @@ def add_schedule():
 
         # Validate inputs
         if not schedule_name:
-            flash("Schedule name is required", "error")
+            flash_t("flash.schedule_name_required")
             return redirect(url_for("lock_chimes.lock_chimes"))
 
         if not chime_filename:
-            flash("Please select a chime", "error")
+            flash_t("flash.no_chime_selected")
             return redirect(url_for("lock_chimes.lock_chimes"))
 
         # Type-specific validation and parameter gathering
@@ -573,7 +574,7 @@ def add_schedule():
         if schedule_type == 'weekly':
             days = request.form.getlist('days')
             if not days:
-                flash("Please select at least one day", "error")
+                flash_t("flash.schedule_select_day")
                 return redirect(url_for("lock_chimes.lock_chimes"))
             params['days'] = days
 
@@ -581,7 +582,7 @@ def add_schedule():
             month = request.form.get('month')
             day = request.form.get('day')
             if not month or not day:
-                flash("Please select a month and day", "error")
+                flash_t("flash.schedule_select_date")
                 return redirect(url_for("lock_chimes.lock_chimes"))
             params['month'] = int(month)
             params['day'] = int(day)
@@ -589,14 +590,14 @@ def add_schedule():
         elif schedule_type == 'holiday':
             holiday = request.form.get('holiday', '').strip()
             if not holiday:
-                flash("Please select a holiday", "error")
+                flash_t("flash.schedule_select_holiday")
                 return redirect(url_for("lock_chimes.lock_chimes"))
             params['holiday'] = holiday
 
         elif schedule_type == 'recurring':
             interval = request.form.get('interval', '').strip()
             if not interval:
-                flash("Please select an interval", "error")
+                flash_t("flash.schedule_select_interval")
                 return redirect(url_for("lock_chimes.lock_chimes"))
             params['interval'] = interval
 
@@ -604,7 +605,7 @@ def add_schedule():
             confirm_disable = request.form.get('confirm_disable_others') == 'true'
 
         else:
-            flash(f"Invalid schedule type: {schedule_type}", "error")
+            flash_t("flash.invalid_schedule_type", type=schedule_type)
             return redirect(url_for("lock_chimes.lock_chimes"))
 
         # Add schedule
@@ -666,7 +667,7 @@ def toggle_schedule(schedule_id):
         schedule = scheduler.get_schedule(schedule_id)
 
         if not schedule:
-            flash("Schedule not found", "error")
+            flash_t("flash.schedule_not_found")
             return redirect(url_for("lock_chimes.lock_chimes"))
 
         # Toggle enabled state
@@ -683,7 +684,7 @@ def toggle_schedule(schedule_id):
                     other_schedules = [s for s in scheduler.get_enabled_schedules() if s.get('schedule_type') != 'recurring']
                     flash(f"Cannot enable recurring schedule: {len(other_schedules)} other schedule(s) are currently active. Disable them first, or create a new recurring schedule which will disable them automatically.", "error")
                 else:
-                    flash("Cannot enable this schedule due to conflicts with other active schedules", "error")
+                    flash_t("flash.schedule_conflict")
             else:
                 flash(f"Failed to update schedule: {message}", "error")
 

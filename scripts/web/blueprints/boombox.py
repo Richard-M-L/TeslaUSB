@@ -21,6 +21,7 @@ from flask import (
 
 from config import IMG_MUSIC_PATH, MUSIC_ENABLED
 from utils import format_file_size, get_base_context
+from services.i18n_service import flash_t
 from services.boombox_service import (
     BOOMBOX_FOLDER,
     BoomboxServiceError,
@@ -45,8 +46,7 @@ def _require_music_image():
     if not MUSIC_ENABLED or not os.path.isfile(IMG_MUSIC_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable"}), 503
-        flash("This feature is not available because the required disk "
-              "image has not been created.")
+        flash_t("flash.feature_unavailable")
         return redirect(url_for('mode_control.index'))
 
 
@@ -87,7 +87,7 @@ def upload():
         if is_ajax:
             return jsonify({
                 "success": False, "error": "No files selected"}), 400
-        flash("No files selected", "error")
+        flash_t("flash.no_files_selected")
         return redirect(url_for('boombox.boombox_home'))
 
     # Always re-check the count per file in the loop — the count check

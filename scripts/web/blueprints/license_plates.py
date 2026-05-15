@@ -179,7 +179,7 @@ def upload_multiple_plates():
     if not files:
         if is_ajax:
             return jsonify({"success": False, "error": "No files selected"}), 400
-        flash("No files selected", "error")
+        flash_t("flash.no_files_selected")
         return redirect(url_for("license_plates.license_plates"))
 
     # Edit mode needs the explicit RW path; present mode infers it via
@@ -263,7 +263,7 @@ def upload_plate():
     mode = current_mode()
 
     if "plate_file" not in request.files:
-        flash("No file selected", "error")
+        flash_t("flash.no_file_uploaded")
         return redirect(url_for("license_plates.license_plates"))
 
     file = request.files["plate_file"]

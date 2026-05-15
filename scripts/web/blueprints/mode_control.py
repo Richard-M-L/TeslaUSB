@@ -418,7 +418,7 @@ def present_usb():
     except subprocess.TimeoutExpired:
         flash_t("flash.mode_switch_failed")
     except Exception as e:
-        flash(f"Error: {str(e)}", "error")
+        flash_t("flash.operation_failed")
     finally:
         _resume_worker_after_mode_switch()
 
@@ -514,7 +514,7 @@ def force_ap():
         elif action == "off":
             flash("AP stopped and auto mode restored - AP will only start if WiFi becomes unavailable", "info")
     except Exception as exc:  # noqa: BLE001
-        flash(f"Failed to update AP state: {exc}", "error")
+        flash_t("flash.operation_failed")
 
     return redirect(url_for("mode_control.index"))
 
@@ -533,9 +533,9 @@ def configure_ap():
         update_ap_config(ssid, passphrase)
         flash(f"AP credentials updated. New SSID: {ssid}. Please reconnect if currently connected to the AP.", "success")
     except ValueError as exc:
-        flash(f"Validation error: {exc}", "error")
+        flash_t("flash.invalid_request")
     except Exception as exc:  # noqa: BLE001
-        flash(f"Failed to update AP credentials: {exc}", "error")
+        flash_t("flash.operation_failed")
 
     return redirect(url_for("mode_control.index"))
 
@@ -561,7 +561,7 @@ def configure_wifi():
     except ValueError as exc:
         flash(f"Validation error: {exc}", "error")
     except Exception as exc:  # noqa: BLE001
-        flash(f"Error updating WiFi: {exc}", "error")
+        flash_t("flash.operation_failed")
 
     return redirect(url_for("mode_control.index"))
 
@@ -721,9 +721,9 @@ def save_archive_settings():
         update_config_yaml(updates)
         flash_t("flash.archive_settings_saved")
     except (ValueError, TypeError) as e:
-        flash(f"Invalid value: {e}", "danger")
+        flash_t("flash.invalid_request")
     except Exception as e:
-        flash(f"Failed to save: {e}", "danger")
+        flash_t("flash.operation_failed")
 
     return redirect(url_for('mode_control.index'))
 

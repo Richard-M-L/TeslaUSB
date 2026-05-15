@@ -23,7 +23,7 @@ def _require_lightshow_image():
     if not os.path.isfile(IMG_LIGHTSHOW_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable"}), 503
-        flash("This feature is not available because the required disk image has not been created.")
+        flash_t("flash.feature_unavailable")
         return redirect(url_for('mode_control.index'))
 
 
@@ -184,7 +184,7 @@ def upload_multiple_light_shows():
     if not files or len(files) == 0:
         if is_ajax:
             return jsonify({"success": False, "error": "No files selected"}), 400
-        flash("No files selected", "error")
+        flash_t("flash.no_files_selected")
         return redirect(url_for("light_shows.light_shows"))
 
     # Get part2 mount path (only needed in edit mode, None is fine for present mode)
@@ -260,7 +260,7 @@ def upload_light_show():
     mode = current_mode()
 
     if "show_file" not in request.files:
-        flash("No file selected", "error")
+        flash_t("flash.no_file_uploaded")
         return redirect(url_for("light_shows.light_shows"))
 
     file = request.files["show_file"]
