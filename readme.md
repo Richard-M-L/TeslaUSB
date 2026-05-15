@@ -1,494 +1,494 @@
 # TeslaUSB
 
-Transform your Raspberry Pi into a smart USB drive for Tesla dashcam recordings with a map-centric dashboard, GPS trip visualization, telemetry-rich video playback, and automated maintenance.
+将树莓派变身为特斯拉行车记录仪的智能 USB 硬盘，提供以地图为中心的仪表板、GPS 行程可视化、带遥测数据的视频播放以及自动化维护功能。
 
-> **🚨 IMPORTANT - CHANGES FOR EXISTING USERS 🚨**
+> **🚨 现有用户请注意 🚨**
 >
-> Significant changes have been made to the application. All configuration is now centralized in a single `config.yaml` file. Please read the [Configuration](#configuration) section for details on updating your setup.  You may want to restart from a clean Raspberry PI OS image and follow the [Installation](#installation) steps again to ensure everything is set up correctly. If you do not want to do that, ensure that the config.yaml file is created and updated with your desired settings and then run the `setup_usb.sh` script again to apply the new configuration structure.
+> 应用已进行重大改动。所有配置现统一集中在 `config.yaml` 文件中。请参阅[配置](#配置)部分了解如何更新设置。建议从全新的 Raspberry Pi OS 镜像开始，重新按照[安装](#安装)步骤进行设置。如果不重装，请确保已创建并更新 `config.yaml` 文件，然后重新运行 `setup_usb.sh` 以应用新的配置结构。
 >
-> **The web interface now runs on PORT 80 (standard HTTP) instead of port 5000.**
+> **Web 界面现运行在 80 端口（标准 HTTP），不再使用 5000 端口。**
 >
-> - **Old URL**: `http://<pi-ip>:5000` ❌
-> - **New URL**: `http://<pi-ip>` ✅ (no port needed!)
+> - **旧地址**：`http://<pi-ip>:5000` ❌
+> - **新地址**：`http://<pi-ip>` ✅（无需端口号！）
 >
-> This change enables the **captive portal feature** - when you connect to the TeslaUSB WiFi network, your device will automatically open the web interface without typing any URL.
+> 此更改启用了**强制门户功能**——连接 TeslaUSB WiFi 后，设备将自动打开 Web 界面，无需输入任何地址。
 
-## Overview
+## 概述
 
-TeslaUSB creates a multi-drive USB gadget that appears as **two or three separate USB drives** to your Tesla:
+TeslaUSB 创建一个多盘 USB 设备，向特斯拉呈现**两到三个独立 USB 硬盘**：
 
-- **TeslaCam Drive**: Large exFAT drive for dashcam and sentry recordings
-- **LightShow Drive**: Smaller FAT32 drive for lock chimes, custom wrap images, and light shows with read-only optimization
-- **Music Drive** *(optional)*: FAT32 drive for Tesla music playback (enabled via `music_enabled: true` in config)
+- **行车记录仪盘**：大容量 exFAT 硬盘，用于哨兵和行车记录
+- **灯光秀盘**：较小的 FAT32 硬盘，用于锁车音效、自定义涂装和灯光秀，优化为只读模式
+- **音乐盘**（可选）：FAT32 硬盘，用于特斯拉音乐播放（通过配置中 `music_enabled: true` 启用）
 
-**Key Benefits:**
-- **Map-centric dashboard** with GPS trip routes, event markers, and floating trip cards as the landing page
-- **Telemetry HUD** overlay during video playback — speed, gear, steering, pedals, blinkers, Autopilot status
-- Remote access to dashcam footage without physically removing storage
-- Web interface for browsing videos, managing chimes, music, boombox sounds, light shows, wraps, license plates, and monitoring storage (with dark/light mode)
-- Automatic cleanup policies to manage disk space
-- Scheduled chime changes for holidays, events, or automatic rotation
-- Offline access point for in-car web access when WiFi is unavailable
+**核心优势：**
+- **以地图为中心的仪表板**作为首页，展示 GPS 行程路线、事件标记和浮动行程卡片
+- **遥测 HUD** 视频播放叠加层——速度、档位、方向盘、刹车/油门、转向灯、Autopilot 状态
+- 无需物理取出存储即可远程访问哨兵视频
+- Web 界面支持浏览视频、管理锁车音效、音乐、外放音效、灯光秀、车身涂装、车牌以及监控存储空间（含深色/浅色模式）
+- 自动清理策略管理磁盘空间
+- 节假日、事件或自动轮换的定时锁车音效切换
+- 无 WiFi 时车内 Web 访问的离线热点
 
 <p align="center">
-  <img src="docs/screenshots/map-event-popup.png" alt="TeslaUSB Map Dashboard — trip route with event popup" width="800">
+  <img src="docs/screenshots/map-event-popup.png" alt="TeslaUSB 地图仪表板——带事件弹窗的行程路线" width="800">
   <br>
-  <em>Map dashboard showing a trip route with event markers and detail popup</em>
+  <em>地图仪表板展示带事件标记和详情弹窗的行程路线</em>
 </p>
 
-> **⚠️ Personal Project Notice**
+> **⚠️ 个人项目声明**
 >
-> This is a personal project built for my own use. You are welcome to fork the code and make your own changes or updates. Please be aware:
-> - The Git repository may update frequently with new features and changes
-> - Bugs may be introduced into the main branch without extensive testing
-> - Bug fixes will be worked on as time permits, but **no timelines or guarantees** are provided
-> - You have access to the source code - if something breaks, you can attempt to fix it yourself
-> - This project is provided as-is with no warranty or support obligations
+> 这是为我自己使用而构建的个人项目。欢迎 fork 代码并自行修改或更新。请注意：
+> - Git 仓库可能频繁更新，包含新功能和改动
+> - Bug 可能会在没有充分测试的情况下被引入主分支
+> - Bug 修复将根据时间安排进行，但**不提供时间表或保证**
+> - 你可以访问源代码——如果出现故障，可以尝试自行修复
+> - 本项目按原样提供，无任何担保或支持义务
 
-## Features
+## 功能特性
 
-### Core Functionality
-- **Multi-Drive USB Gadget**: Two or three independent filesystems (TeslaCam + LightShow + optional Music) with optimized performance
-- **Two Operating Modes**:
-  - **Present Mode**: Active USB gadget for Tesla recording (shown as "Connected to Tesla" in the UI)
-  - **Edit Mode**: Network access via Samba shares for file management (shown as "Network Sharing Active" in the UI)
-- **Web Interface**: Browser-based control panel accessible at `http://<pi-ip>` (port 80) with five main sections — Map (landing page), Analytics, Media, Cloud, and Settings — plus a sidebar rail on desktop and bottom tabs on mobile
-- **Captive Portal**: Automatic splash screen when connecting to TeslaUSB WiFi network
-- **Design System**: Dark/light mode with CSS design tokens, Inter variable font (bundled offline), Lucide SVG icon sprite, and glassmorphic overlay HUD
+### 核心功能
+- **多盘 USB 设备**：两到三个独立文件系统（行车记录仪 + 灯光秀 + 可选音乐），性能经过优化
+- **两种运行模式**：
+  - **已连接车辆**：激活 USB 设备供特斯拉录制（界面中显示为"已连接至特斯拉"）
+  - **网络共享已开启**：通过 Samba 共享进行网络文件管理（界面中显示为"网络共享已开启"）
+- **Web 界面**：通过 `http://<pi-ip>`（80 端口）访问的浏览器控制面板，包含五个主要板块——地图（首页）、统计、媒体、云同步和设置——桌面端侧边栏导航，移动端底部标签页
+- **强制门户**：连接 TeslaUSB WiFi 网络时自动弹出欢迎页
+- **设计系统**：深色/浅色模式及 CSS 设计令牌、Inter 可变字体（离线捆绑）、Lucide SVG 图标精灵、玻璃拟态叠加 HUD
 
-### Video Management
-- **Map-integrated video browser**: Slide-out panel on the Map page with three tabs — Events (default), Trips, and All Clips — no separate video pages
-- **Unified overlay player**: Map-launched video playback with camera angle switching (Front, Back, Left, Right, L Pillar, R Pillar) using directional Lucide SVG icons, plus two distinct fullscreen modes — **Fullscreen** (OS-level, hides browser chrome) and **Maximize** (fills the browser viewport). Both keep the telemetry HUD visible.
-- **Disambiguation popup**: Tapping the map at a location with multiple overlapping clips (e.g., a road driven multiple times) opens a chooser listing each clip with its trip date/time so the right one can be selected.
-- **Telemetry HUD**: Glassmorphic overlay showing real-time steering wheel angle, brake/gas pedal positions, speed, gear (P/R/N/D), turn signals, and Autopilot status — powered by pre-indexed server-side waypoint data (instant, no full video download needed)
-- **Auto-indexing**: A single low-priority background worker drains a SQLite-backed `indexing_queue` one file at a time. Producers: boot catch-up scan, real-time inotify on new files, the post-WiFi archive run, and manual reindex from the UI. The "Indexing…" banner only appears while a specific file is actively being parsed. Sentry events placed on map using inferred location from nearest trip
-- **RecentClips Archive**: Automatically copies RecentClips to the Pi's SD card every 2 minutes before Tesla's 1-hour circular buffer deletes them — zero USB disruption, videos preserved for 30 days
-- **Skeuomorphic event markers**: Balloon-pin map markers — brake pedal, gas pedal, steering wheel, speedometer, eye (sentry) — always visible on the map
-- **Trip navigation**: Floating trip card with prev/next navigation; FSD overlay toggle
-- Download all camera views for an event as a zip file
-- Delete entire events (Edit mode only)
-- Cascade database cleanup when videos are deleted
+### 视频管理
+- **地图集成视频浏览器**：地图页面侧滑面板，包含三个标签页——事件（默认）、行程和全部视频——无需独立视频页面
+- **统一叠加播放器**：地图触发的视频播放，支持摄像头角度切换（前、后、左、右、左B柱、右B柱），使用 Lucide SVG 方向图标，以及两种全屏模式——**全屏**（操作系统级别，隐藏浏览器边框）和**最大化**（填满浏览器视口），两者均保持遥测 HUD 可见
+- **消歧弹窗**：点击地图上存在多个重叠视频的位置时（如多次行驶的道路），弹出选择器列出每个视频及其行程日期/时间
+- **遥测 HUD**：玻璃拟态叠加层，实时显示方向盘角度、刹车/油门踏板位置、速度、档位（P/R/N/D）、转向灯和 Autopilot 状态——由服务端预索引的路径点数据驱动（即时显示，无需下载完整视频）
+- **自动索引**：单一低优先级后台工作线程从 SQLite 支持的 `indexing_queue` 中逐个处理文件。生产者：启动追赶扫描、新文件实时 inotify、WiFi 后存档运行以及界面手动重建索引。"正在索引…"横幅仅在有特定文件正在解析时显示。哨兵事件通过最近行程推断位置放置在地图上
+- **RecentClips 存档**：每 2 分钟自动将 RecentClips 复制到树莓派 SD 卡，赶在特斯拉 1 小时循环缓冲删除之前——零 USB 中断，视频保留 30 天
+- **拟物事件标记**：气球图钉地图标记——刹车踏板、油门踏板、方向盘、速度表、眼睛（哨兵）——始终在地图上可见
+- **行程导航**：浮动行程卡片，支持上/下一个导航；FSD 叠加层切换
+- 将事件的所有摄像头视角下载为 ZIP 文件
+- 删除整个事件（仅限网络共享模式）
+- 删除视频时级联清理数据库
 
-### Lock Chime Management
-- Upload WAV or MP3 files (automatically converted to Tesla-compatible format)
-- Organized chime library with preview and download
-- Volume normalization presets (Broadcast, Streaming, Loud, Maximum)
-- **Chime Groups**: Organize chimes by theme (Holidays, Funny, Seasonal, etc.)
-- **Random Selection on Boot**: Automatically pick a different chime from your selected group each time the device boots
-- Scheduled chime changes:
-  - Weekly schedules (specific days/times)
-  - Date-based schedules
-  - Holiday schedules (Christmas, Easter, Thanksgiving, etc.)
-  - Recurring rotation (every 15min to 12 hours, or on boot)
+### 锁车音效管理
+- 上传 WAV 或 MP3 文件（自动转换为特斯拉兼容格式）
+- 整理音效库，支持预览和下载
+- 音量标准化预设（广播、流媒体、响亮、最大）
+- **音效分组**：按主题组织音效（节日、搞笑、季节等）
+- **启动时随机选择**：每次设备启动时从所选分组中自动选择不同音效
+- 定时音效切换：
+  - 每周排程（指定日期/时间）
+  - 指定日期排程
+  - 节假日排程（春节、国庆节、中秋节等）
+  - 定期轮换（每 15 分钟到 12 小时，或启动时）
 
-### Light Show Management
-- Upload FSEQ and MP3/WAV files
-- Grouped display (pairs sequence + audio files)
-- Preview MP3/WAV tracks in browser
-- Delete complete light show sets
+### 灯光秀管理
+- 上传 FSEQ 和 MP3/WAV 文件
+- 分组显示（配对序列 + 音频文件）
+- 浏览器内预览 MP3/WAV 音轨
+- 删除完整灯光秀组合
 
-### Custom Wrap Management
-- Upload PNG files for Tesla's Paint Shop 3D vehicle visualization
-- Thumbnail previews of all uploaded wraps
-- Automatic validation (512-1024px dimensions, max 1MB, PNG only)
-- Supports up to 10 custom wraps at a time
-- Drag-and-drop upload with progress indicator
+### 车身涂装管理
+- 上传 PNG 文件用于特斯拉 Paint Shop 3D 车辆可视化
+- 所有已上传涂装的缩略图预览
+- 自动验证（512-1024px 尺寸，最大 1MB，仅 PNG）
+- 同时支持最多 10 个自定义涂装
+- 拖放上传带进度指示
 
-### License Plate Management
-- Upload custom license-plate background images for Tesla's Paint Shop visualization (LightShow drive, `/LicensePlate` folder)
-- **Smart auto-cropping**: Drop in any image format (PNG, JPEG, WEBP, GIF, BMP) — the server crops/resizes to one of Tesla's two allowed dimensions: **420×200** (North America) or **420×100** (Europe)
-- Output is always optimized PNG, capped at **512 KB**
-- Up to **10 plates** at a time, alphanumeric filenames (32 characters max — Tesla's plate parser rejects anything else)
-- Drag-and-drop multi-file upload, previews, individual download/delete
-- Read-only at runtime (Tesla reads from the LightShow LUN); writes use the `quick_edit_part2` mechanism
+### 车牌管理
+- 上传自定义车牌背景图片用于特斯拉 Paint Shop 可视化（灯光秀盘，`/LicensePlate` 文件夹）
+- **智能自动裁剪**：拖入任意图片格式（PNG、JPEG、WEBP、GIF、BMP）——服务端裁剪/缩放至特斯拉允许的两种尺寸之一：**420×200**（北美）或 **420×100**（欧洲）
+- 输出始终为优化 PNG，上限 **512 KB**
+- 最多 **10 个**车牌，字母数字文件名（最多 32 字符——特斯拉车牌解析器不接受其他格式）
+- 拖放多文件上传、预览、单独下载/删除
+- 运行时只读（特斯拉从灯光秀 LUN 读取）；写入使用 `quick_edit_part2` 机制
 
-### Boombox Sound Management
-- Manage sounds Tesla plays through the external pedestrian-warning speaker (Music drive, `/Boombox` folder — requires `music_enabled: true`)
-- **Tesla constraints enforced in the UI**: MP3 or WAV only, **1 MiB** maximum (≤ 5 seconds recommended), **64-character** filename limit (letters, numbers, spaces, underscores, dashes, dots), **5 sounds** max — Tesla loads the first 5 alphabetically
-- In-browser preview, drag-and-drop upload, individual delete
-- Prominent **NHTSA safety notice**: Boombox sounds only play while the vehicle is in Park (Feb 2022 NHTSA ruling), and the vehicle must have an external pedestrian-warning speaker — built September 2019 or later for Model 3/Y/S/X, or any Cybertruck
+### 外放音效管理
+- 管理特斯拉通过外部行人警告扬声器播放的音效（音乐盘，`/Boombox` 文件夹——需要 `music_enabled: true`）
+- **界面中强制执行特斯拉限制**：仅 MP3 或 WAV，**1 MiB** 上限（建议 ≤ 5 秒），**64 字符**文件名限制（字母、数字、空格、下划线、破折号、点号），最多 **5 个**音效——特斯拉按字母顺序加载前 5 个
+- 浏览器内预览、拖放上传、单独删除
+- 显眼的 **NHTSA 安全声明**：外放音效仅在驻车时播放（2022年2月 NHTSA 规定），车辆必须有外部行人警告扬声器——Model 3/Y/S/X 需 2019 年 9 月后生产，Cybertruck 支持全部年份
 
-### Automatic Maintenance
-- **Storage Cleanup**: Age, size, or count-based policies per folder
-- **Boot Cleanup**: Deferred post-boot cleanup runs after USB gadget is presented to Tesla
-- **RecentClips Archive**: Automatic background archival with 3-tier retention (free space floor, size cap, age limit)
-- **Chime Scheduler**: Checks every 60 seconds for scheduled changes
-- **Hardware Watchdog**: Automatic system recovery on hangs or crashes
-- **Task Coordinator**: Exclusive lock prevents geo-indexer, video archiver, and cloud sync from running simultaneously (critical for Pi Zero 2 W's 512MB RAM)
+### 自动化维护
+- **存储清理**：按文件夹配置基于时间、大小或数量的清理策略
+- **启动清理**：USB 设备呈现给特斯拉后延迟执行的启动后清理
+- **RecentClips 存档**：自动后台存档，三级保留策略（剩余空间下限、大小上限、时间限制）
+- **音效排程器**：每 60 秒检查一次定时切换
+- **硬件看门狗**：系统挂起或崩溃时自动恢复
+- **任务协调器**：排他锁防止地理索引器、视频存档器和云同步同时运行（对 Pi Zero 2 W 的 512MB RAM 至关重要）
 
-### Network Features
-- **Samba Shares**: Windows/Mac/Linux file access in Edit mode
-- **Offline Access Point**: Automatic fallback AP when WiFi unavailable (in-car web access)
-- **WiFi Roaming**: Automatic switching between access points with the same SSID for optimal signal strength (mesh networks and WiFi extenders)
+### 网络功能
+- **Samba 共享**：网络共享模式下支持 Windows/Mac/Linux 文件访问
+- **离线热点**：WiFi 不可用时自动回退热点（车内 Web 访问）
+- **WiFi 漫游**：相同 SSID 的热点间自动切换以获取最佳信号强度（Mesh 网络和 WiFi 扩展器）
 
-### Cloud Archive
-- **Queue-based continuous sync**: Automatically uploads dashcam events to cloud storage (Google Drive, S3, Dropbox, etc.) via rclone
-- **Priority ordering**: Events with Tesla event.json uploaded first, then geolocated trips, then remaining clips
-- **Power-loss safe**: Files marked as synced only after rclone confirms upload; partial uploads detected and re-queued on restart
-- **Low impact**: Runs with `nice`/`ionice` throttling, configurable bandwidth limits, one file at a time — web UI stays responsive
-- **Web UI**: Configure cloud provider, browse remote folders, monitor sync queue and history, trigger manual uploads, bandwidth testing
+### 云存档
+- **基于队列的持续同步**：通过 rclone 自动上传哨兵事件到云存储（Google Drive、S3、Dropbox 等）
+- **优先级排序**：带 Tesla event.json 的事件优先上传，其次是有地理定位的行程，最后是其余视频
+- **断电安全**：仅在 rclone 确认上传后将文件标记为已同步；部分上传在重启时检测并重新入队
+- **低影响**：以 `nice`/`ionice` 限流运行，可配置带宽限制，一次一个文件——Web 界面保持响应
+- **Web 界面**：配置云服务商、浏览远程文件夹、监控同步队列和历史、手动上传、带宽测试
 
-## Requirements
+## 硬件要求
 
-> **Note**: This project has only been tested on **Raspberry Pi Zero 2 W**. Other OTG-capable models should work but are untested.
+> **注意**：本项目仅在 **Raspberry Pi Zero 2 W** 上测试过。其他支持 OTG 的型号理论上可行但未经测试。
 
-- **Tesla Software**: Version **2025.44.25.1 or later** (2025 Holiday Update) required for event thumbnails, SEI telemetry data, and multi-camera event structure
-- **Raspberry Pi Zero 2 W** (tested and recommended) - Small form factor, low power, powered directly from Tesla USB port
-- Other Raspberry Pi models with USB OTG capability should work (Pi 4, Pi 5, Compute Modules) - **untested**
-- 128GB+ microSD card (for OS, dashcam storage, light shows, and music)
+- **特斯拉软件**：版本 **2025.44.25.1 或更高**（2025 假日更新）需要事件缩略图、SEI 遥测数据和多摄像头事件结构
+- **Raspberry Pi Zero 2 W**（已测试并推荐）——小巧、低功耗，直接由特斯拉 USB 端口供电
+- 其他支持 USB OTG 的树莓派型号（Pi 4、Pi 5、Compute Module）理论上可行——**未经测试**
+- 128GB+ microSD 卡（用于操作系统、哨兵存储、灯光秀和音乐）
 - Raspberry Pi OS (64-bit) Desktop - Debian "Trixie"
-- Internet connection for initial setup
+- 初始设置需要互联网连接
 
-### Raspberry Pi OTG Compatibility
+### 树莓派 OTG 兼容性
 
-For USB gadget projects like TeslaUSB, the **Raspberry Pi Zero family and Compute Modules are the best choice**. Raspberry Pi 4 and 5 offer OTG support, but their higher power requirements can be an issue. **Raspberry Pi A, B, 2B, 3B, and 3B+ do NOT support OTG** (host mode only).
+对于 TeslaUSB 这类 USB 设备项目，**树莓派 Zero 系列和 Compute Module 是最佳选择**。树莓派 4 和 5 支持 OTG，但功耗较高可能有问题。**树莓派 A、B、2B、3B 和 3B+ 不支持 OTG**（仅主机模式）。
 
-For detailed information, see the official Raspberry Pi whitepaper: [Using OTG mode on Raspberry Pi SBCs](https://pip.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009276-WP/Using-OTG-mode-on-Raspberry-Pi-SBCs.pdf)
+详细信息请参阅官方树莓派白皮书：[在树莓派 SBC 上使用 OTG 模式](https://pip.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009276-WP/Using-OTG-mode-on-Raspberry-Pi-SBCs.pdf)
 
-| Model | OTG Support | Notes |
+| 型号 | OTG 支持 | 说明 |
 |-------|-------------|-------|
-| Raspberry Pi Zero / Zero W / Zero 2 W | ✅ Yes | Fully supported on USB data port |
-| Raspberry Pi 4 | ⚠️ Yes* | USB-C port in device mode |
-| Raspberry Pi 5 | ⚠️ Yes* | USB-C port in device mode |
-| Raspberry Pi A/B/2B/3B/3B+ | ❌ No | Only host mode - **not compatible** |
-| Raspberry Pi Compute Module 1-3 | ✅ Yes | Exposed on OTG pins |
-| Raspberry Pi Compute Module 4 | ✅ Yes | micro-USB on CM4 IO board |
+| Raspberry Pi Zero / Zero W / Zero 2 W | ✅ 支持 | USB 数据端口完全支持 |
+| Raspberry Pi 4 | ⚠️ 支持* | USB-C 端口设备模式 |
+| Raspberry Pi 5 | ⚠️ 支持* | USB-C 端口设备模式 |
+| Raspberry Pi A/B/2B/3B/3B+ | ❌ 不支持 | 仅主机模式 - **不兼容** |
+| Raspberry Pi Compute Module 1-3 | ✅ 支持 | 通过 OTG 引脚引出 |
+| Raspberry Pi Compute Module 4 | ✅ 支持 | CM4 IO 板 micro-USB |
 
-*\* Raspberry Pi 4 and 5 draw power from the host via USB cable, so there may be limitations on available current due to their higher power requirements.*
+*\* 树莓派 4 和 5 通过 USB 线从主机取电，由于功耗较高，可能受到可用电流的限制。*
 
-**Note for Pi Zero 2 W users**: Setup automatically optimizes memory by disabling unnecessary desktop services and enabling 1GB swap. This ensures stable operation on the 512MB RAM platform.
+**Pi Zero 2 W 用户注意**：安装程序通过禁用不必要的桌面服务并启用 1GB 交换空间来自动优化内存。这确保在 512MB RAM 平台上稳定运行。
 
-**⚠️ Note for Raspberry Pi 4/5 users**: USB OTG/gadget mode is **only available on the USB-C port**, which is also the power input. This creates a challenge: you cannot simultaneously power the Pi from a standard USB charger and present as a USB device to Tesla. Options include:
-- USB-C power + data splitter adapters (search "USB-C OTG with PD charging")
-- Powering the Pi via GPIO pins from a separate car charger (advanced)
-- Using a larger SD card instead of external USB storage to avoid power budget issues
+**⚠️ 树莓派 4/5 用户注意**：USB OTG/设备模式**仅在 USB-C 端口**上可用，而该端口同时也是电源输入。这意味着无法同时用标准 USB 充电器供电并向特斯拉呈现 USB 设备。可选方案包括：
+- USB-C 供电 + 数据分离适配器（搜索"USB-C OTG with PD charging"）
+- 通过 GPIO 引脚从独立的车载充电器供电（高级方案）
+- 使用更大容量的 SD 卡而非外部 USB 存储来避免供电问题
 
-## Installation
+## 安装
 
-### 1. Prepare Raspberry Pi
+### 1. 准备树莓派
 
-1. Flash **Raspberry Pi OS (64-bit) Desktop** using [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
-2. Configure OS customization settings:
-   - Set hostname (e.g., `cybertruckusb`)
-   - Enable SSH with password authentication
-   - Set username/password (default: `pi`)
-   - Configure WiFi credentials
-   - Set timezone and keyboard layout
-3. Insert microSD into Pi and boot (wait 2-3 minutes)
-4. Verify SSH access: `ssh pi@cybertruckusb.local`
+1. 使用 [Raspberry Pi Imager](https://www.raspberrypi.com/software/) 烧录 **Raspberry Pi OS (64-bit) Desktop**
+2. 配置操作系统自定义设置：
+   - 设置主机名（如 `cybertruckusb`）
+   - 启用 SSH 密码认证
+   - 设置用户名/密码（默认：`pi`）
+   - 配置 WiFi 凭据
+   - 设置时区和键盘布局（中国用户：时区选择 `Asia/Shanghai`）
+3. 插入 microSD 并启动（等待 2-3 分钟）
+4. 验证 SSH 访问：`ssh pi@cybertruckusb.local`
 
-### 2. Install TeslaUSB
+### 2. 安装 TeslaUSB
 
 ```bash
-git clone https://github.com/mphacker/TeslaUSB.git
+git clone https://github.com/Richard-M-L/TeslaUSB.git
 cd TeslaUSB
 chmod +x setup_usb.sh
 sudo ./setup_usb.sh
 ```
 
-The setup script will:
-- Install required packages (parted, dosfstools, python3-flask, python3-av, samba, hostapd, dnsmasq, ffmpeg)
-- Optimize memory for low-RAM systems (disable desktop services, enable swap)
-- Configure USB gadget kernel modules and hardware watchdog
-- Detect and disable conflicting `rpi-usb-gadget` service (Pi OS Trixie default)
-- Create disk images (TeslaCam + LightShow + optional Music) with interactive image dashboard
-- Set up Samba shares and web interface
-- Configure systemd services with auto-restart on failure
-- Create `/Chimes` library and migrate existing lock chimes
+安装脚本将：
+- 安装必需软件包（parted、dosfstools、python3-flask、python3-av、samba、hostapd、dnsmasq、ffmpeg）
+- 为低内存系统优化内存（禁用桌面服务，启用交换空间）
+- 配置 USB 设备内核模块和硬件看门狗
+- 检测并禁用冲突的 `rpi-usb-gadget` 服务（Pi OS Trixie 默认启用）
+- 创建磁盘镜像（行车记录仪 + 灯光秀 + 可选音乐）及交互式镜像仪表板
+- 配置 Samba 共享和 Web 界面
+- 配置 systemd 服务及失败自动重启
+- 创建 `/Chimes` 库并迁移现有锁车音效
 
-### 3. Access Web Interface
+### 3. 访问 Web 界面
 
-Open `http://<pi-ip-address>` or `http://<hostname>.local` in your browser (port 80 - no port number needed).
+在浏览器中打开 `http://<pi-ip-address>` 或 `http://<hostname>.local`（80 端口——无需端口号）。
 
-Alternatively, connect to the TeslaUSB WiFi network and the captive portal will automatically open.
+也可以连接 TeslaUSB WiFi 网络，强制门户将自动打开。
 
-### 4. Connect to Tesla
+### 4. 连接特斯拉
 
-Connect the Pi to your Tesla's USB port:
-- **Pi Zero 2 W**: Use USB port labeled "USB" (not "PWR")
-- **Pi 4/5**: Use USB-C port
+将树莓派连接到特斯拉的 USB 端口：
+- **Pi Zero 2 W**：使用标记为 "USB" 的端口（非 "PWR"）
+- **Pi 4/5**：使用 USB-C 端口
 
-Tesla will detect the USB drives automatically (two drives, or three if Music is enabled).
+特斯拉将自动检测 USB 硬盘（两个盘，如果启用了音乐则为三个）。
 
-### Power & Sleep Behavior
+### 电源与休眠行为
 
-The TeslaUSB device only runs when the car is awake. When your Tesla enters sleep mode, USB ports are powered off and the Raspberry Pi shuts down.
+TeslaUSB 设备仅在车辆唤醒时运行。当特斯拉进入休眠模式时，USB 端口断电，树莓派关机。
 
-**To keep your vehicle awake for extended management sessions:**
-1. Turn on climate control
-2. Enable "Dog Mode" or "Camp Mode" from the climate screen
-3. Connect to the TeslaUSB web interface and manage your lock chimes, light shows, or videos
-4. When finished, disable Dog/Camp Mode and turn off climate control
-5. The vehicle will return to sleep, powering off the USB ports
+**如需进行较长时间的管理操作，保持车辆唤醒：**
+1. 开启空调
+2. 从空调屏幕启用"宠物模式"或"露营模式"
+3. 连接 TeslaUSB Web 界面管理锁车音效、灯光秀或视频
+4. 完成后禁用宠物/露营模式并关闭空调
+5. 车辆将恢复休眠，关闭 USB 端口
 
-**Note:** For quick operations like viewing videos or changing a lock chime, the car typically stays awake long enough without needing Dog Mode. Use Dog/Camp Mode only for longer management sessions.
+**注意**：对于查看视频或更换锁车音效等快速操作，车辆通常保持唤醒足够长时间，无需开启宠物模式。仅在较长时间的管理会话中使用。
 
-## Usage
+## 使用指南
 
-### Operating Modes
+### 运行模式
 
-The web interface abstracts the underlying modes behind user-friendly labels:
+Web 界面在用户友好的标签后抽象了底层模式：
 
-**"Connected to Tesla"** (Present USB Mode — default on boot):
-- Pi appears as USB drives to Tesla
-- Drives mounted read-only locally at `/mnt/gadget/part1-ro`, `/mnt/gadget/part2-ro`, `/mnt/gadget/part3-ro` (if Music enabled)
-- Web interface: View/play only (no editing) — some operations (chime changes, music uploads) use temporary quick-edit for seamless access
-- Samba shares disabled
+**"已连接至特斯拉"**（USB 设备模式——启动默认）：
+- 树莓派以 USB 硬盘形式呈现给特斯拉
+- 硬盘以只读方式本地挂载于 `/mnt/gadget/part1-ro`、`/mnt/gadget/part2-ro`、`/mnt/gadget/part3-ro`（如启用音乐）
+- Web 界面：仅查看/播放（不可编辑）——部分操作（音效更换、音乐上传）使用临时快速编辑实现无缝访问
+- Samba 共享已禁用
 
-**"Network Sharing Active"** (Edit USB Mode):
-- USB gadget disconnected
-- Drives mounted read-write at `/mnt/gadget/part1`, `/mnt/gadget/part2`, `/mnt/gadget/part3` (if Music enabled)
-- Web interface: Full file management (upload, delete, organize)
-- Samba shares active for network access
+**"网络共享已开启"**（USB 编辑模式）：
+- USB 设备断开连接
+- 硬盘以读写方式挂载于 `/mnt/gadget/part1`、`/mnt/gadget/part2`、`/mnt/gadget/part3`（如启用音乐）
+- Web 界面：完整文件管理（上传、删除、整理）
+- Samba 共享已激活
 
-**Switch modes** via the device status card on the Settings page ("Enable Network Sharing" / "Reconnect to Tesla" buttons) or command line:
+**切换模式**通过设置页面的设备状态卡片（"开启网络共享"/"重新连接特斯拉"按钮）或命令行：
 ```bash
-sudo ~/TeslaUSB/scripts/present_usb.sh  # Reconnect to Tesla
-sudo ~/TeslaUSB/scripts/edit_usb.sh     # Enable Network Sharing
+sudo ~/TeslaUSB/scripts/present_usb.sh  # 重新连接特斯拉
+sudo ~/TeslaUSB/scripts/edit_usb.sh     # 开启网络共享
 ```
 
-### Network Access
+### 网络访问
 
-**Samba Shares** (Edit mode only):
-- `\\<pi-ip-address>\gadget_part1` - TeslaCam drive
-- `\\<pi-ip-address>\gadget_part2` - LightShow drive
-- `\\<pi-ip-address>\gadget_part3` - Music drive (when `music_enabled: true`)
-- Default credentials: username = `pi`, password = `tesla`
+**Samba 共享**（仅网络共享模式）：
+- `\\<pi-ip-address>\gadget_part1` - 行车记录仪盘
+- `\\<pi-ip-address>\gadget_part2` - 灯光秀盘
+- `\\<pi-ip-address>\gadget_part3` - 音乐盘（当 `music_enabled: true`）
+- 默认凭据：用户名 = `pi`，密码 = `tesla`
 
-**Offline Access Point with Captive Portal**:
-When WiFi is unavailable, the Pi automatically creates a fallback access point:
-- SSID: `TeslaUSB` (configurable in `config.yaml`)
-- Password: `teslausb1234` (change this!)
-- IP: `192.168.4.1`
-- **Captive Portal**: Automatically opens web interface when you connect (no URL needed!)
-- Manual access: `http://192.168.4.1` or `http://teslausb` (port 80)
-- Control from web UI: Force start/stop AP or leave in auto mode
-  - **Start AP Now**: Forces AP on until reboot or manually stopped
-  - **Stop AP**: Returns to auto mode (AP only starts if WiFi fails)
-- Change credentials in `config.yaml` before first use
-- **Note**: After clicking "Start AP Now" or "Stop AP" buttons, the status may not update immediately. Wait 10-20 seconds and refresh the page to see the current state.
+**离线热点及强制门户**：
+WiFi 不可用时，树莓派自动创建回退热点：
+- SSID：`TeslaUSB`（可在 `config.yaml` 中配置）
+- 密码：`teslausb1234`（请修改！）
+- IP：`192.168.4.1`
+- **强制门户**：连接时自动打开 Web 界面（无需 URL！）
+- 手动访问：`http://192.168.4.1` 或 `http://teslausb`（80 端口）
+- 通过 Web 界面控制：强制启动/停止热点或保持自动模式
+  - **立即启动热点**：强制开启热点直到重启或手动停止
+  - **停止热点**：恢复自动模式（仅在 WiFi 故障时启动）
+- 首次使用前在 `config.yaml` 中修改凭据
+- **注意**：点击"立即启动热点"或"停止热点"按钮后，状态可能不会立即更新。等待 10-20 秒后刷新页面查看当前状态。
 
-### Web Features
+### Web 功能
 
-The web interface uses a five-tab navigation — sidebar rail on desktop and bottom tabs on mobile.
+Web 界面使用五标签导航——桌面端侧边栏，移动端底部标签页。
 
-**Map Tab** *(landing page at `/`)*:
-- GPS trip routes rendered on an interactive map with floating trip card and prev/next navigation
-- Skeuomorphic balloon-pin event markers (brake pedal, gas pedal, steering wheel, speedometer, eye for sentry) — always visible
-- Video browser slide-out panel with three sub-tabs:
-  - **Events**: Chronological view of driving events and sentry detections with event type icons
-  - **Trips**: Browse trips with clip cards (Play / Download ZIP / Delete)
-  - **All Clips**: Unified list of all video clips across all sources
-- Unified overlay player with camera angle switching using directional Lucide SVG icons (Front, Back, Left, Right, L Pillar, R Pillar)
-- Two fullscreen modes — **Fullscreen** (OS-level, hides browser chrome) and **Maximize** (fills browser viewport); both keep the telemetry HUD visible
-- Disambiguation popup when a map location has multiple overlapping clips (lists each clip with trip date/time so the right one can be selected)
-- Telemetry HUD overlay showing speed, gear, steering wheel, brake/gas pedals, blinkers, and Autopilot status (uses pre-indexed server-side waypoint data — instant, no full download)
-- FSD overlay toggle
-- **Shareable URLs**: The selected day and active sub-view are encoded in the URL — bookmarks, browser back/forward, and reload all return you to exactly the same state
-- Auto-indexing of dashcam SEI telemetry via a queue-backed background worker (boot catch-up + inotify + post-WiFi archive run); banner shows only during real parse activity and is positioned so it never covers the date/filter controls
+**地图标签页**（首页 `/`）：
+- GPS 行程路线在交互式地图上渲染，带浮动行程卡片和上/下一个导航
+- 拟物气球图钉事件标记（刹车踏板、油门踏板、方向盘、速度表、眼睛代表哨兵）——始终可见
+- 视频浏览器侧滑面板，含三个子标签页：
+  - **事件**：按时间顺序显示驾驶事件和哨兵检测，带事件类型图标
+  - **行程**：浏览带视频卡片的行程（播放 / 下载 ZIP / 删除）
+  - **全部视频**：所有来源的视频统一列表
+- 统一叠加播放器，支持摄像头角度切换（前、后、左、右、左B柱、右B柱）
+- 两种全屏模式——**全屏**（操作系统级别，隐藏浏览器边框）和**最大化**（填满浏览器视口）；两者均保持遥测 HUD 可见
+- 消歧弹窗：地图上存在多个重叠视频的位置时弹出（列出每个视频及其行程日期/时间）
+- 遥测 HUD 叠加层显示速度、档位、方向盘、刹车/油门踏板、转向灯和 Autopilot 状态（使用服务端预索引的路径点数据——即时显示，无需下载完整视频）
+- FSD 叠加层切换
+- **可分享的 URL**：选中的日期和活动子视图编码在 URL 中——书签、浏览器前进/后退和刷新均能回到完全相同状态
+- 通过队列支持的后台工作线程自动索引哨兵 SEI 遥测数据（启动追赶 + inotify + WiFi 后存档运行）；横幅仅在真实解析活动期间显示，位置不会遮挡日期/筛选控件
 
-**Analytics Tab**:
-- Storage metrics with drive usage gauges and folder-by-folder breakdown (including Music drive when enabled)
-- Driving statistics and event analytics (Chart.js)
-- Video count and size statistics
+**统计标签页**：
+- 存储指标，含硬盘使用量仪表和按文件夹细分（包括音乐盘，如启用）
+- 驾驶统计和事件分析（Chart.js）
+- 视频数量和大小统计
 
-**Media Tab** *(hub with sub-tabs)*:
-- **Lock Chimes**: Upload WAV/MP3 files (auto-converted to Tesla format), preview with in-browser player, set active chime, built-in audio editor with waveform visualization, schedule automatic changes (weekly, date, holiday, recurring)
-- **Music** *(requires `music_enabled: true` and Music disk image)*: Browse folders with breadcrumb navigation, in-browser playback (MP3, FLAC, WAV, AAC, M4A), drag-and-drop uploads with chunked transfer, create/move/delete files and folders, usage gauge
-- **Boombox** *(requires `music_enabled: true`)*: Manage the up to 5 sounds Tesla plays through the external pedestrian-warning speaker, with an NHTSA safety notice ("plays only in Park") prominently displayed. MP3/WAV, 1 MiB max
-- **Light Shows**: Upload and manage FSEQ + MP3/WAV files, grouped display, preview audio in browser, delete complete sets
-- **Wraps**: Upload PNG files for Tesla Paint Shop wraps (512–1024px, max 1MB, up to 10), thumbnail gallery, download or delete
-- **License Plates**: Upload custom plate-background images — server auto-crops to Tesla's 420×200 (NA) or 420×100 (EU) format, outputs optimized PNG ≤ 512 KB, up to 10 plates, alphanumeric filenames
+**媒体标签页**（含子标签的枢纽）：
+- **锁车音效**：上传 WAV/MP3 文件（自动转换为特斯拉格式），浏览器内预览播放，设为当前音效，内置波形可视化音频编辑器，定时自动切换（每周、指定日期、节假日、定期循环）
+- **音乐**（需要 `music_enabled: true` 及音乐磁盘镜像）：含面包屑导航的文件夹浏览，浏览器内播放（MP3、FLAC、WAV、AAC、M4A），分块传输拖放上传，创建/移动/删除文件和文件夹，使用量仪表
+- **外放音效**（需要 `music_enabled: true`）：管理最多 5 个特斯拉通过外部行人警告扬声器播放的音效，醒目显示 NHTSA 安全声明（"仅驻车时播放"）。MP3/WAV，最大 1 MiB
+- **灯光秀**：上传和管理 FSEQ + MP3/WAV 文件，分组显示，浏览器内预览音频，删除完整组合
+- **车身涂装**：上传 PNG 文件用于特斯拉 Paint Shop 涂装（512–1024px，最大 1MB，最多 10 个），缩略图画廊，下载或删除
+- **车牌**：上传自定义车牌背景图片——服务端自动裁剪至特斯拉的 420×200（北美）或 420×100（欧洲）格式，输出优化 PNG ≤ 512 KB，最多 10 个车牌，字母数字文件名
 
-Each Media sub-tab is **automatically hidden** when the disk image it depends on is missing (Boombox/Music require `usb_music.img`; Chimes/Shows/Wraps/Plates require `usb_lightshow.img`).
+每个媒体子标签在依赖的磁盘镜像不存在时**自动隐藏**（外放音效/音乐需要 `usb_music.img`；锁车音效/灯光秀/涂装/车牌需要 `usb_lightshow.img`）。
 
-**Cloud Tab** *(conditional — shown when cloud archive is configured)*:
-- Configure cloud storage provider (Google Drive, S3, Dropbox, etc.) via rclone
-- Browse remote folders and set upload destination
-- Monitor sync queue, upload progress, and transfer history
-- Manual "Archive to Cloud" for individual events from the Map page
-- Bandwidth testing and configurable upload speed limits
-- Start/stop sync on demand
+**云同步标签页**（条件显示——配置云存档后可见）：
+- 通过 rclone 配置云存储服务商（Google Drive、S3、Dropbox 等）
+- 浏览远程文件夹并设置上传目标
+- 监控同步队列、上传进度和传输历史
+- 地图页面支持单个事件"存档到云端"
+- 带宽测试和可配置上传速度限制
+- 按需启动/停止同步
 
-**Settings Tab** *(at `/settings/`)*:
-- **Device status card**: Shows "Connected to Tesla" or "Network Sharing Active" with mode-switch buttons ("Enable Network Sharing" / "Reconnect to Tesla")
-- **WiFi configuration**: View and update network settings
-- **Access Point controls**: Force start/stop AP or leave in auto mode
-- **Auto-Cleanup settings**: Configure age, size, or count-based policies per folder; link to cleanup config page; preview and execute cleanup operations
-- **Filesystem Health Check**: Quick Check (read-only, any mode) and Check & Repair (edit mode only) for all drives
-- **System info**: Hostname, IP address, uptime, memory usage, disk image status, version
+**设置标签页**（`/settings/`）：
+- **设备状态卡片**：显示"已连接至特斯拉"或"网络共享已开启"，带模式切换按钮
+- **WiFi 配置**：查看和更新网络设置
+- **热点控制**：强制启动/停止热点或保持自动模式
+- **自动清理设置**：按文件夹配置基于时间、大小或数量的策略；链接到清理配置页面；预览和执行清理操作
+- **文件系统健康检查**：快速检查（只读，任意模式）和检查并修复（仅网络共享模式）适用于所有硬盘
+- **系统信息**：主机名、IP 地址、运行时间、内存使用、磁盘镜像状态、版本
 
-## Configuration
+## 配置
 
-All configuration is centralized in a single **`config.yaml`** file - edit this file **before** running setup.
+所有配置统一集中在 **`config.yaml`** 文件中——在运行安装前编辑此文件。
 
-Both bash scripts and the Python web application read from this YAML file, ensuring consistency across the entire system.
+Bash 脚本和 Python Web 应用都从此 YAML 文件中读取，确保整个系统的一致性。
 
-### Configuration File: `config.yaml`
+### 配置文件：`config.yaml`
 
 ```yaml
-# TeslaUSB Configuration File
+# TeslaUSB 配置文件
 #
-# All paths, settings, and credentials are defined here.
-# Both bash scripts and Python web application use this file.
+# 所有路径、设置和凭据在此定义。
+# Bash 脚本和 Python Web 应用均使用此文件。
 
 # ============================================================================
-# Installation & Paths
+# 安装与路径
 # ============================================================================
 installation:
-  target_user: pi                    # Linux user running services
-  mount_dir: /mnt/gadget             # Mount directory for USB drives
+  target_user: pi                    # 运行服务的 Linux 用户
+  mount_dir: /mnt/gadget             # USB 硬盘挂载目录
 
 # ============================================================================
-# Disk Images
+# 磁盘镜像
 # ============================================================================
 disk_images:
-  cam_name: usb_cam.img              # TeslaCam disk image filename
-  lightshow_name: usb_lightshow.img  # LightShow disk image filename
-  cam_label: TeslaCam                # Filesystem label for TeslaCam drive
-  lightshow_label: Lightshow         # Filesystem label for LightShow drive
-  music_name: usb_music.img          # Music disk image filename (optional)
-  music_label: Music                 # Filesystem label for Music drive
-  music_enabled: true                # Create and present Music partition (LUN2)
-  music_fs: fat32                    # Filesystem for Music image (fat32 recommended)
-  boot_fsck_enabled: true            # Auto-repair filesystems on boot (recommended)
+  cam_name: usb_cam.img              # 行车记录仪磁盘镜像文件名
+  lightshow_name: usb_lightshow.img  # 灯光秀磁盘镜像文件名
+  cam_label: TeslaCam                # 行车记录仪盘文件系统标签
+  lightshow_label: Lightshow         # 灯光秀盘文件系统标签
+  music_name: usb_music.img          # 音乐磁盘镜像文件名（可选）
+  music_label: Music                 # 音乐盘文件系统标签
+  music_enabled: true                # 创建并呈现音乐分区（LUN2）
+  music_fs: fat32                    # 音乐镜像文件系统（推荐 fat32）
+  boot_fsck_enabled: true            # 启动时自动修复文件系统（推荐）
 
 # ============================================================================
-# Setup Configuration (used only by setup_usb.sh)
+# 安装配置（仅 setup_usb.sh 使用）
 # ============================================================================
-# Leave empty ("") for interactive prompts during setup
+# 留空 ("") 将在安装过程中交互式提示
 setup:
-  part1_size: ""                     # TeslaCam drive size (e.g., "50G")
-  part2_size: ""                     # LightShow drive size (e.g., "10G")
-  part3_size: ""                     # Music drive size (e.g., "32G")
-  reserve_size: ""                   # Free space headroom (default: 5G)
-  archive_reserve_size: "50G"        # Space reserved for RecentClips archive
+  part1_size: ""                     # 行车记录仪盘大小（如 "50G"）
+  part2_size: ""                     # 灯光秀盘大小（如 "10G"）
+  part3_size: ""                     # 音乐盘大小（如 "32G"）
+  reserve_size: ""                   # 剩余空间余量（默认：5G）
+  archive_reserve_size: "50G"        # RecentClips 存档预留空间
 
 # ============================================================================
-# Network & Security
+# 网络与安全
 # ============================================================================
 network:
-  samba_password: tesla              # Samba password (CHANGE THIS!)
-  web_port: 80                       # Web port (80 required for captive portal)
+  samba_password: tesla              # Samba 密码（请修改！）
+  web_port: 80                       # Web 端口（80 为强制门户必需）
 
 # ============================================================================
-# Offline Access Point Configuration
+# 离线热点配置
 # ============================================================================
 offline_ap:
-  enabled: true                      # Enable/disable fallback AP
-  ssid: TeslaUSB                     # AP network name (CHANGE THIS!)
-  passphrase: teslausb1234           # WPA2 passphrase 8-63 chars (CHANGE THIS!)
-  channel: 6                         # 2.4GHz channel (1-11)
-  force_mode: auto                   # auto, force_on, or force_off
+  enabled: true                      # 启用/禁用回退热点
+  ssid: TeslaUSB                     # 热点网络名称（请修改！）
+  passphrase: teslausb1234           # WPA2 密码 8-63 字符（请修改！）
+  channel: 6                         # 2.4GHz 信道 (1-11)
+  force_mode: auto                   # auto, force_on 或 force_off
 
 # ============================================================================
-# Web Application Configuration
+# Web 应用配置
 # ============================================================================
 web:
   secret_key: CHANGE-THIS-TO-A-RANDOM-SECRET-KEY-ON-FIRST-INSTALL
   max_lock_chime_size: 1048576       # 1 MiB
-  max_lock_chime_duration: 10.0      # 10 seconds
-  max_upload_size_mb: 2048           # Max upload size for music/lightshow (MiB)
-  max_upload_chunk_mb: 16            # Chunk size for streaming uploads (MiB)
+  max_lock_chime_duration: 10.0      # 10 秒
+  max_upload_size_mb: 2048           # 音乐/灯光秀最大上传大小 (MiB)
+  max_upload_chunk_mb: 16            # 流式上传块大小 (MiB)
 
 # ============================================================================
-# RecentClips Archive
+# RecentClips 存档
 # ============================================================================
 archive:
-  enabled: true                      # Enable RecentClips archival to SD card
-  interval_minutes: 2                # How often to check for new clips
-  retention_days: 30                 # Delete archived clips older than this
-  min_free_space_gb: 10              # Stop archiving if SD card < this free
-  max_size_gb: 50                    # Cap on total archive folder size
+  enabled: true                      # 启用 RecentClips 存档到 SD 卡
+  interval_minutes: 2                # 检查新视频的频率
+  retention_days: 30                 # 删除超过此天数的已存档视频
+  min_free_space_gb: 10              # SD 卡空闲空间低于此值时停止存档
+  max_size_gb: 50                    # 存档文件夹总大小上限
 ```
 
-**Important settings to change before first use:**
-- `network.samba_password` - Default is `tesla` (change this!)
-- `offline_ap.ssid` - Default is `TeslaUSB` (customize for your vehicle)
-- `offline_ap.passphrase` - Default is `teslausb1234` (change this!)
-- `web.secret_key` - Auto-generated on first run, but can be set manually
+**首次使用前必须修改的设置：**
+- `network.samba_password` - 默认为 `tesla`（请修改！）
+- `offline_ap.ssid` - 默认为 `TeslaUSB`（为你的车辆自定义）
+- `offline_ap.passphrase` - 默认为 `teslausb1234`（请修改！）
+- `web.secret_key` - 首次运行时自动生成，也可手动设置
 
-**Optional settings:**
-- `disk_images.music_enabled` - Create and present an optional Music drive as a third USB LUN (default: `true`)
-- `disk_images.boot_fsck_enabled` - Auto-repair filesystems on boot (default: `true`, recommended)
+**可选设置：**
+- `disk_images.music_enabled` - 创建并呈现可选音乐盘作为第三个 USB LUN（默认：`true`）
+- `disk_images.boot_fsck_enabled` - 启动时自动修复文件系统（默认：`true`，推荐）
 
-**Note:** The installation directory (`GADGET_DIR`) is automatically derived from the script location — no path configuration is needed. Scripts and the web app detect their own location at runtime.
+**注意**：安装目录（`GADGET_DIR`）自动从脚本位置派生——无需路径配置。脚本和 Web 应用在运行时自动检测自身位置。
 
-**After making changes:** Restart affected services
+**修改配置后**：重启受影响的服务
 ```bash
-sudo systemctl restart gadget_web.service    # For web application changes
-sudo systemctl restart wifi-monitor.service  # For offline AP changes
+sudo systemctl restart gadget_web.service    # Web 应用更改
+sudo systemctl restart wifi-monitor.service  # 离线热点更改
 ```
 
-**How it works:**
-- Bash scripts use `yq` to read YAML values
-- Python web app uses `PyYAML` to load configuration
-- Single source of truth for all settings
-- Comments and structure make configuration clear
+**工作原理：**
+- Bash 脚本使用 `yq` 读取 YAML 值
+- Python Web 应用使用 `PyYAML` 加载配置
+- 所有设置的单一数据源
+- 注释和结构使配置清晰明了
 
-## Maintenance
+## 维护
 
-### Upgrade to Latest Version
+### 升级至最新版本
 
-> **⚠️ BACK UP YOUR DISK IMAGES BEFORE UPGRADING**
+> **⚠️ 升级前请备份磁盘镜像**
 >
-> Your USB drive images (`usb_cam.img`, `usb_lightshow.img`, `usb_music.img`) contain all your dashcam videos, lock chimes, light shows, music, and wraps. These files can be **hundreds of gigabytes** and are not recoverable if lost.
+> USB 硬盘镜像（`usb_cam.img`、`usb_lightshow.img`、`usb_music.img`）包含所有哨兵视频、锁车音效、灯光秀、音乐和涂装。这些文件可能达到**数百 GB**，丢失后不可恢复。
 >
-> Before running any upgrade or `git pull`:
-> 1. **Switch to Edit Mode** (or use "Enable Network Sharing" in Settings)
-> 2. **Copy the `.img` files** to a safe location (external drive, NAS, or computer):
+> 运行任何升级或 `git pull` 前：
+> 1. **切换到网络共享模式**（或在设置中点击"开启网络共享"）
+> 2. **将 `.img` 文件复制**到安全位置（外置硬盘、NAS 或电脑）：
 >    ```bash
 >    scp pi@<hostname>.local:~/TeslaUSB/*.img /path/to/backup/
 >    ```
-> 3. Then proceed with the upgrade
+> 3. 然后继续升级
 >
-> The `.img` files are listed in `.gitignore` and should not be affected by git operations, but backing up protects against accidental deletion, SD card corruption, or any unexpected issues during upgrade.
+> `.img` 文件在 `.gitignore` 中，不应受 git 操作影响，但备份可以防止意外删除、SD 卡损坏或升级过程中的任何意外问题。
 
 ```bash
 cd ~/TeslaUSB
 ./upgrade.sh
 ```
 
-Upgrades to the latest version from GitHub. Supports both git-cloned installs (`git pull`) and manual installs (tarball download with automatic backup/restore on error). After updating code, prompts to re-run `setup_usb.sh`. Disk images and configuration are preserved.
+升级到 GitHub 上的最新版本。支持 git 克隆安装（`git pull`）和手动安装（tar 包下载，错误时自动备份/恢复）。更新代码后，提示重新运行 `setup_usb.sh`。磁盘镜像和配置被保留。
 
-### Uninstall
+### 卸载
 
 ```bash
 cd ~/TeslaUSB
 sudo ./cleanup.sh
 ```
 
-Removes all files, services, and system configuration.
+删除所有文件、服务和系统配置。
 
-## Systemd Services
+## Systemd 服务
 
-| Service/Timer | Purpose |
+| 服务/定时器 | 用途 |
 |---------------|---------|
-| `gadget_web.service` | Web interface (port 80) with captive portal |
-| `present_usb_on_boot.service` | Auto-present USB gadget on boot (cleanup deferred) |
-| `teslausb-deferred-tasks.service` | Post-boot tasks: cleanup, random chime selection |
-| `chime_scheduler.timer` | Check scheduled chime changes every 60 seconds |
-| `wifi-monitor.service` | Manage offline access point |
-| `watchdog.service` | Hardware watchdog for system reliability |
+| `gadget_web.service` | Web 界面（80 端口）含强制门户 |
+| `present_usb_on_boot.service` | 启动时自动呈现 USB 设备（清理延迟执行） |
+| `teslausb-deferred-tasks.service` | 启动后任务：清理、随机音效选择 |
+| `chime_scheduler.timer` | 每 60 秒检查定时音效切换 |
+| `wifi-monitor.service` | 管理离线热点 |
+| `watchdog.service` | 硬件看门狗保障系统可靠性 |
 
-**Common Commands:**
+**常用命令：**
 ```bash
-# Check service status
+# 查看服务状态
 sudo systemctl status gadget_web.service
 
-# View logs
+# 查看日志
 sudo journalctl -u gadget_web.service -f
 
-# Restart web interface
+# 重启 Web 界面
 sudo systemctl restart gadget_web.service
 
-# Disable auto-present on boot
+# 禁用启动时自动呈现 USB
 sudo systemctl disable present_usb_on_boot.service
 ```
 
-### Hardware Watchdog Configuration
+### 硬件看门狗配置
 
-The hardware watchdog automatically reboots the Pi if the system becomes unresponsive. The default configuration is intentionally simple and reliable:
+硬件看门狗在系统无响应时自动重启树莓派。默认配置简洁可靠：
 
 ```bash
 watchdog-device = /dev/watchdog
@@ -498,108 +498,107 @@ realtime = yes
 priority = 1
 ```
 
-**⚠️ Warning: Aggressive watchdog settings can cause boot loops!**
+**⚠️ 警告：过于激进的看门狗设置可能导致启动循环！**
 
-The following options should be **avoided** on Raspberry Pi Zero 2 W (512MB RAM):
+在 Raspberry Pi Zero 2 W（512MB RAM）上应**避免**以下选项：
 
-| Setting | Problem |
+| 设置 | 问题 |
 |---------|---------|
-| `min-memory = 50000` | Pi Zero 2 W often has <50MB free during normal operation, triggering unnecessary reboots |
-| `repair-binary = /usr/lib/watchdog/repair` | This file doesn't exist on Raspberry Pi OS |
-| `interval` (low values) | Can cause timing issues with the kernel watchdog |
+| `min-memory = 50000` | Pi Zero 2 W 正常运行时可用内存常低于 50MB，触发不必要的重启 |
+| `repair-binary = /usr/lib/watchdog/repair` | 此文件在 Raspberry Pi OS 上不存在 |
+| `interval`（过低的值） | 可能导致内核看门狗时序问题 |
 
-**If your device keeps rebooting in a loop**, the watchdog configuration may be too aggressive. To fix:
+**如果设备不断循环重启**，看门狗配置可能过于激进。修复方法：
 
-1. Pull the SD card and mount it on another computer
-2. Edit `cmdline.txt` on the boot partition and add: `systemd.mask=watchdog.service`
-3. Boot the Pi and SSH in
-4. Fix `/etc/watchdog.conf` to use the simple configuration above
-5. Remove the mask from `cmdline.txt` and reboot
+1. 取出 SD 卡并在另一台电脑上挂载
+2. 编辑启动分区上的 `cmdline.txt`，添加：`systemd.mask=watchdog.service`
+3. 启动树莓派并 SSH 登录
+4. 修复 `/etc/watchdog.conf` 使用上述简洁配置
+5. 从 `cmdline.txt` 中移除 mask 并重启
 
-**Watchdog timeout**: Set to 90 seconds to accommodate (a) large disk images (400GB+) which take longer to configure at boot and (b) transient SDIO bus contention on the Pi Zero 2 W during heavy archive catch-up. Smaller images work fine with 15 seconds, but 90 seconds is safe for all configurations and prevents spurious reboots when the watchdog daemon is briefly stalled by the shared SDIO controller (SD card + WiFi chip).
+**看门狗超时**：设置为 90 秒以适应 (a) 大磁盘镜像（400GB+）启动时需要更长时间配置，以及 (b) Pi Zero 2 W 在大量存档追赶期间出现的瞬时 SDIO 总线争用。较小镜像 15 秒即可，但 90 秒对任何配置都安全，可防止看门狗守护进程因共享 SDIO 控制器（SD 卡 + WiFi 芯片）短暂停滞导致误重启。
 
-## Troubleshooting
+## 故障排查
 
-### Common Issues
+### 常见问题
 
-**Web interface not accessible:**
+**Web 界面不可访问：**
 ```bash
-# Check service status and logs
+# 检查服务状态和日志
 sudo systemctl status gadget_web.service
 sudo journalctl -u gadget_web.service -f
 ```
 
-**Videos not showing:**
-- Verify correct mode (Present or Edit, not Unknown)
-- Check TeslaCam folder exists on drive 1
-- Confirm drive is properly mounted
+**视频不显示：**
+- 验证当前模式正确（已连接车辆或网络共享，非未知状态）
+- 检查行车记录仪文件夹是否在硬盘 1 上
+- 确认硬盘已正确挂载
 
-**Samba shares appear empty:**
+**Samba 共享显示为空：**
 ```bash
-# Force Samba refresh
+# 强制 Samba 刷新
 sudo smbcontrol all close-share gadget_part1
 sudo smbcontrol all close-share gadget_part2
-sudo smbcontrol all close-share gadget_part3  # if music enabled
+sudo smbcontrol all close-share gadget_part3  # 如启用音乐
 sudo systemctl restart smbd nmbd
 ```
 
-**Tesla not recognizing new lock chime:**
-Try these steps in order:
-1. Power cycle Tesla (close doors, walk away 5+ minutes, wake up)
-2. Switch USB modes (Edit → wait 10s → Present)
-3. Physical reconnect (unplug Pi, wait 10s, plug back in)
-4. Tesla reboot (hold both scroll wheels until screen goes black)
+**特斯拉不识别新锁车音效：**
+按顺序尝试以下步骤：
+1. 重新启动特斯拉电源（关闭车门，离开 5 分钟以上，唤醒）
+2. 切换 USB 模式（编辑 → 等待 10s → 呈现）
+3. 物理重新连接（拔掉树莓派，等待 10s，重新插入）
+4. 重启特斯拉（同时按住方向盘两个滚轮直到屏幕变黑）
 
-**Operation in Progress banner stuck:**
+**"文件操作进行中"横幅卡住：**
 ```bash
-# Check and remove stale lock file if older than 120 seconds
+# 检查并删除超过 120 秒的过期锁文件
 ls -lh ~/TeslaUSB/.quick_edit_part2.lock
 rm ~/TeslaUSB/.quick_edit_part2.lock
 ```
 
-**iOS file upload not working:**
-- Use **Safari** on iOS (third-party browsers have restricted file access)
-- Desktop browsers work normally regardless of choice
+**iOS 文件上传不工作：**
+- 在 iOS 上使用 **Safari**（第三方浏览器文件访问受限）
+- 桌面浏览器无论选择哪个均可正常使用
 
-### Logs
+### 日志
 
 ```bash
-# Web interface logs
+# Web 界面日志
 sudo journalctl -u gadget_web.service -f
 
-# Chime scheduler logs
+# 音效排程器日志
 sudo journalctl -u chime_scheduler.service -f
 
-# System USB logs
+# 系统 USB 日志
 sudo dmesg | grep -i "mass_storage\|gadget"
 ```
 
-## Technical Details
+## 技术细节
 
-**Multi-Drive Architecture:**
-- Two or three separate disk images:
-  - `usb_cam.img` (exFAT) — TeslaCam recordings
-  - `usb_lightshow.img` (FAT32) — LightShow, Chimes, and Wraps
-  - `usb_music.img` (FAT32, optional) — Music playback
-- Sparse files (only use disk space as data is written)
-- Presented as multi-LUN USB gadget to Tesla
+**多盘架构：**
+- 两到三个独立磁盘镜像：
+  - `usb_cam.img`（exFAT）——行车记录仪录制
+  - `usb_lightshow.img`（FAT32）——灯光秀、锁车音效和涂装
+  - `usb_music.img`（FAT32，可选）——音乐播放
+- 稀疏文件（仅在写入数据时占用磁盘空间）
+- 以多 LUN USB 设备呈现给特斯拉
 
-**USB Gadget Implementation:**
-- Linux `g_mass_storage` kernel module via `libcomposite`
-- LUN 0: Read-write (ro=0) for TeslaCam recordings
-- LUN 1: Read-only (ro=1) for LightShow/Chimes
-- LUN 2: Read-only (ro=1) for Music (optional, when `music_enabled: true`)
+**USB 设备实现：**
+- Linux `g_mass_storage` 内核模块通过 `libcomposite`
+- LUN 0：读写（ro=0）用于行车记录仪录制
+- LUN 1：只读（ro=1）用于灯光秀/锁车音效
+- LUN 2：只读（ro=1）用于音乐（可选，当 `music_enabled: true`）
 
-**Concurrency Protection:**
-- `.quick_edit_part2.lock` file prevents race conditions during temporary RW mounts
-- Shared lock for quick-edit operations on both part2 (LightShow) and part3 (Music)
-- 10-second timeout, 120-second stale lock detection
-- **Task coordinator**: Global exclusive lock prevents geo-indexer, video archiver, and cloud sync from running simultaneously (30-minute stale lock auto-clear)
-- All services and scripts respect lock state
+**并发保护：**
+- `.quick_edit_part2.lock` 文件防止临时读写挂载期间的竞争条件
+- part2（灯光秀）和 part3（音乐）快速编辑操作共享锁
+- 10 秒超时，120 秒过期锁检测
+- **任务协调器**：全局排他锁防止地理索引器、视频存档器和云同步同时运行（30 分钟过期锁自动清除）
+- 所有服务和脚本均遵守锁状态
 
-**Performance Optimizations:**
-- **Boot time**: ~14 seconds on Pi Zero 2 W (detects existing RW mount at boot to skip unnecessary remount operations)
-- **Configuration loading**: Single YAML parse with secure eval (properly quoted values prevent command injection)
-- **Web UI responsiveness**: Settings page loads in ~0.4s (optimized from 133s through batched configuration reads)
-- **Memory efficiency**: Desktop services disabled, 1GB swap enabled for stable operation on 512MB RAM
-
+**性能优化：**
+- **启动时间**：Pi Zero 2 W 约 14 秒（检测到已有读写挂载时跳过不必要的重挂载操作）。中国优化版进一步缩短约 3-8 秒：禁用 HDMI、蓝牙和音频输出。
+- **配置加载**：单次 YAML 解析（正确引用的值可防止命令注入）
+- **Web 界面响应速度**：设置页面加载约 0.4s（通过批量配置读取优化，从 133s 大幅降低）
+- **内存效率**：禁用桌面服务，启用 1GB 交换空间确保 512MB RAM 上稳定运行
