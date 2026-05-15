@@ -5,8 +5,8 @@ set -euo pipefail
 # This script pulls the latest code from GitHub and runs setup
 # Supports both git-cloned installations and manual installations
 
-REPO_URL="https://github.com/mphacker/TeslaUSB"
-ARCHIVE_BASE_URL="https://github.com/mphacker/TeslaUSB/archive/refs/heads"
+REPO_URL="https://github.com/Richard-M-L/TeslaUSB"
+ARCHIVE_BASE_URL="https://github.com/Richard-M-L/TeslaUSB/archive/refs/heads"
 # Auto-derive install directory from this script's location (run-in-place)
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="main"
