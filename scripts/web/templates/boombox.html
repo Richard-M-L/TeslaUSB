@@ -278,7 +278,7 @@
 
     <h2>{{ _('media.boombox_title') }}</h2>
     <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 14px;">
-        Sounds Tesla plays through the external pedestrian-warning speaker.
+        {{ _("media.boombox_desc") }}
     </p>
 
     {# === NHTSA SAFETY WARNING (must stay above the upload zone) === #}
@@ -303,26 +303,26 @@
             <svg style="width: 18px; height: 18px; flex-shrink: 0;" aria-hidden="true">
                 <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use>
             </svg>
-            <strong>Tesla Boombox Requirements</strong>
+            <strong>{{ _("media.boombox_requirements") }}</strong>
         </p>
         <ul>
-            <li><strong>Folder:</strong> <code>/{{ boombox_folder }}</code> at the root of the Music drive (managed for you)</li>
-            <li><strong>Format:</strong> MP3 or WAV only</li>
-            <li><strong>Size:</strong> {{ max_file_size_mb }} MB maximum (≤ 5 seconds recommended)</li>
-            <li><strong>Filename:</strong> {{ max_filename_length }} characters max (letters, numbers, spaces, underscores, dashes, dots)</li>
-            <li><strong>Count:</strong> Up to {{ max_file_count }} sounds (Tesla loads the first {{ max_file_count }} alphabetically)</li>
+            <li><strong>{{ _("media.boombox_folder_label") }}:</strong> <code>/{{ boombox_folder }}</code> {{ _("media.boombox_folder_desc") }}</li>
+            <li><strong>{{ _("media.boombox_format_label") }}:</strong> {{ _("media.boombox_format_desc") }}</li>
+            <li><strong>{{ _("media.boombox_size_label") }}:</strong> {{ _("media.boombox_size_desc", max_mb=max_file_size_mb) }}</li>
+            <li><strong>{{ _("media.boombox_filename_label") }}:</strong> {{ _("media.boombox_filename_desc", max_len=max_filename_length) }}</li>
+            <li><strong>{{ _("media.boombox_count_label") }}:</strong> {{ _("media.boombox_count_desc", max_count=max_file_count) }}</li>
         </ul>
     </div>
 
     {# === UPLOAD ZONE === #}
     <div class="boombox-section-header">
-        <h3>Add a sound</h3>
+        <h3>{{ _("media.boombox_add_sound") }}</h3>
         <span id="boomboxCountBadge"
               class="boombox-count-badge {% if file_count >= max_file_count %}full{% endif %}">
             <svg style="width: 14px; height: 14px;" aria-hidden="true">
                 <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-music"></use>
             </svg>
-            {{ file_count }} / {{ max_file_count }} sounds
+            {{ _("media.boombox_sound_count", count=file_count, max=max_file_count) }}
         </span>
     </div>
 
@@ -335,9 +335,9 @@
             </svg>
             <div class="drop-title">
                 {% if file_count >= max_file_count %}
-                Maximum sounds reached
+                {{ _("media.boombox_max_reached") }}
                 {% else %}
-                Drop a file here or click to choose
+                {{ _("media.boombox_drop_hint") }}
                 {% endif %}
             </div>
             <div class="drop-hint">
@@ -365,7 +365,7 @@
 
     {# === FILE LIST === #}
     <div class="boombox-section-header">
-        <h3>Current sounds</h3>
+        <h3>{{ _("media.boombox_current_sounds") }}</h3>
     </div>
 
     {% if files %}
@@ -386,7 +386,7 @@
                     <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use>
                 </svg>
                 <div>
-                    <strong>Tesla may ignore this file.</strong> {{ file.warning }}
+                    <strong>{{ _("media.boombox_tesla_may_ignore") }}</strong> {{ file.warning }}
                 </div>
             </div>
             {% endif %}

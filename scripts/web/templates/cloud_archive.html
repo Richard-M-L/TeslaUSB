@@ -31,7 +31,7 @@
                 {{ sync_status.current_file or '' }}
             </span>
             <button type="button" class="present-btn" onclick="syncStop()" id="syncStopBtn"
-                    style="padding: 8px 16px; font-size: 14px;">Stop Sync</button>
+                    style="padding: 8px 16px; font-size: 14px;">{{ _("cloud.stop_sync") }}</button>
         </div>
 
         {% elif sync_status.error %}
@@ -68,9 +68,9 @@
         <div style="margin-top: 8px;">
             <button type="button" class="edit-btn" onclick="syncNow()" id="syncNowBtn"
                     style="padding: 8px 16px; font-size: 14px;"
-                    {% if not provider_connected %}disabled title="Configure a cloud provider first"{% endif %}>Sync Now</button>
+                    {% if not provider_connected %}disabled title="{{ _('cloud.set_up_provider') }}"{% endif %}>{{ _("cloud.sync_now") }}</button>
             {% if not provider_connected %}
-            <span style="font-size: var(--text-sm); color: var(--text-secondary); margin-left: 8px;">Set up a cloud provider below to start syncing.</span>
+            <span style="font-size: var(--text-sm); color: var(--text-secondary); margin-left: 8px;">{{ _("cloud.set_up_provider") }}</span>
             {% endif %}
         </div>
         {% endif %}
@@ -88,7 +88,7 @@
             <div class="device-status-header">
                 <span class="status-dot status-edit" style="animation: pulse 1.5s ease-in-out infinite;"></span>
                 <div class="device-status-info">
-                    <strong id="archiveTitle">Archiving&hellip;</strong>
+                    <strong id="archiveTitle">{{ _("cloud.archiving_placeholder") }}</strong>
                     <p id="archiveSubtitle" style="font-size: var(--text-sm); color: var(--text-secondary);"></p>
                 </div>
             </div>
@@ -106,24 +106,24 @@
     <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4);">
         <div style="flex: 1; min-width: 120px; padding: var(--space-3); background: var(--bg-info); border-radius: var(--radius-md); text-align: center;">
             <div style="font-size: var(--text-2xl); font-weight: 600; color: var(--text-primary);">{{ sync_stats.total_synced|default(0) }}</div>
-            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Events Synced</div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary);">{{ _("cloud.events_synced") }}</div>
         </div>
         <div style="flex: 1; min-width: 120px; padding: var(--space-3); background: var(--bg-info); border-radius: var(--radius-md); text-align: center;">
             <div style="font-size: var(--text-2xl); font-weight: 600; color: var(--text-primary);">{{ sync_stats.total_pending|default(0) }}</div>
-            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Events Pending</div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary);">{{ _("cloud.events_pending") }}</div>
         </div>
         <div style="flex: 1; min-width: 120px; padding: var(--space-3); background: var(--bg-info); border-radius: var(--radius-md); text-align: center;">
             <div style="font-size: var(--text-2xl); font-weight: 600; color: var(--text-primary);">{{ sync_stats.total_failed|default(0) }}</div>
-            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Failed</div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary);">{{ _("cloud.failed") }}</div>
         </div>
         <div style="flex: 1; min-width: 120px; padding: var(--space-3); background: var(--bg-info); border-radius: var(--radius-md); text-align: center;">
             <div style="font-size: var(--text-2xl); font-weight: 600; color: var(--text-primary);">
                 {% if sync_stats.total_bytes %}{{ sync_stats.total_bytes|filesizeformat }}{% else %}0 B{% endif %}
             </div>
-            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Transferred</div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary);">{{ _("cloud.transferred") }}</div>
         </div>
     </div>
-    <p style="font-size: var(--text-xs); color: var(--text-muted); margin: -8px 0 var(--space-4); text-align: center;">Each event contains multiple camera files (up to 6 angles per clip)</p>
+    <p style="font-size: var(--text-xs); color: var(--text-muted); margin: -8px 0 var(--space-4); text-align: center;">{{ _("cloud.each_event_contains") }}</p>
     {% endif %}
 
     <!-- ================================================================
@@ -132,7 +132,7 @@
     <details class="settings-section"{% if not provider_connected %} open{% endif %}>
         <summary>
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-cloud"></use></svg>
-            Cloud Provider
+            {{ _("cloud.cloud_provider") }}
         </summary>
         <div class="section-content" id="providerSection">
             {% if provider_connected %}
@@ -142,19 +142,19 @@
                     <span style="color: var(--success-text); font-size: 1.2em;">&#10003;</span>
                     <strong style="color: var(--text-primary);">{{ provider|replace('-', ' ')|title }}</strong>
                 </span>
-                <span style="font-size: var(--text-sm); color: var(--text-secondary);">Connected</span>
+                <span style="font-size: var(--text-sm); color: var(--text-secondary);">{{ _("cloud.connected") }}</span>
                 <button type="button" class="action-btn danger" onclick="disconnectProvider()"
-                        style="margin-left: auto;">Disconnect</button>
+                        style="margin-left: auto;">{{ _("cloud.disconnect") }}</button>
             </div>
             <div style="margin-top: var(--space-3);">
-                <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtn">Test Connection</button>
+                <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtn">{{ _("cloud.test_connection") }}</button>
                 <span id="testConnResult" style="font-size: var(--text-sm); margin-left: var(--space-2);"></span>
             </div>
 
             {# ---- Storage usage ---- #}
             <div id="storageUsageRow" style="margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text-tertiary); display: none;">
                 <svg style="width:12px;height:12px;vertical-align:-1px;margin-right:3px;opacity:0.6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                Storage: <span id="storageUsageText"></span>
+                {{ _("index.storage") }}: <span id="storageUsageText"></span>
             </div>
             <div id="storageWarning" style="display: none; margin-top: var(--space-2); padding: 8px 12px; border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500;"></div>
 
@@ -162,7 +162,7 @@
             {% if token_expiry %}
             <div style="margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text-tertiary);">
                 <svg style="width:12px;height:12px;vertical-align:-1px;margin-right:3px;opacity:0.6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Access token expires: <span id="tokenExpiryDate" data-expiry="{{ token_expiry }}"></span>
+                {{ _("cloud.access_token_expires") }}: <span id="tokenExpiryDate" data-expiry="{{ token_expiry }}"></span>
                 {% if provider in ('onedrive',) %}
                 <br><span style="color: var(--text-tertiary); font-size: var(--text-xs);">
                     Refresh token stays valid for 90 days of inactivity. The system refreshes automatically when WiFi is connected.
@@ -170,7 +170,7 @@
                 </span>
                 {% elif provider in ('google-drive', 'dropbox') %}
                 <br><span style="color: var(--text-tertiary); font-size: var(--text-xs);">
-                    Refresh token is valid indefinitely unless you revoke access in your account settings.
+                    {{ _("cloud.token_indefinite") }}
                 </span>
                 {% endif %}
             </div>
@@ -179,13 +179,13 @@
             {# ---- Auto-sync toggle ---- #}
             <div style="margin-top: var(--space-4); border-top: 1px solid var(--border-primary); padding-top: var(--space-3);">
                 <div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;">
-                    <strong style="color: var(--text-primary); font-size: var(--text-sm);">Automatic sync:</strong>
+                    <strong style="color: var(--text-primary); font-size: var(--text-sm);">{{ _("cloud.automatic_sync") }}:</strong>
                     <label style="display: inline-flex; align-items: center; cursor: pointer; gap: 8px;">
                         <input type="checkbox" id="syncEnabledToggle" {% if sync_enabled %}checked{% endif %}
                                onchange="toggleSyncEnabled(this.checked)"
                                style="width: 18px; height: 18px; accent-color: var(--accent-success);">
                         <span id="syncEnabledLabel" style="font-size: var(--text-sm); color: var(--text-secondary);">
-                            {{ 'Enabled — syncs automatically when WiFi connects' if sync_enabled else 'Disabled — provider stays connected, no auto-sync' }}
+                            {{ '{{ _("cloud.enabled_syncs_auto") }}' if sync_enabled else '{{ _("cloud.disabled_no_auto_sync") }}' }}
                         </span>
                     </label>
                 </div>
@@ -194,12 +194,12 @@
             {# ---- Sync destination folder ---- #}
             <div style="margin-top: var(--space-3);">
                 <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2);">
-                    <strong style="color: var(--text-primary); font-size: var(--text-sm);">Sync destination:</strong>
+                    <strong style="color: var(--text-primary); font-size: var(--text-sm);">{{ _("cloud.sync_destination") }}:</strong>
                     <code id="currentRemotePath" style="font-size: var(--text-sm); color: var(--accent-info); background: var(--bg-tertiary); padding: 2px 8px; border-radius: var(--radius-sm);">{{ remote_path or 'TeslaUSB' }}</code>
                     <button type="button" class="action-btn" onclick="openFolderBrowser()" id="browseFolderBtn"
                             style="font-size: 13px; padding: 4px 12px;">
                         <svg style="width:14px;height:14px;vertical-align:-2px;margin-right:3px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                        Choose Folder
+                        {{ _("cloud.choose_folder") }}
                     </button>
                 </div>
 
@@ -217,12 +217,12 @@
                     <div style="padding: 8px 12px; border-top: 1px solid var(--border-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <button type="button" class="action-btn" onclick="createNewFolder()" style="font-size: 13px; padding: 4px 10px;">
                             <svg style="width:12px;height:12px;vertical-align:-1px;margin-right:2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            New Folder
+                            {{ _("cloud.new_folder") }}
                         </button>
                         <span style="flex: 1;"></span>
-                        <button type="button" class="action-btn" onclick="closeFolderBrowser()" style="font-size: 13px; padding: 4px 10px;">Cancel</button>
+                        <button type="button" class="action-btn" onclick="closeFolderBrowser()" style="font-size: 13px; padding: 4px 10px;">{{ _("common.cancel") }}</button>
                         <button type="button" class="edit-btn" onclick="selectCurrentFolder()" id="selectFolderBtn" style="font-size: 13px; padding: 4px 14px;">
-                            Select This Folder
+                            {{ _("cloud.select_this_folder") }}
                         </button>
                     </div>
                 </div>
@@ -231,14 +231,14 @@
             {% else %}
             {# ---- Not connected state ---- #}
             <p style="margin: 0 0 var(--space-3); color: var(--text-secondary);">
-                Set up a cloud storage provider to automatically archive dashcam footage.
+                {{ _("cloud.set_up_provider") }}
             </p>
 
             <div style="margin-bottom: var(--space-3);">
                 <label for="providerSelect" style="display: block; margin-bottom: var(--space-2); font-weight: 500; color: var(--text-primary);">Provider:</label>
                 <select id="providerSelect" onchange="onProviderChange()"
                         style="width: 100%; max-width: 360px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-input); font-size: 15px; background-color: var(--form-input-bg); color: var(--text-primary);">
-                    <option value="">-- Select Provider --</option>
+                    <option value="">{{ _("cloud.select_provider") }}</option>
                     <option value="google-drive"{% if provider == 'google-drive' %} selected{% endif %}>Google Drive</option>
                     <option value="onedrive"{% if provider == 'onedrive' %} selected{% endif %}>OneDrive</option>
                     <option value="dropbox"{% if provider == 'dropbox' %} selected{% endif %}>Dropbox</option>
@@ -251,10 +251,10 @@
             {# rclone-based providers — Token paste wizard #}
             <div id="rcloneSetup" style="display: none;">
                 <div class="info-box" style="margin-bottom: var(--space-3);">
-                    <strong>How to connect <span id="rcloneProviderName">your cloud storage</span>:</strong>
+                    <strong>{{ _("cloud.how_to_connect", provider="cloud") }}</strong>
                     <ol style="margin: 8px 0 0; padding-left: 20px; font-size: var(--text-sm); line-height: 1.7;">
-                        <li>Install <a href="https://rclone.org/downloads/" target="_blank" rel="noopener" style="color: var(--link-color);">rclone</a> on a computer with a web browser</li>
-                        <li>Open a terminal and run:
+                        <li>{{ _("cloud.rclone_howto_step1") }}</li>
+                        <li>{{ _("cloud.rclone_howto_step2") }}
                             <div style="margin: 6px 0; padding: 8px 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-family: monospace; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; max-width: 100%; overflow-x: auto;">
                                 <code id="rcloneCmd" style="white-space: nowrap;">rclone authorize "onedrive"</code>
                                 <button type="button" onclick="copyRcloneCmd()" title="Copy command"
@@ -263,13 +263,13 @@
                                 </button>
                             </div>
                         </li>
-                        <li>Sign in and grant access in your browser</li>
-                        <li>Copy the token output and paste it below</li>
+                        <li>{{ _("cloud.rclone_howto_step3") }}</li>
+                        <li>{{ _("cloud.rclone_howto_step4") }}</li>
                     </ol>
                 </div>
 
                 <div style="margin-bottom: var(--space-3);">
-                    <label for="rcloneTokenInput" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Paste rclone token:</label>
+                    <label for="rcloneTokenInput" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.paste_rclone_token") }}</label>
                     <textarea id="rcloneTokenInput" rows="5" placeholder='Paste the entire JSON token here, e.g.: {"access_token":"...","token_type":"Bearer",...}'
                               style="width: 100%; max-width: 480px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 13px; font-family: monospace; resize: vertical;"></textarea>
                 </div>
@@ -285,39 +285,39 @@
             {# Key-based providers #}
             <div id="keySetup" style="display: none;">
                 <div style="margin-bottom: var(--space-3);">
-                    <label for="credAccessKey" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Access Key:</label>
+                    <label for="credAccessKey" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.access_key") }}</label>
                     <input type="text" id="credAccessKey" autocomplete="off"
                            style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
                 </div>
                 <div style="margin-bottom: var(--space-3);">
-                    <label for="credSecret" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Secret Key:</label>
+                    <label for="credSecret" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.secret_key") }}</label>
                     <div style="display: flex; gap: 4px; max-width: 360px;">
                         <input type="password" id="credSecret" autocomplete="off"
                                style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
                         <button type="button" onclick="toggleCredSecret(this)"
-                                style="padding: 4px 8px; background-color: var(--btn-info-bg); color: var(--btn-info-text); border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">Show</button>
+                                style="padding: 4px 8px; background-color: var(--btn-info-bg); color: var(--btn-info-text); border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">{{ _("common.show") }}</button>
                     </div>
                 </div>
                 <div style="margin-bottom: var(--space-3);">
-                    <label for="credRegion" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Region:</label>
+                    <label for="credRegion" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.region") }}</label>
                     <input type="text" id="credRegion" placeholder="e.g. us-east-1"
                            style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
                 </div>
                 <div style="margin-bottom: var(--space-3);">
-                    <label for="credBucket" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Bucket Name:</label>
+                    <label for="credBucket" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.bucket_name") }}</label>
                     <input type="text" id="credBucket" placeholder="my-teslausb-archive"
                            style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
                 </div>
                 <div style="margin-bottom: var(--space-3);" id="endpointGroup">
-                    <label for="credEndpoint" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">Endpoint URL <span style="font-weight: 400; color: var(--text-secondary);">(optional for S3)</span>:</label>
+                    <label for="credEndpoint" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.endpoint_url") }} {{ _("cloud.endpoint_optional") }}</label>
                     <input type="url" id="credEndpoint" placeholder="https://s3.wasabisys.com"
                            style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button type="button" class="edit-btn" onclick="saveProvider()" style="padding: 8px 16px; font-size: 14px;">
-                        Save &amp; Connect
+                        {{ _("cloud.save_and_connect") }}
                     </button>
-                    <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtnSetup">Test Connection</button>
+                    <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtnSetup">{{ _("cloud.test_connection") }}</button>
                     <span id="testConnResultSetup" style="font-size: var(--text-sm); color: var(--text-secondary); align-self: center;"></span>
                 </div>
             </div>
@@ -331,18 +331,18 @@
     <details class="settings-section" open>
         <summary>
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-settings"></use></svg>
-            Sync Settings
+            {{ _("cloud.sync_settings") }}
         </summary>
         <div class="section-content">
             {# ---- How sync works ---- #}
             <div class="info-box" style="margin-bottom: var(--space-4); font-size: var(--text-sm); line-height: 1.6; color: var(--text-secondary);">
-                <strong style="color: var(--text-primary);">How sync works:</strong>
+                <strong style="color: var(--text-primary);">{{ _("cloud.how_sync_works") }}</strong>
                 <ul style="margin: 6px 0 0; padding-left: 18px;">
-                    <li><strong>Automatic:</strong> Starts syncing whenever WiFi connects</li>
-                    <li><strong>Events only:</strong> Syncs Sentry and Saved clips (not RecentClips rolling buffer)</li>
-                    <li><strong>Oldest first:</strong> Preserves the most at-risk clips first</li>
-                    <li><strong>Skip existing:</strong> Files already on cloud storage are never re-uploaded</li>
-                    <li><strong>Manual:</strong> Click &ldquo;Sync Now&rdquo; at any time</li>
+                    <li><strong>{{ _("cloud.sync_auto") }}</strong></li>
+                    <li><strong>{{ _("cloud.sync_events_only") }}</strong></li>
+                    <li><strong>{{ _("cloud.sync_oldest_first") }}</strong></li>
+                    <li><strong>{{ _("cloud.sync_skip_existing") }}</strong></li>
+                    <li><strong>{{ _("cloud.sync_manual") }}</strong></li>
                 </ul>
                 <p style="margin: 8px 0 0;">
                     All camera angles for each event are uploaded together.
@@ -354,7 +354,7 @@
 
                 {# Folder selection #}
                 <div style="margin-bottom: var(--space-4);">
-                    <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">Folders to sync:</label>
+                    <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">{{ _("cloud.folders_to_sync") }}</label>
                     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
                         {% set folder_options = ['SentryClips', 'SavedClips', 'RecentClips'] %}
                         {% for folder in folder_options %}
@@ -371,9 +371,9 @@
 
                 {# Priority order #}
                 <div style="margin-bottom: var(--space-4);">
-                    <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">Upload priority:</label>
+                    <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">{{ _("cloud.upload_priority") }}</label>
                     <p style="margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--text-secondary);">
-                        Use the arrows to reorder. Top item is synced first.
+                        {{ _("cloud.priority_reorder_hint") }}
                     </p>
                     <ol id="priorityList" style="margin: 0; padding-left: 0; color: var(--text-primary); list-style: none;">
                         {% for folder in priority_order %}
@@ -396,7 +396,7 @@
                 {# Bandwidth limit #}
                 <div style="margin-bottom: var(--space-4);">
                     <label for="bwSlider" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">
-                        Bandwidth limit: <span id="bwValue" style="font-weight: 400;">{{ max_upload_mbps }} Mbps</span>
+                        {{ _("cloud.bandwidth_limit") }}: <span id="bwValue" style="font-weight: 400;">{{ max_upload_mbps }} Mbps</span>
                     </label>
                     <div style="display:flex; align-items:center; gap:12px;">
                         <input type="range" id="bwSlider" name="max_upload_mbps"
@@ -419,11 +419,11 @@
                 {# Cloud storage reserve #}
                 <div style="margin-bottom: var(--space-4);">
                     <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">
-                        Cloud storage reserve (GB)
+                        {{ _("cloud.cloud_storage_reserve") }}
                     </label>
                     <input type="number" name="cloud_reserve_gb" value="{{ cloud_reserve_gb }}" min="0" max="100" step="0.5"
                            style="width:120px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-secondary);">
-                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">Keep this much free on cloud — sync stops before filling to 100%.</p>
+                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">{{ _("cloud.cloud_reserve_desc") }}</p>
                 </div>
 
                 {# Phase 2.6 — bulk cloud sync retry cap. Default 5,
@@ -433,7 +433,7 @@
                    effect on the next sync iteration without restart. #}
                 <div style="margin-bottom: var(--space-4);">
                     <label for="cloudRetryMaxAttempts" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">
-                        Retry attempts before giving up
+                        {{ _("cloud.retry_attempts") }}
                     </label>
                     <input type="number" id="cloudRetryMaxAttempts" name="cloud_retry_max_attempts"
                            min="1" max="20" step="1"
@@ -449,11 +449,11 @@
                 <div style="margin-bottom: var(--space-3);">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px">
                         <input type="checkbox" name="sync_non_event_videos" {% if sync_non_event_videos %}checked{% endif %}>
-                        <span>Sync videos without events or geolocation</span>
+                        <span>{{ _("cloud.sync_non_event_videos") }}</span>
                     </label>
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px">
                         <input type="checkbox" name="cloud_auto_cleanup" {% if cloud_auto_cleanup %}checked{% endif %}>
-                        <span>Auto-delete old cloud videos when storage is low</span>
+                        <span>{{ _("cloud.auto_delete_old") }}</span>
                     </label>
                 </div>
 
@@ -470,7 +470,7 @@
                         <input type="checkbox" name="keep_clips_until_synced"
                                {% if keep_clips_until_synced %}checked{% endif %}
                                {% if not provider_connected %}disabled{% endif %}>
-                        <span style="font-weight: 600; color: var(--text-primary);">Keep clips until backed up to cloud</span>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ _("cloud.keep_clips_until_synced") }}</span>
                     </label>
                     {% if not provider_connected %}
                         <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 4px 0 0;">
@@ -502,7 +502,7 @@
                     <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">Auto-cleanup won't delete videos newer than this.</p>
                 </div>
 
-                <button type="submit" class="edit-btn" style="padding: 8px 20px; font-size: 14px; margin-top: var(--space-3);">Save Settings</button>
+                <button type="submit" class="edit-btn" style="padding: 8px 20px; font-size: 14px; margin-top: var(--space-3);">{{ _("cloud.save_settings") }}</button>
             </form>
         </div>
     </details>
@@ -514,7 +514,7 @@
     <details class="settings-section" id="syncQueueSection">
         <summary>
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-list"></use></svg>
-            Sync Queue
+            {{ _("cloud.sync_queue") }}
             <span id="queueBadge" style="display: none; margin-left: 8px; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-info-bg); color: var(--msg-info-text);"></span>
         </summary>
         <div class="section-content">
@@ -522,8 +522,8 @@
                 <div style="text-align: center; padding: var(--space-4); color: var(--text-muted);">Loading queue&hellip;</div>
             </div>
             <div style="margin-top: var(--space-3); display: flex; gap: var(--space-2); flex-wrap: wrap;">
-                <button type="button" class="action-btn" onclick="refreshQueue()" style="padding: 6px 14px; font-size: 13px;">Refresh</button>
-                <button type="button" class="action-btn danger" onclick="clearQueue()" id="clearQueueBtn" style="padding: 6px 14px; font-size: 13px; display: none;">Clear Queue</button>
+                <button type="button" class="action-btn" onclick="refreshQueue()" style="padding: 6px 14px; font-size: 13px;">{{ _("common.refresh") }}</button>
+                <button type="button" class="action-btn danger" onclick="clearQueue()" id="clearQueueBtn" style="padding: 6px 14px; font-size: 13px; display: none;">{{ _("cloud.clear_queue") }}</button>
             </div>
         </div>
     </details>
@@ -534,7 +534,7 @@
     <details class="settings-section">
         <summary>
             <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-bar-chart-2"></use></svg>
-            Sync History
+            {{ _("cloud.sync_history") }}
         </summary>
         <div class="section-content">
             {% if sync_history %}
@@ -625,7 +625,7 @@
                 <svg class="nav-icon" aria-hidden="true" style="width: 48px; height: 48px; opacity: 0.4; margin-bottom: var(--space-2);">
                     <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-cloud"></use>
                 </svg>
-                <p style="margin: 0;">No sync sessions yet</p>
+                <p style="margin: 0;">{{ _("cloud.no_sync_sessions") }}</p>
             </div>
             {% endif %}
         </div>
@@ -860,7 +860,7 @@
                     '</div>' +
                 '</div>' +
                 '<div style="margin-top:8px;">' +
-                    '<button type="button" class="edit-btn" onclick="syncNow()" style="padding:8px 16px;font-size:14px;">Sync Now</button>' +
+                    '<button type="button" class="edit-btn" onclick="syncNow()" style="padding:8px 16px;font-size:14px;">{{ _("cloud.sync_now") }}</button>' +
                 '</div>';
             isSyncing = false;
         }
@@ -903,14 +903,14 @@
             });
             var data = await resp.json();
             if (data.success) {
-                showToast('Sync started.', 'success');
+                showToast(_t('cloud.sync_started'), 'success');
                 startPolling();
             } else {
-                showToast(data.message || 'Failed to start sync.', 'error');
+                showToast(data.message || _t('cloud.failed_to_start_sync'), 'error');
                 if (btn) { btn.disabled = false; btn.textContent = 'Sync Now'; }
             }
         } catch (e) {
-            showToast('Network error. Please try again.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
             if (btn) { btn.disabled = false; btn.textContent = 'Sync Now'; }
         }
     };
@@ -928,11 +928,11 @@
             if (data.success) {
                 showToast(data.message, 'info');
             } else {
-                showToast(data.message || 'Failed to stop sync.', 'error');
+                showToast(data.message || _t('cloud.sync_stop_failed'), 'error');
             }
         } catch (e) {
             _hideBusy();
-            showToast('Network error.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
         }
     };
 
@@ -984,9 +984,9 @@
                 result.style.color = data.success ? 'var(--success-text)' : 'var(--error-text)';
             }
             if (data.auth_error) {
-                showToast('Authorization expired. Please disconnect and reconnect.', 'error');
+                showToast(_t('cloud.auth_expired'), 'error');
             } else {
-                showToast(data.message || (data.success ? 'Connection successful.' : 'Connection failed.'), data.success ? 'success' : 'error');
+                showToast(data.message || (data.success ? _t('cloud.connection_successful') : _t('cloud.connection_failed')), data.success ? 'success' : 'error');
             }
         } catch (e) {
             if (result) { result.textContent = 'Network error'; result.style.color = 'var(--error-text)'; }
@@ -1055,7 +1055,7 @@
         var cmdEl = document.getElementById('rcloneCmd');
         if (cmdEl) {
             navigator.clipboard.writeText(cmdEl.textContent).then(function() {
-                showToast('Command copied!', 'success');
+                showToast(_t('cloud.command_copied'), 'success');
             }).catch(function() {
                 /* Fallback for older browsers */
                 var range = document.createRange();
@@ -1063,7 +1063,7 @@
                 var sel = window.getSelection();
                 sel.removeAllRanges();
                 sel.addRange(range);
-                showToast('Command selected — press Ctrl+C to copy.', 'info');
+                showToast(_t('cloud.command_selected'), 'info');
             });
         }
     };
@@ -1072,12 +1072,12 @@
         var sel = document.getElementById('providerSelect');
         var provider = sel ? sel.value : '';
         if (!provider || rcloneProviders.indexOf(provider) === -1) {
-            showToast('Please select a cloud provider.', 'warning');
+            showToast(_t('cloud.select_provider_warning'), 'warning');
             return;
         }
         var tokenText = (document.getElementById('rcloneTokenInput') || {}).value || '';
         if (!tokenText.trim()) {
-            showToast('Please paste the token from rclone authorize.', 'warning');
+            showToast(_t('cloud.paste_token_warning'), 'warning');
             return;
         }
 
@@ -1103,7 +1103,7 @@
                 setTimeout(function() { window.location.reload(); }, 1500);
             } else {
                 _hideBusy();
-                showToast(data.message || 'Failed to connect.', 'error');
+                showToast(data.message || _t('cloud.connect_failed'), 'error');
                 if (resultEl) {
                     resultEl.textContent = data.message || 'Failed';
                     resultEl.style.color = 'var(--error-text)';
@@ -1120,7 +1120,7 @@
     window.saveProvider = async function() {
         var sel = document.getElementById('providerSelect');
         var provider = sel ? sel.value : '';
-        if (!provider) { showToast('Please select a provider.', 'warning'); return; }
+        if (!provider) { showToast(_t('cloud.select_provider_warning'), 'warning'); return; }
 
         var credentials = {};
         if (keyProviders.indexOf(provider) !== -1) {
@@ -1130,7 +1130,7 @@
             credentials.bucket = (document.getElementById('credBucket') || {}).value || '';
             credentials.endpoint = (document.getElementById('credEndpoint') || {}).value || '';
             if (!credentials.access_key || !credentials.secret || !credentials.bucket) {
-                showToast('Access Key, Secret, and Bucket are required.', 'warning');
+                showToast(_t('cloud.access_key_required'), 'warning');
                 return;
             }
         }
@@ -1149,7 +1149,7 @@
                 showToast('Provider saved. Reloading\u2026', 'success');
                 setTimeout(function() { window.location.reload(); }, 1000);
             } else {
-                showToast(data.message || 'Failed to save provider.', 'error');
+                showToast(data.message || _t('cloud.failed_to_save_provider'), 'error');
             }
         } catch (e) {
             showToast('Network error.', 'error');
@@ -1157,7 +1157,7 @@
     };
 
     window.disconnectProvider = async function() {
-        if (!confirm('Disconnect cloud provider? Existing archived files will remain in the cloud.')) return;
+        if (!confirm(_t('cloud.disconnect_confirm'))) return;
         _showBusy('Disconnecting\u2026');
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_disconnect_provider") }}', {
@@ -1169,11 +1169,11 @@
             });
             var data = await resp.json();
             if (data.success) {
-                showToast('Provider disconnected.', 'info');
+                showToast(_t('cloud.provider_disconnected'), 'info');
                 setTimeout(function() { window.location.reload(); }, 1000);
             } else {
                 _hideBusy();
-                showToast(data.message || 'Failed to disconnect.', 'error');
+                showToast(data.message || _t('cloud.disconnect_failed'), 'error');
             }
         } catch (e) {
             _hideBusy();
@@ -1300,7 +1300,7 @@
         var name = prompt('Enter new folder name:');
         if (!name || !name.trim()) return;
         name = name.trim().replace(/[\/\\]/g, '');
-        if (!name) { showToast('Invalid folder name.', 'warning'); return; }
+        if (!name) { showToast(_t('cloud.invalid_folder_name'), 'warning'); return; }
 
         var fullPath = _currentBrowsePath ? _currentBrowsePath + '/' + name : name;
         _showBusy('Creating folder\u2026');
@@ -1314,10 +1314,10 @@
             var data = await resp.json();
             _hideBusy();
             if (data.success) {
-                showToast('Folder created.', 'success');
+                showToast(_t('cloud.folder_created'), 'success');
                 _navigateFolder(fullPath);
             } else {
-                showToast(data.message || 'Failed to create folder.', 'error');
+                showToast(data.message || _t('cloud.failed_to_create_folder'), 'error');
             }
         } catch (e) {
             _hideBusy();
@@ -1341,9 +1341,9 @@
                 var pathEl = document.getElementById('currentRemotePath');
                 if (pathEl) pathEl.textContent = data.path;
                 closeFolderBrowser();
-                showToast('Sync destination set to: ' + data.path, 'success');
+                showToast(_t('cloud.sync_destination_set') + ': ' + data.path, 'success');
             } else {
-                showToast(data.message || 'Failed to set path.', 'error');
+                showToast(data.message || _t('cloud.failed_to_set_path'), 'error');
             }
         } catch (e) {
             _hideBusy();
@@ -1373,9 +1373,9 @@
                 if (label) label.textContent = enabled
                     ? 'Enabled \u2014 syncs automatically when WiFi connects'
                     : 'Disabled \u2014 provider stays connected, no auto-sync';
-                showToast('Auto-sync ' + (enabled ? 'enabled' : 'disabled') + '.', 'success');
+                showToast(enabled ? _t('cloud.auto_sync_enabled') : _t('cloud.auto_sync_disabled'), 'success');
             } else {
-                showToast(data.message || 'Failed to update.', 'error');
+                showToast(data.message || _t('cloud.failed_to_update'), 'error');
                 /* Revert checkbox */
                 var cb = document.getElementById('syncEnabledToggle');
                 if (cb) cb.checked = !enabled;
@@ -1601,7 +1601,7 @@
             }
 
             if (queue.length === 0) {
-                content.innerHTML = '<div style="text-align: center; padding: var(--space-4); color: var(--text-muted);">No files in sync queue</div>';
+                content.innerHTML = '<div style="text-align: center; padding: var(--space-4); color: var(--text-muted);">{{ _("cloud.no_files_in_queue") }}</div>';
                 return;
             }
 
@@ -1626,7 +1626,7 @@
             html += '</div>';
             content.innerHTML = html;
         } catch(e) {
-            content.innerHTML = '<div style="text-align: center; padding: var(--space-4); color: var(--error-text);">Failed to load queue</div>';
+            content.innerHTML = '<div style="text-align: center; padding: var(--space-4); color: var(--error-text);">{{ _("cloud.failed_to_load_queue") }}</div>';
         }
     };
 
@@ -1641,17 +1641,17 @@
             try { data = await resp.json(); } catch(e) { /* non-JSON response */ }
             if (!resp.ok || (data && data.success === false)) {
                 var msg = (data && data.message) ? data.message : ('HTTP ' + resp.status);
-                showToast('Could not remove from queue: ' + msg, 'error');
+                showToast(_t('cloud.queue_remove_failed') + ': ' + msg, 'error');
             }
             refreshQueue();
         } catch(e) {
-            showToast('Could not remove from queue: ' + e.message, 'error');
+            showToast(_t('cloud.queue_remove_failed') + ': ' + e.message, 'error');
             refreshQueue();
         }
     };
 
     window.clearQueue = async function() {
-        if (!confirm('Remove all queued files from the sync queue?')) return;
+        if (!confirm(_t('cloud.confirm_clear_queue'))) return;
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_queue_clear") }}', {
                 method: 'POST',
@@ -1661,13 +1661,13 @@
             try { data = await resp.json(); } catch(e) { /* non-JSON response */ }
             if (!resp.ok || (data && data.success === false)) {
                 var msg = (data && data.message) ? data.message : ('HTTP ' + resp.status);
-                showToast('Could not clear queue: ' + msg, 'error');
+                showToast(_t('cloud.queue_clear_failed') + ': ' + msg, 'error');
             } else if (data && data.message) {
                 showToast(data.message, 'success');
             }
             refreshQueue();
         } catch(e) {
-            showToast('Could not clear queue: ' + e.message, 'error');
+            showToast(_t('cloud.queue_clear_failed') + ': ' + e.message, 'error');
             refreshQueue();
         }
     };
@@ -1754,7 +1754,7 @@ async function applyBandwidth() {
                 slider.value = status.recommended_mbps;
                 label.textContent = status.recommended_mbps + ' Mbps';
             }
-            if (typeof showToast === 'function') showToast('Bandwidth updated to ' + status.recommended_mbps + ' Mbps', 'success');
+            if (typeof showToast === 'function') showToast(_t('cloud.bandwidth_updated', {mbps: status.recommended_mbps}), 'success');
         }
     } catch(e) { /* ignore */ }
 }
