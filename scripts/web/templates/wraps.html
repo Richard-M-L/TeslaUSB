@@ -14,7 +14,7 @@
     <div class="info-box" style="margin-bottom: 20px;">
         <p><strong>Tesla Wrap Requirements:</strong></p>
         <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 13px; color: var(--text-secondary);">
-            <li><strong>Format:</strong> PNG only</li>
+            <li><strong>{{ _("media.wraps_format_label") }}:</strong> {{ _("media.wraps_format_desc") }}</li>
             <li><strong>Size:</strong> {{ (max_file_size / 1024 / 1024)|round(0)|int }} MB maximum</li>
             <li><strong>Dimensions:</strong> {{ min_dimension }}x{{ min_dimension }} to {{ max_dimension }}x{{ max_dimension }} pixels</li>
             <li><strong>Filename:</strong> {{ max_filename_length }} characters max (letters, numbers, underscores, dashes, spaces)</li>
@@ -32,7 +32,7 @@
             <div class="drag-drop-zone" id="dragDropZone" style="border: 3px dashed var(--border-input); border-radius: 8px; padding: 40px; text-align: center; background: var(--form-input-bg); cursor: pointer; transition: all 0.3s; margin-bottom: 20px;">
                 <div style="pointer-events: none;">
                     <i class="bi bi-image" style="font-size: 48px; color: var(--btn-purple-bg); display: block; margin-bottom: 15px;"></i>
-                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Drag & drop PNG files here or click to browse</p>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">{{ _("media.wraps_drop_hint") }}</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
                         PNG files only • {{ min_dimension }}-{{ max_dimension }}px • Max 1 MB each
                     </p>
@@ -41,20 +41,20 @@
 
             <input type="file" id="wrap_files_multi" accept=".png,image/png" multiple style="display: none;">
 
-            <!-- Selected Files Preview -->
+            <!-- {{ _("media.wraps_selected_files") }} Preview -->
             <div id="selectedFilesPreview" style="display: none; margin-bottom: 20px;">
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 Selected Files:</h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 300px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="action-btn" id="uploadSelectedBtn">Upload All Files</button>
-                    <button type="button" class="action-btn danger" id="clearSelectedBtn">Clear All</button>
+                    <button type="button" class="action-btn" id="uploadSelectedBtn">{{ _("media.wraps_upload_all") }}</button>
+                    <button type="button" class="action-btn danger" id="clearSelectedBtn">{{ _("media.wraps_clear_all") }}</button>
                 </div>
             </div>
         </div>
 
         <!-- Mobile/Fallback Simple Upload Interface -->
         <form method="post" action="{{ url_for('wraps.upload_wrap') }}" enctype="multipart/form-data" style="margin-bottom: 20px;" id="wrapUploadForm">
-            <label for="wrap_file" style="display: block; margin-bottom: 8px; font-weight: 600;">Upload Custom Wrap:</label>
+            <label for="wrap_file" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ _("media.wraps_upload_single") }}</label>
             <p style="margin: 0 0 10px 0; font-size: 13px; color: var(--text-secondary);">
                 PNG file • {{ min_dimension }}-{{ max_dimension }}px • Max 1 MB
             </p>

@@ -54,12 +54,12 @@
             <div id="selectedFilesPreview" style="display: none; margin-bottom: 20px;">
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">
                     <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-list"></use></svg>
-                    Selected Files
+                    {{ _("media.wraps_selected_files") }}
                 </h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 300px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                    <button type="button" class="action-btn" id="uploadSelectedBtn" style="min-height: 44px;">Upload All Files</button>
-                    <button type="button" class="action-btn danger" id="clearSelectedBtn" style="min-height: 44px;">Clear All</button>
+                    <button type="button" class="action-btn" id="uploadSelectedBtn" style="min-height: 44px;">{{ _("media.wraps_upload_all") }}</button>
+                    <button type="button" class="action-btn danger" id="clearSelectedBtn" style="min-height: 44px;">{{ _("media.wraps_clear_all") }}</button>
                 </div>
             </div>
         </div>
@@ -208,7 +208,7 @@
         <header class="cropper-header">
             <h3 id="cropperTitle" style="margin: 0;">
                 <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-image"></use></svg>
-                Crop License Plate Image
+                {{ _("media.plates_crop_title") }}
             </h3>
             <button type="button" id="cropperCloseBtn" class="action-btn" aria-label="Close cropper" style="min-width: 44px; min-height: 44px;">
                 <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-x"></use></svg>
@@ -219,7 +219,7 @@
             <div id="cropperFileInfo" style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);"></div>
 
             <fieldset style="border: 1px solid var(--border-input); border-radius: 4px; padding: 10px 14px; margin-bottom: 12px;">
-                <legend style="font-size: 13px; font-weight: 600; padding: 0 6px;">Region</legend>
+                <legend style="font-size: 13px; font-weight: 600; padding: 0 6px;">{{ _("media.plates_region") }}</legend>
                 <label style="display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; min-height: 44px; cursor: pointer;">
                     <input type="radio" name="plateRegion" value="na" id="cropperRegionNa" checked style="width: 18px; height: 18px;">
                     <span>North America ({{ plate_width_na }}&times;{{ plate_height_na }})</span>
@@ -235,8 +235,8 @@
             </div>
 
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-                <button type="button" id="cropperResetBtn" class="action-btn" style="min-height: 44px;">Reset crop</button>
-                <button type="button" id="cropperMaximizeBtn" class="action-btn" style="min-height: 44px;">Maximize crop</button>
+                <button type="button" id="cropperResetBtn" class="action-btn" style="min-height: 44px;">{{ _("media.plates_reset_crop") }}</button>
+                <button type="button" id="cropperMaximizeBtn" class="action-btn" style="min-height: 44px;">{{ _("media.plates_maximize_crop") }}</button>
             </div>
 
             <div style="margin-top: 14px;">
@@ -250,7 +250,7 @@
 
         <footer class="cropper-footer" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px;">
             <button type="button" id="cropperCancelBtn" class="action-btn" style="min-height: 44px;">Cancel</button>
-            <button type="button" id="cropperConfirmBtn" class="action-btn" style="min-height: 44px;">Use this image</button>
+            <button type="button" id="cropperConfirmBtn" class="action-btn" style="min-height: 44px;">{{ _("media.plates_use_image") }}</button>
         </footer>
     </div>
 </div>

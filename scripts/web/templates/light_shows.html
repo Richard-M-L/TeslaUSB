@@ -16,7 +16,7 @@
             <div class="drag-drop-zone" id="dragDropZone" style="border: 3px dashed var(--border-input); border-radius: 8px; padding: 40px; text-align: center; background: var(--form-input-bg); cursor: pointer; transition: all 0.3s; margin-bottom: 20px;">
                 <div style="pointer-events: none;">
                     <i class="bi bi-cloud-upload" style="font-size: 48px; color: var(--btn-purple-bg); display: block; margin-bottom: 15px;"></i>
-                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Drag & drop files here or click to browse</p>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">{{ _("media.shows_drop_hint") }}</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
                         Supports: .fseq, .mp3, .wav, .zip (can select multiple files)
                     </p>
@@ -30,8 +30,8 @@
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">Selected Files:</h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="action-btn" id="uploadSelectedBtn">Upload All Files</button>
-                    <button type="button" class="action-btn danger" id="clearSelectedBtn">Clear All</button>
+                    <button type="button" class="action-btn" id="uploadSelectedBtn">{{ _("media.wraps_upload_all") }}</button>
+                    <button type="button" class="action-btn danger" id="clearSelectedBtn">{{ _("media.wraps_clear_all") }}</button>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <a href="{{ url_for('light_shows.download_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
                                class="action-btn">
-                                Download ZIP
+                                {{ _("media.shows_download_zip") }}
                             </a>
                             <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" style="display: inline-block; margin: 0;" 
                                   onsubmit="return confirm('Are you sure you want to delete all files for {{ group.base_name }}?');">

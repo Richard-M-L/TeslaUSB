@@ -507,7 +507,7 @@
             </p>
             <div id="dropZone" class="music-drop-zone">
                 <div class="drop-icon">🎵</div>
-                <div class="drop-label">Drop files here or click to choose</div>
+                <div class="drop-label">{{ _("media.music_drop_hint") }}</div>
                 <div class="drop-hint">Allowed: mp3, flac, wav, aac, m4a. Max {{ max_upload_size_mb }} MiB per file.</div>
                 <input id="fileInput" type="file" name="music_files" multiple webkitdirectory directory
                     style="display: none;" accept=".mp3,.flac,.wav,.aac,.m4a">
@@ -515,11 +515,11 @@
             <div class="music-file-list" id="fileList"></div>
             <div class="music-folder-input">
                 <input id="folderName" type="text" placeholder="New folder name">
-                <button id="createFolder" class="action-btn">Create Folder</button>
+                <button id="createFolder" class="action-btn">{{ _("media.music_create_folder") }}</button>
             </div>
             <div class="music-upload-actions">
                 <button id="startUpload" class="action-btn" disabled>Upload</button>
-                <button id="clearSelection" class="action-btn danger" disabled>Clear</button>
+                <button id="clearSelection" class="action-btn danger" disabled>{{ _("media.wraps_clear_all") }}</button>
             </div>
             <div id="uploadStatus" class="music-status"></div>
         </div>

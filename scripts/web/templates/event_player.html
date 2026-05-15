@@ -703,7 +703,7 @@
     <!-- Main video -->
     <div class="main-video-container">
         <video id="mainVideo" class="main-video" controls playsinline webkit-playsinline>
-            Your browser does not support the video tag.
+            {{ _("player.no_video_support") }}
         </video>
     </div>
 
@@ -787,7 +787,7 @@
             <button class="clip-nav-btn" id="prevClipBtn" onclick="navigateClip(-1)" title="Previous Clip" aria-label="Previous clip">
                 <i class="bi bi-chevron-left"></i>
             </button>
-            <div class="clip-info" id="clipInfo">Clip 1 of 1</div>
+            <div class="clip-info" id="clipInfo">{{ _("player.clip_of", n=1, total=1) }}</div>
             <button class="clip-nav-btn" id="nextClipBtn" onclick="navigateClip(1)" title="Next Clip" aria-label="Next clip">
                 <i class="bi bi-chevron-right"></i>
             </button>
@@ -920,14 +920,14 @@
         <!-- Download Event Button -->
         <div class="camera-option download-option" id="downloadButton" onclick="downloadEvent()">
             <i class="bi bi-download camera-icon" id="downloadIcon"></i>
-            <div class="camera-label" id="downloadLabel">Download All</div>
+            <div class="camera-label" id="downloadLabel">{{ _("player.download_all") }}</div>
         </div>
 
         <!-- Archive to Cloud Button -->
         {% if cloud_provider_connected %}
         <div class="camera-option archive-option" id="archiveButton" onclick="archiveToCloud()">
             <i class="bi bi-cloud-arrow-up camera-icon" id="archiveIcon"></i>
-            <div class="camera-label" id="archiveLabel">Archive</div>
+            <div class="camera-label" id="archiveLabel">{{ _("player.archive") }}</div>
         </div>
         {% elif cloud_archive_available %}
         <div class="camera-option archive-option disabled" id="archiveButton" title="Connect a cloud provider in Cloud settings to archive videos" style="opacity:0.4;cursor:not-allowed;">
@@ -940,7 +940,7 @@
         {% if mode_token == 'edit' %}
         <div class="camera-option delete-option" id="deleteButton" onclick="deleteEvent()">
             <i class="bi bi-trash camera-icon" id="deleteIcon"></i>
-            <div class="camera-label" id="deleteLabel">Delete</div>
+            <div class="camera-label" id="deleteLabel">{{ _("common.delete") }}</div>
         </div>
         {% else %}
         <div class="camera-option delete-option disabled" id="deleteButton" title="Enable Network Sharing to delete videos">
