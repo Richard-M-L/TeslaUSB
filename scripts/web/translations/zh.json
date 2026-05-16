@@ -34,7 +34,7 @@
     "base.brand": "TeslaUSB",
     "base.theme_toggle": "切换深色模式",
     "base.system_status": "系统状态",
-    "base.lang_switch_title": "切换至中文",
+    "base.lang_switch_title": "Switch to English",
 
     "base.archive_banner": "存档子系统健康状态异常。",
     "base.run_archive_now": "立即运行存档",

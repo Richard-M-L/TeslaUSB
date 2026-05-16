@@ -34,7 +34,7 @@
     "base.brand": "TeslaUSB",
     "base.theme_toggle": "Toggle dark mode",
     "base.system_status": "System status",
-    "base.lang_switch_title": "Switch to English",
+    "base.lang_switch_title": "切换至中文",
 
     "base.archive_banner": "Archive subsystem health degraded.",
     "base.run_archive_now": "Run archive now",

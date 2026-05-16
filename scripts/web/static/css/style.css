@@ -438,6 +438,43 @@
 }
 
 /* ============================================================
+   Language Switch Button (circular flag icon)
+   ============================================================ */
+
+.lang-switch-btn {
+    background: none;
+    border: none;
+    color: var(--ds-text-secondary);
+    cursor: pointer;
+    padding: var(--space-1);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    text-decoration: none;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.lang-switch-btn:hover {
+    background: var(--ds-bg-tertiary);
+    color: var(--ds-text-primary);
+}
+
+.lang-switch-btn:focus-visible {
+    outline: 2px solid var(--ds-accent-primary);
+    outline-offset: 2px;
+}
+
+.lang-flag-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: block;
+}
+
+/* ============================================================
    Nav Icon (Lucide SVG)
    ============================================================ */
 
@@ -477,8 +514,9 @@
 .sidebar-rail .nav-item {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: 0;
     padding: var(--space-3) var(--space-3);
+    justify-content: center;
     color: var(--ds-text-secondary);
     text-decoration: none;
     white-space: nowrap;
@@ -486,6 +524,12 @@
     border-radius: var(--radius-md);
     margin: var(--space-1) var(--space-1);
     transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-rail:hover .nav-item,
+.sidebar-rail.expanded .nav-item {
+    gap: var(--space-3);
+    justify-content: flex-start;
 }
 
 .sidebar-rail .nav-item:hover {
@@ -512,13 +556,15 @@
     font-size: var(--text-sm);
     font-weight: 500;
     opacity: 0;
-    transition: opacity var(--transition-slow);
+    width: 0;
     overflow: hidden;
+    transition: opacity var(--transition-slow);
 }
 
 .sidebar-rail:hover .nav-label,
 .sidebar-rail.expanded .nav-label {
     opacity: 1;
+    width: auto;
 }
 
 /* ============================================================

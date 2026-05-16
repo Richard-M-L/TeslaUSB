@@ -2,8 +2,8 @@
 
 import os
 import logging
-from flask import Blueprintfrom services.i18n_service import flash_t
-, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file
+from services.i18n_service import flash_t
 
 from config import MUSIC_ENABLED, IMG_MUSIC_PATH
 from utils import get_base_context, format_file_size
