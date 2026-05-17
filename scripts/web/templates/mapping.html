@@ -3859,7 +3859,7 @@ async function loadVideoList(append) {
                 '<div class="vp-clip-info">' +
                     '<div class="vp-clip-date">' + safeDateStr + '</div>' +
                     '<div class="vp-clip-meta">' + cameras + ' cam\u00b7 ' + sizeMb.toFixed(0) + ' MB</div>' +
-                    (reason ? '<div class="vp-clip-reason">' + safeReason + '</div>' : '') +
+                    (safeReason ? '<div class="vp-clip-reason">' + safeReason + '</div>' : '') +
                 '</div>' +
                 '<div class="vp-actions">' +
                     (ev.city
