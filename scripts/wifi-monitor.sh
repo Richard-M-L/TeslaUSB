@@ -15,15 +15,15 @@ log_timing() {
     local elapsed=$((now_ms - WIFI_MONITOR_START_MS))
     echo "[WIFI-MONITOR TIMING] +${elapsed}ms: $checkpoint"
 }
-log_timing "WiFi monitor starting"
+log_timing "WiFi 监视器启动中"
 # ====================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-log_timing "Script dir resolved"
+log_timing "脚本目录已解析"
 
 CONFIG_FILE="$SCRIPT_DIR/config.sh"
 [ -f "$CONFIG_FILE" ] && source "$CONFIG_FILE"
-log_timing "Config loaded"
+log_timing "配置已加载"
 
 LOCK_FILE="/var/run/wifi-monitor.lock"
 LOG_TAG="wifi-monitor"
@@ -66,16 +66,16 @@ log() {
 if [ -f "$LOCK_FILE" ]; then
     OLD_PID="$(cat "$LOCK_FILE" 2>/dev/null || true)"
     if [ -n "$OLD_PID" ] && [ "$OLD_PID" != "$$" ] && kill -0 "$OLD_PID" 2>/dev/null; then
-        log "Another instance (PID $OLD_PID) is running, exiting"
+        log "另一个实例（PID $OLD_PID）正在运行，退出"
         exit 0
     fi
-    log "Removing stale lock from PID ${OLD_PID:-unknown}"
+    log "正在移除 PID ${OLD_PID:-unknown} 的过期锁文件"
     rm -f "$LOCK_FILE"
 fi
 echo "$$" > "$LOCK_FILE"
 
 cleanup() {
-    log "Cleaning up wifi-monitor..."
+    log "正在清理 wifi-monitor..."
     rm -f "$LOCK_FILE"
     # Don't stop AP on exit - let it continue running
 }
@@ -152,22 +152,22 @@ ping_ok() {
 
 check_wifi() {
     if ! link_up; then
-        log "$WIFI_IF not associated"
+        log "$WIFI_IF 未关联"
         return 1
     fi
     if ! ip_ready; then
-        log "$WIFI_IF has no IP address"
+        log "$WIFI_IF 没有 IP 地址"
         return 1
     fi
     if ping_ok; then
         return 0
     fi
-    log "Ping to $PING_TARGET failed"
+    log "对 $PING_TARGET 的 Ping 失败"
     return 1
 }
 
 restart_wifi_interface() {
-    log "Restarting WiFi interface $WIFI_IF"
+    log "正在重启 WiFi 接口 $WIFI_IF"
     if ip link set "$WIFI_IF" down 2>/dev/null; then
         sleep 2
         if ip link set "$WIFI_IF" up 2>/dev/null; then
@@ -179,7 +179,7 @@ restart_wifi_interface() {
 }
 
 restart_networking() {
-    log "Restarting networking stack"
+    log "正在重启网络栈"
     if systemctl is-active --quiet NetworkManager; then
         if systemctl restart NetworkManager 2>/dev/null; then
             sleep 10
@@ -268,7 +268,7 @@ stop_ap() {
     ip addr flush dev "$iface" 2>/dev/null || true
     iw dev "$iface" del 2>/dev/null || true
     clear_ap_state
-    log "Stopped fallback AP"
+    log "已停止备用 AP"
 }
 
 start_ap() {
@@ -280,21 +280,21 @@ start_ap() {
 
     # Verify physical interface exists
     if ! iw dev "$WIFI_IF" info >/dev/null 2>&1; then
-        log "Physical interface $WIFI_IF not found, cannot create AP"
+        log "未找到物理接口 $WIFI_IF，无法创建 AP"
         return 1
     fi
 
     # Create virtual AP interface (keeps WiFi client running)
     iw dev "$iface" del 2>/dev/null || true
     if ! iw dev "$WIFI_IF" interface add "$iface" type __ap; then
-        log "Failed to create virtual AP interface $iface from $WIFI_IF"
+        log "未能从 $WIFI_IF 创建虚拟 AP 接口 $iface"
         return 1
     fi
-    log "Created virtual AP interface $iface"
+    log "已创建虚拟 AP 接口 $iface"
 
     # Bring up the virtual interface (required for hostapd)
     if ! ip link set "$iface" up; then
-        log "Failed to bring up interface $iface"
+        log "未能启动接口 $iface"
         iw dev "$iface" del 2>/dev/null || true
         return 1
     fi
@@ -308,7 +308,7 @@ start_ap() {
     # Configure IP address on the interface
     ip addr flush dev "$iface" 2>/dev/null || true
     ip addr add "$AP_IPV4_CIDR" dev "$iface" || {
-        log "Failed to assign IP $AP_IPV4_CIDR to $iface"
+        log "未能将 IP $AP_IPV4_CIDR 分配给 $iface"
         iw dev "$iface" del 2>/dev/null || true
         return 1
     }
@@ -318,7 +318,7 @@ start_ap() {
 
     # Start dnsmasq
     if ! dnsmasq --conf-file="$DNSMASQ_CONF" --pid-file="$DNSMASQ_PID"; then
-        log "Failed to start dnsmasq for fallback AP"
+        log "未能启动备用 AP 的 dnsmasq"
         return 1
     fi
 
@@ -326,50 +326,50 @@ start_ap() {
     local hostapd_out
     hostapd_out=$(hostapd -B -P "$HOSTAPD_PID" "$HOSTAPD_CONF" 2>&1)
     if [ $? -ne 0 ]; then
-        log "Failed to start hostapd: $hostapd_out"
+        log "未能启动 hostapd：$hostapd_out"
         kill "$(cat "$DNSMASQ_PID" 2>/dev/null)" 2>/dev/null || true
         rm -f "$DNSMASQ_PID"
         return 1
     fi
 
     record_ap_start
-    log "Fallback AP started on $iface (SSID: $AP_SSID)"
+    log "备用 AP 已在 $iface 上启动（SSID：$AP_SSID）"
 }
 
 # Removed: maybe_retry_sta_from_ap() - no longer needed with mandatory concurrent mode
 # In concurrent mode, STA and AP run simultaneously without interference
 
 # Cleanup any stale virtual interface from previous crash/unclean shutdown
-log_timing "Cleaning up stale interfaces"
+log_timing "正在清理过期的接口"
 iw dev "$AP_VIRTUAL_IF" del 2>/dev/null || true
 
 # Initialize runtime force mode from persistent config if not already set
-log_timing "Initializing runtime directory"
+log_timing "正在初始化运行时目录"
 ensure_runtime_dir
 if [ ! -f "$AP_FORCE_MODE_FILE" ] && [ -n "${OFFLINE_AP_FORCE_MODE:-}" ]; then
-    log "Initializing force mode from config: ${OFFLINE_AP_FORCE_MODE}"
+    log "正在从配置初始化强制模式：${OFFLINE_AP_FORCE_MODE}"
     echo "${OFFLINE_AP_FORCE_MODE}" >"$AP_FORCE_MODE_FILE"
 fi
-log_timing "Force mode initialized"
+log_timing "强制模式已初始化"
 
 # Verify physical WiFi interface exists
 if ! iw dev "$WIFI_IF" info >/dev/null 2>&1; then
-    log "WARNING: Physical WiFi interface $WIFI_IF not found - AP feature will not work"
+    log "警告：未找到物理 WiFi 接口 $WIFI_IF - AP 功能将无法工作"
 fi
-log_timing "WiFi interface verified"
+log_timing "WiFi 接口已验证"
 
 # ── Boot-time STA connect attempt ──
 # Try to connect to a saved network BEFORE entering the main loop.
 # The Pi Zero 2 W has a single-radio chip — running the AP (hostapd on uap0)
 # locks the radio to one channel and prevents STA association on other channels.
 # So we attempt STA first while the radio is free.
-log_timing "Attempting initial WiFi connection"
+log_timing "正在尝试初始 WiFi 连接"
 BOOT_CONNECTED=0
 if [ "$(get_force_mode)" != "force_on" ]; then
     # Give NetworkManager up to 30 seconds to auto-connect
     for attempt in 1 2 3 4 5 6; do
         if check_wifi; then
-            log "WiFi connected at boot (attempt $attempt)"
+            log "WiFi 在启动时已连接（尝试 $attempt）"
             BOOT_CONNECTED=1
             break
         fi
@@ -378,29 +378,29 @@ if [ "$(get_force_mode)" != "force_on" ]; then
 
     if [ $BOOT_CONNECTED -eq 0 ]; then
         # NetworkManager didn't auto-connect — try highest-priority saved connection
-        log "Auto-connect failed after 30s, trying explicit connect..."
+        log "30 秒后自动连接失败，正在尝试手动连接..."
         BEST_CONN=$(nmcli -t -f NAME,TYPE,AUTOCONNECT-PRIORITY connection show 2>/dev/null \
             | grep ':.*wireless' \
             | sort -t: -k3 -rn \
             | head -1 \
             | cut -d: -f1)
         if [ -n "$BEST_CONN" ]; then
-            log "  Trying: $BEST_CONN"
+            log "  正在尝试：$BEST_CONN"
             nmcli --wait 20 connection up "$BEST_CONN" 2>/dev/null
             sleep 5
             if check_wifi; then
-                log "Connected to $BEST_CONN at boot"
+                log "启动时已连接到 $BEST_CONN"
                 BOOT_CONNECTED=1
             else
-                log "Explicit connect to $BEST_CONN failed"
+                log "手动连接到 $BEST_CONN 失败"
             fi
         fi
     fi
 fi
-log_timing "Initial WiFi attempt complete (connected=$BOOT_CONNECTED)"
+log_timing "初始 WiFi 尝试完成（connected=$BOOT_CONNECTED）"
 
-log_timing "WiFi monitor initialization complete (total: $(($(date +%s%3N) - WIFI_MONITOR_START_MS))ms)"
-log "WiFi monitor started (interval ${CHECK_INTERVAL}s, AP fallback ${AP_ENABLED})"
+log_timing "WiFi 监视器初始化完成（总计：$(($(date +%s%3N) - WIFI_MONITOR_START_MS))ms）"
+log "WiFi 监视器已启动（间隔 ${CHECK_INTERVAL}秒，AP 回退 ${AP_ENABLED}）"
 
 while true; do
     force_mode=$(get_force_mode)
@@ -408,8 +408,8 @@ while true; do
     if [ "$force_mode" = "force_on" ]; then
         # Force-on mode: Start AP immediately (runs concurrently with WiFi client)
         if ! ap_active; then
-            log "Force-on requested; starting fallback AP"
-            start_ap || log "Force-on start failed"
+            log "已请求强制开启；正在启动备用 AP"
+            start_ap || log "强制开启启动失败"
         fi
         sleep_interval
         continue
@@ -417,7 +417,7 @@ while true; do
 
     if [ "$force_mode" = "force_off" ]; then
         if ap_active; then
-            log "Force-off requested; stopping fallback AP"
+            log "已请求强制关闭；正在停止备用 AP"
             stop_ap
         fi
         sleep_interval
@@ -429,7 +429,7 @@ while true; do
         if check_wifi; then
             rssi=$(current_rssi)
             if [ -n "$rssi" ] && [ "$rssi" -ge "$MIN_RSSI" ]; then
-                log "Auto mode: WiFi healthy (RSSI ${rssi}dBm); stopping AP"
+                log "自动模式：WiFi 正常（RSSI ${rssi}dBm）；正在停止 AP"
                 stop_ap
                 # Reset the STA-retry backoff so the next outage gets
                 # quick retries again (Phase 1 item 1.1).
@@ -466,7 +466,7 @@ while true; do
         STA_RETRY_COUNTER=$((STA_RETRY_COUNTER + 1))
         if [ $STA_RETRY_COUNTER -ge $STA_RETRY_BACKOFF_CYCLES ]; then
             STA_RETRY_COUNTER=0
-            log "Periodic STA retry (backoff=${STA_RETRY_BACKOFF_CYCLES} cycles, prior failures=${STA_RETRY_FAILURES}): stopping AP to attempt home WiFi"
+            log "定期 STA 重试（退避=${STA_RETRY_BACKOFF_CYCLES} 周期，此前失败=${STA_RETRY_FAILURES}）：正在停止 AP 以尝试家庭 WiFi"
             stop_ap
             sleep 5
 
@@ -490,7 +490,7 @@ while true; do
             done
 
             if [ "$sta_ok" -eq 1 ]; then
-                log "STA reconnected — AP stays off"
+                log "STA 已重新连接 — AP 保持关闭"
                 FAILURE_COUNT=0
                 LAST_GOOD_TS=$(date +%s)
                 # Reset backoff to its minimum so the NEXT outage
@@ -505,8 +505,8 @@ while true; do
                 if [ $STA_RETRY_BACKOFF_CYCLES -gt 90 ]; then
                     STA_RETRY_BACKOFF_CYCLES=90
                 fi
-                log "STA retry failed after 30s (consec failures=${STA_RETRY_FAILURES}, next retry in ~${STA_RETRY_BACKOFF_CYCLES} cycles) — restarting AP"
-                start_ap || log "AP restart failed"
+                log "STA 重试 30 秒后失败（连续失败=${STA_RETRY_FAILURES}，下次重试约 ${STA_RETRY_BACKOFF_CYCLES} 个周期）— 正在重启 AP"
+                start_ap || log "AP 重启失败"
             fi
         fi
 
@@ -516,40 +516,40 @@ while true; do
 
     if check_wifi; then
         if [ $FAILURE_COUNT -gt 0 ]; then
-            log "WiFi restored after $FAILURE_COUNT failures"
+            log "WiFi 在 $FAILURE_COUNT 次失败后恢复"
         fi
         FAILURE_COUNT=0
         LAST_GOOD_TS=$(date +%s)
     else
         FAILURE_COUNT=$((FAILURE_COUNT + 1))
-        log "WiFi check failed (attempt $FAILURE_COUNT/$MAX_FAILURES)"
+        log "WiFi 检查失败（尝试 $FAILURE_COUNT/$MAX_FAILURES）"
 
         if [ $FAILURE_COUNT -ge $MAX_FAILURES ]; then
-            log "Max failures reached; attempting STA recovery"
+            log "已达到最大失败次数；正在尝试 STA 恢复"
             if restart_wifi_interface && check_wifi; then
-                log "Recovery successful after interface restart"
+                log "接口重启后恢复成功"
                 FAILURE_COUNT=0
                 LAST_GOOD_TS=$(date +%s)
             elif restart_networking && check_wifi; then
-                log "Recovery successful after networking restart"
+                log "网络重启后恢复成功"
                 FAILURE_COUNT=0
                 LAST_GOOD_TS=$(date +%s)
             else
                 # Last resort: try explicit nmcli reconnect to configured connection
-                log "Standard recovery failed; trying explicit nmcli reconnect"
+                log "标准恢复失败；正在尝试手动 nmcli 重新连接"
                 local active_conn
                 active_conn=$(nmcli -t -f NAME,TYPE connection show 2>/dev/null | grep ':.*wireless' | head -1 | cut -d: -f1)
                 if [ -n "$active_conn" ]; then
                     nmcli connection up "$active_conn" 2>/dev/null && sleep 5
                     if check_wifi; then
-                        log "Recovery successful after explicit nmcli reconnect"
+                        log "手动 nmcli 重新连接后恢复成功"
                         FAILURE_COUNT=0
                         LAST_GOOD_TS=$(date +%s)
                     else
-                        log "All recovery attempts failed"
+                        log "所有恢复尝试均失败"
                     fi
                 else
-                    log "No wireless connection profile found for reconnect"
+                    log "未找到用于重新连接的无线连接配置文件"
                 fi
             fi
         fi
@@ -557,13 +557,13 @@ while true; do
         if [ "$AP_ENABLED" = "true" ] && [ "$force_mode" != "force_off" ]; then
             now=$(date +%s)
             if [ $(( now - LAST_GOOD_TS )) -ge "$DISCONNECT_GRACE" ]; then
-                log "Offline for ${DISCONNECT_GRACE}s; starting fallback AP"
+                log "已离线 ${DISCONNECT_GRACE} 秒；正在启动备用 AP"
                 if start_ap; then
                     # AP started successfully
                     FAILURE_COUNT=0
                     LAST_GOOD_TS=$now
                 else
-                    log "Failed to start fallback AP"
+                    log "启动备用 AP 失败"
                     # Don't reset LAST_GOOD_TS on failure - allow faster retry
                     # Reset failure count to start grace period over
                     FAILURE_COUNT=0

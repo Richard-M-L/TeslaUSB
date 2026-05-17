@@ -16,15 +16,15 @@ LOG_FILE="/var/log/teslausb/fsck_$(basename "$DEVICE").log"
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")"
 
-echo "Running fsck on $DEVICE (type: $FS_TYPE, mode: $MODE)"
+echo "正在对 $DEVICE 执行文件系统检查（类型：$FS_TYPE，模式：$MODE）"
 
 # Enable swap if it exists and isn't already enabled
 SWAP_ENABLED=0
 if [ -f "$SWAP_FILE" ]; then
   if ! swapon --show | grep -q "$SWAP_FILE"; then
-    echo "Enabling swap for fsck operation..."
+    echo "正在启用交换空间以支持 fsck 操作..."
     swapon "$SWAP_FILE" 2>/dev/null || {
-      echo "Warning: Could not enable swap (may already be active)"
+      echo "警告：无法启用交换空间（可能已处于活动状态）"
     }
     SWAP_ENABLED=1
   fi
@@ -33,7 +33,7 @@ fi
 # Cleanup function
 cleanup() {
   if [ $SWAP_ENABLED -eq 1 ]; then
-    echo "Disabling swap..."
+    echo "正在禁用交换空间..."
     swapoff "$SWAP_FILE" 2>/dev/null || true
   fi
 }
@@ -50,7 +50,7 @@ FSCK_STATUS=0
 if [ -n "$TIMEOUT_OVERRIDE" ]; then
   # Custom timeout specified
   TIMEOUT="$TIMEOUT_OVERRIDE"
-  echo "Using custom timeout: ${TIMEOUT}s"
+  echo "使用自定义超时：${TIMEOUT}秒"
 elif [ "${FSCK_BACKGROUND:-0}" = "1" ]; then
   # Background mode (called from web service) - use extended timeouts
   if [ "$MODE" = "repair" ]; then
@@ -58,7 +58,7 @@ elif [ "${FSCK_BACKGROUND:-0}" = "1" ]; then
   else
     TIMEOUT=1800  # 30 minutes for quick check
   fi
-  echo "Using background timeout: ${TIMEOUT}s"
+  echo "使用后台超时：${TIMEOUT}秒"
 else
   # Legacy short timeouts (for any remaining direct calls)
   if [ "$MODE" = "repair" ]; then
@@ -66,7 +66,7 @@ else
   else
     TIMEOUT=300   # 5 minutes
   fi
-  echo "Using standard timeout: ${TIMEOUT}s"
+  echo "使用标准超时：${TIMEOUT}秒"
 fi
 
 case "$FS_TYPE" in
@@ -86,7 +86,7 @@ case "$FS_TYPE" in
     fi
     ;;
   *)
-    echo "Error: Unsupported filesystem type: $FS_TYPE" >&2
+    echo "错误：不支持的文件系统类型：$FS_TYPE" >&2
     exit 1
     ;;
 esac
@@ -97,46 +97,46 @@ esac
 #   - Repair mode (-a/-p): exit 1 = errors found and corrected
 case $FSCK_STATUS in
   0)
-    echo "✓ Filesystem check passed - no errors found"
+    echo "✓ 文件系统检查通过 - 未发现错误"
     rm -f "$LOG_FILE"
     exit 0
     ;;
   1)
     if [ "$MODE" = "repair" ]; then
-      echo "✓ Filesystem errors corrected successfully"
-      echo "   Details: $LOG_FILE"
+      echo "✓ 文件系统错误已成功修复"
+      echo "   详情：$LOG_FILE"
       exit 1
     else
       # Quick mode: exit 1 means errors were found but not fixed (read-only check)
-      echo "⚠ Filesystem errors detected (read-only check)"
-      echo "   Run repair to fix these errors"
-      echo "   Details: $LOG_FILE"
+      echo "⚠ 检测到文件系统错误（只读检查）"
+      echo "   请运行修复模式来修复这些错误"
+      echo "   详情：$LOG_FILE"
       exit 4  # Map to "errors uncorrected" for quick mode
     fi
     ;;
   2)
-    echo "⚠ Filesystem corrected - system should be rebooted"
-    echo "   Details: $LOG_FILE"
+    echo "⚠ 文件系统已修复 - 应重新启动系统"
+    echo "   详情：$LOG_FILE"
     exit 2
     ;;
   4)
-    echo "✗ Filesystem errors left uncorrected"
-    echo "   Details: $LOG_FILE"
+    echo "✗ 文件系统错误未修复"
+    echo "   详情：$LOG_FILE"
     exit 4
     ;;
   8)
-    echo "✗ Operational error during fsck"
-    echo "   Details: $LOG_FILE"
+    echo "✗ fsck 操作出现错误"
+    echo "   详情：$LOG_FILE"
     exit 8
     ;;
   124)
-    echo "⚠ Filesystem check timed out"
-    echo "   Details: $LOG_FILE"
+    echo "⚠ 文件系统检查超时"
+    echo "   详情：$LOG_FILE"
     exit 124
     ;;
   *)
-    echo "✗ Unknown fsck exit code: $FSCK_STATUS"
-    echo "   Details: $LOG_FILE"
+    echo "✗ 未知的 fsck 退出码：$FSCK_STATUS"
+    echo "   详情：$LOG_FILE"
     exit $FSCK_STATUS
     ;;
 esac

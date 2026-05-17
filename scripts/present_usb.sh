@@ -26,7 +26,7 @@ wait_until() {
     sleep $interval
     elapsed=$(echo "$elapsed + $interval" | bc)
     if (( $(echo "$elapsed >= $max_wait" | bc -l) )); then
-      echo "  Warning: $desc did not complete within ${max_wait}s"
+      echo "  警告：$desc 未在 ${max_wait}秒 内完成"
       return 1
     fi
   done
@@ -43,9 +43,9 @@ create_loop() {
 
 # Load configuration
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-log_timing "Script start"
+log_timing "脚本启动"
 source "$SCRIPT_DIR/config.sh"
-log_timing "Config loaded"
+log_timing "配置已加载"
 
 MUSIC_ENABLED_LC="$(printf '%s' "${MUSIC_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
 MUSIC_ENABLED_BOOL=0
@@ -57,8 +57,8 @@ LOCK_TIMEOUT=30
 LOCK_CHECK_START=$(date +%s)
 
 if [ -f "$LOCK_FILE" ]; then
-  echo "⚠️  File operation in progress (lock file detected)"
-  echo "Waiting up to ${LOCK_TIMEOUT}s for operation to complete..."
+  echo "⚠️  检测到文件操作正在进行（发现锁文件）"
+  echo "等待最多 ${LOCK_TIMEOUT}秒 等待操作完成..."
 
   while [ -f "$LOCK_FILE" ]; do
     LOCK_AGE=$(($(date +%s) - LOCK_CHECK_START))
@@ -68,49 +68,49 @@ if [ -f "$LOCK_FILE" ]; then
       if [ -f "$LOCK_FILE" ]; then
         LOCK_FILE_AGE=$(($(date +%s) - $(stat -c %Y "$LOCK_FILE" 2>/dev/null || echo 0)))
         if [ $LOCK_FILE_AGE -gt 120 ]; then
-          echo "⚠️  Removing stale lock file (age: ${LOCK_FILE_AGE}s)"
+          echo "⚠️  正在移除过期的锁文件（已存在 ${LOCK_FILE_AGE}秒）"
           rm -f "$LOCK_FILE"
           break
         fi
       fi
 
-      echo "❌ ERROR: Cannot switch to present mode - file operation still in progress" >&2
-      echo "Please wait for current upload/download/scheduler operation to complete" >&2
+      echo "❌ 错误：无法切换到展示模式 - 文件操作仍在进行中" >&2
+      echo "请等待当前上传/下载/调度操作完成" >&2
       exit 1
     fi
 
     sleep 1
   done
 
-  echo "✓ File operation completed, proceeding with mode switch"
+  echo "✓ 文件操作已完成，继续执行模式切换"
 fi
 
-log_timing "Lock check completed"
+log_timing "锁检查完成"
 
 # Boot mode detection: skip Samba/unmount/loop cleanup when called at boot
 # (nothing is mounted yet — saves ~2-3 seconds)
 BOOT_MODE=0
 if [ "${1:-}" = "--boot" ]; then
   BOOT_MODE=1
-  echo "Boot mode: skipping Samba/unmount/loop cleanup (nothing mounted yet)"
-  log_timing "Boot mode — skipping cleanup"
+  echo "启动模式：跳过 Samba/卸载/循环设备清理（尚未挂载任何内容）"
+  log_timing "启动模式 — 跳过清理"
 fi
 
-echo "Switching to USB gadget presentation mode..."
+echo "正在切换到 USB 设备展示模式..."
 
 if [ $BOOT_MODE -eq 0 ]; then
   # Ask Samba to drop any open handles before shutting it down
-  echo "Closing Samba shares..."
+  echo "正在关闭 Samba 共享..."
   sudo smbcontrol all close-share gadget_part1 2>/dev/null || true
   sudo smbcontrol all close-share gadget_part2 2>/dev/null || true
 
 # Stop Samba so nothing can reopen the image while we transition
-  echo "Stopping Samba services..."
+  echo "正在停止 Samba 服务..."
   sudo systemctl stop smbd || true
   sudo systemctl stop nmbd || true
 
   # Force all buffered data to disk before unmounting
-  echo "Flushing buffered writes to disk..."
+  echo "正在将缓冲数据刷入磁盘..."
   sync
   # Brief pause to ensure filesystem metadata is stable (reduced from 1s)
   sleep 0.3
@@ -128,32 +128,32 @@ unmount_with_retry() {
   for attempt in 1 2 3; do
     # Unmount in host namespace to ensure it's visible system-wide
     if sudo nsenter --mount=/proc/1/ns/mnt -- umount "$target" 2>/dev/null || sudo umount "$target" 2>/dev/null; then
-      echo "  Unmounted $target"
+      echo "  已卸载 $target"
       return 0
     fi
-    echo "  $target busy (attempt $attempt). Terminating remaining clients..."
+    echo "  $target 忙（尝试 $attempt）。正在终止剩余客户端..."
     sudo fuser -km "$target" 2>/dev/null || true
     sleep 1
   done
 
-  echo "  Unable to unmount $target cleanly; forcing lazy unmount..."
+  echo "  无法干净地卸载 $target；正在强制延迟卸载..."
   sudo nsenter --mount=/proc/1/ns/mnt -- umount -lf "$target" 2>/dev/null || sudo umount -lf "$target" 2>/dev/null || true
   sleep 1
 
   # Check again in host namespace
   if sudo nsenter --mount=/proc/1/ns/mnt -- mountpoint -q "$target" 2>/dev/null || mountpoint -q "$target" 2>/dev/null; then
-    echo "  Error: $target still mounted after forced unmount." >&2
+    echo "  错误：强制卸载后 $target 仍处于挂载状态。" >&2
     return 1
   fi
 
-  echo "  Lazy unmount succeeded for $target"
+  echo "  延迟卸载已成功完成：$target"
   return 0
 }
 
 # Unmount drives if mounted (skip at boot — nothing is mounted)
 if [ $BOOT_MODE -eq 0 ]; then
-log_timing "Starting unmount sequence"
-echo "Unmounting drives..."
+log_timing "开始卸载序列"
+echo "正在卸载驱动器..."
 UNMOUNT_TARGETS=("$MNT_DIR/part1" "$MNT_DIR/part2")
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   UNMOUNT_TARGETS+=("$MNT_DIR/part3")
@@ -161,19 +161,19 @@ fi
 for mp in "${UNMOUNT_TARGETS[@]}"; do
   # Sync each partition before unmounting
   if mountpoint -q "$mp" 2>/dev/null; then
-    echo "  Syncing $mp..."
+    echo "  正在同步 $mp..."
     sudo sync -f "$mp" 2>/dev/null || sync
   fi
   if ! unmount_with_retry "$mp"; then
-    echo "  Aborting gadget presentation to avoid corruption." >&2
+    echo "  中止设备展示以避免损坏。" >&2
     exit 1
   fi
 done
 
-log_timing "Drives unmounted"
+log_timing "驱动器已卸载"
 
 # Also unmount any existing read-only mounts from previous present mode
-echo "Unmounting any existing read-only mounts..."
+echo "正在卸载现有的只读挂载点..."
 RO_MNT_DIR="/mnt/gadget"
 RO_UNMOUNT_TARGETS=("$RO_MNT_DIR/part1-ro" "$RO_MNT_DIR/part2-ro")
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
@@ -181,18 +181,18 @@ if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
 fi
 for mp in "${RO_UNMOUNT_TARGETS[@]}"; do
   if mountpoint -q "$mp" 2>/dev/null || sudo nsenter --mount=/proc/1/ns/mnt -- mountpoint -q "$mp" 2>/dev/null; then
-    echo "  Unmounting $mp..."
+    echo "  正在卸载 $mp..."
     unmount_with_retry "$mp" || true
   fi
 done
 
 # One final sync after all unmounts
 sync
-log_timing "Final sync completed"
+log_timing "最终同步完成"
 
 # Clean up existing loop devices for our images
 # After unmounting, detach any lingering loop devices to avoid accumulation
-echo "Cleaning up existing loop devices..."
+echo "正在清理现有的循环设备..."
 LOOP_IMAGES=("$IMG_CAM" "$IMG_LIGHTSHOW")
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   LOOP_IMAGES+=("$IMG_MUSIC")
@@ -200,14 +200,14 @@ fi
 for img in "${LOOP_IMAGES[@]}"; do
   for loop in $(losetup -j "$img" 2>/dev/null | cut -d: -f1); do
     if [ -n "$loop" ]; then
-      echo "  Detaching $loop..."
+      echo "  正在分离 $loop..."
       sudo losetup -d "$loop" 2>/dev/null || true
     fi
   done
 done
 # Brief pause for loop device cleanup to complete
 sleep 0.2
-log_timing "Loop devices cleaned up"
+log_timing "循环设备已清理"
 fi # end BOOT_MODE unmount/cleanup skip
 
 # ============================================================================
@@ -222,10 +222,10 @@ LOOP_MUSIC=""
 # fsck runs on edit→present transitions (non-boot mode) to catch corruption.
 # At boot, the images were either: (a) freshly created, or (b) previously fsck'd.
 if [ $BOOT_MODE -eq 1 ]; then
-  echo "Boot mode: deferring fsck (USB presentation is priority)"
-  log_timing "fsck deferred (boot mode)"
+  echo "启动模式：延迟文件系统检查（USB 展示优先）"
+  log_timing "文件系统检查已延迟（启动模式）"
 elif [ "${BOOT_FSCK_ENABLED:-false}" = "true" ]; then
-  echo "Running filesystem check and repair (parallel)..."
+  echo "正在运行文件系统检查和修复（并行）..."
 
   # Create loop devices for fsck (will be reused for local mounts too)
   LOOP_CAM=$(create_loop "$IMG_CAM")
@@ -251,9 +251,9 @@ elif [ "${BOOT_FSCK_ENABLED:-false}" = "true" ]; then
     fi
     local rc=$?
     if [ $rc -eq 0 ]; then
-      echo "    ✓ $label: clean"
+      echo "    ✓ $label: 正常"
     else
-      echo "    ⚠ $label: repaired or has issues (rc=$rc)"
+      echo "    ⚠ $label: 已修复或存在问题 (rc=$rc)"
     fi
   }
 
@@ -274,14 +274,14 @@ elif [ "${BOOT_FSCK_ENABLED:-false}" = "true" ]; then
     wait $FSCK_PID3 || true
   fi
 
-  echo "  Loop devices preserved for local mount reuse"
-  log_timing "Boot fsck completed (parallel)"
+  echo "  循环设备已保留供本地挂载重用"
+  log_timing "启动时文件系统检查已完成（并行）"
 else
-  echo "Boot-time fsck disabled (set disk_images.boot_fsck_enabled: true to enable)"
+  echo "启动时文件系统检查已禁用（设置 disk_images.boot_fsck_enabled: true 以启用）"
 fi
 
 # Remove mount directories to avoid accidental access when unmounted
-echo "Removing mount directories..."
+echo "正在移除挂载目录..."
 REMOVE_TARGETS=("$MNT_DIR/part1" "$MNT_DIR/part2")
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   REMOVE_TARGETS+=("$MNT_DIR/part3")
@@ -289,7 +289,7 @@ fi
 for mp in "${REMOVE_TARGETS[@]}"; do
   # Check if mounted in host namespace
   if sudo nsenter --mount=/proc/1/ns/mnt -- mountpoint -q "$mp" 2>/dev/null || mountpoint -q "$mp" 2>/dev/null; then
-    echo "  Skipping removal of $mp (still mounted)" >&2
+    echo "  跳过移除 $mp（仍处于挂载状态）" >&2
     continue
   fi
   if [ -d "$mp" ]; then
@@ -298,7 +298,7 @@ for mp in "${REMOVE_TARGETS[@]}"; do
 done
 
 # Flush any pending writes to the image files
-echo "Flushing pending filesystem buffers..."
+echo "正在刷新待处理的文件系统缓冲区..."
 sync
 
 # Note: We don't need to detach existing loop devices for the gadget to work.
@@ -320,7 +320,7 @@ if [ "$BOOT_MODE" -eq 0 ] || [ -d "$CONFIGFS_GADGET" ]; then
   # This service claims the UDC for a USB Ethernet gadget, blocking our mass-storage gadget
   for svc in rpi-usb-gadget.service usb-gadget.service; do
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
-      echo "Stopping conflicting $svc..."
+      echo "正在停止冲突的服务 $svc..."
       sudo systemctl stop "$svc" 2>/dev/null || true
       sleep 0.3
     fi
@@ -328,14 +328,14 @@ if [ "$BOOT_MODE" -eq 0 ] || [ -d "$CONFIGFS_GADGET" ]; then
 
   # Remove legacy gadget module if present
   if lsmod | grep -q '^g_mass_storage'; then
-    echo "Removing existing USB gadget module..."
+    echo "正在移除现有的 USB 设备模块..."
     sudo rmmod g_mass_storage || true
     sleep 1
   fi
 
   # Remove existing gadget configuration if present
   if [ -d "$CONFIGFS_GADGET" ]; then
-    echo "Removing existing gadget configuration..."
+    echo "正在移除现有的设备配置..."
 
     # Unbind UDC first
     if [ -f "$CONFIGFS_GADGET/UDC" ]; then
@@ -372,10 +372,10 @@ if [ "$BOOT_MODE" -eq 0 ] || [ -d "$CONFIGFS_GADGET" ]; then
     sudo rmdir "$CONFIGFS_GADGET" 2>/dev/null || true
   fi
 else
-  echo "Boot mode: skipping dead teardown (no leftover gadget)"
+  echo "启动模式：跳过拆卸步骤（没有遗留的设备）"
 fi
 
-log_timing "Gadget removed/cleared"
+log_timing "设备已移除/清除"
 
 # Mount configfs if not already mounted. Fail loud if we can't — the
 # subsequent gadget setup writes into /sys/kernel/config and would otherwise
@@ -386,12 +386,12 @@ if ! mountpoint -q /sys/kernel/config 2>/dev/null; then
   sudo mount -t configfs none /sys/kernel/config 2>/dev/null || true
 fi
 if ! mountpoint -q /sys/kernel/config 2>/dev/null; then
-  echo "Error: configfs is not mounted at /sys/kernel/config" >&2
+  echo "错误：configfs 未挂载到 /sys/kernel/config" >&2
   exit 1
 fi
 
 # Present dual-LUN gadget using configfs
-echo "Presenting USB gadget with dual LUNs (TeslaCam RW + Lightshow RO)..."
+echo "正在展示 USB 设备（双 LUN：TeslaCam 读写 + Lightshow 只读）..."
 
 # Create gadget directory
 sudo mkdir -p "$CONFIGFS_GADGET"
@@ -436,7 +436,7 @@ echo "$IMG_LIGHTSHOW" | sudo tee functions/mass_storage.usb0/lun.1/file > /dev/n
 # Configure LUN 2: Music (READ-ONLY to Tesla)
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   if [ ! -f "$IMG_MUSIC" ]; then
-    echo "WARNING: Music image not found at $IMG_MUSIC — skipping LUN 2" >&2
+    echo "警告：在 $IMG_MUSIC 未找到音乐镜像 — 跳过 LUN 2" >&2
     MUSIC_ENABLED_BOOL=0
   else
     sudo mkdir -p functions/mass_storage.usb0/lun.2
@@ -460,14 +460,14 @@ for _ in $(seq 1 50); do
   sleep 0.1
 done
 if [ -z "$UDC_DEVICE" ]; then
-  echo "Error: No UDC device found after 5s. Is dwc2 module loaded?" >&2
+  echo "错误：5 秒后未找到 UDC 设备。dwc2 模块是否已加载？" >&2
   exit 1
 fi
 
-echo "Binding to UDC: $UDC_DEVICE"
+echo "正在绑定到 UDC：$UDC_DEVICE"
 echo "$UDC_DEVICE" | sudo tee UDC > /dev/null
 
-echo "Updating mode state..."
+echo "正在更新模式状态..."
 echo "present" > "$STATE_FILE"
 chown "$TARGET_USER:$TARGET_USER" "$STATE_FILE" 2>/dev/null || true
 
@@ -476,7 +476,7 @@ chown "$TARGET_USER:$TARGET_USER" "$STATE_FILE" 2>/dev/null || true
 # This is generally safe for read-only access, but be aware:
 # - If the host (Tesla) is actively writing to TeslaCam, you may see stale cached data
 # - Best used when Tesla is not actively recording (e.g., after driving)
-echo "Mounting partitions locally in read-only mode..."
+echo "正在以只读模式本地挂载分区..."
 RO_MNT_DIR="/mnt/gadget"
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   sudo mkdir -p "$RO_MNT_DIR/part1-ro" "$RO_MNT_DIR/part2-ro" "$RO_MNT_DIR/part3-ro"
@@ -497,7 +497,7 @@ if [ -n "$LOOP_CAM" ] && [ -e "$LOOP_CAM" ]; then
   # Detect filesystem type
   FS_TYPE=$(sudo blkid -o value -s TYPE "$LOOP_CAM" 2>/dev/null || echo "vfat")
 
-  echo "  Mounting ${LOOP_CAM} (TeslaCam) at $RO_MNT_DIR/part1-ro (read-only)..."
+  echo "  正在挂载 ${LOOP_CAM}（TeslaCam）到 $RO_MNT_DIR/part1-ro（只读）..."
 
   if [ "$FS_TYPE" = "vfat" ]; then
     sudo nsenter --mount=/proc/1/ns/mnt mount -t vfat -o ro,uid=$UID_VAL,gid=$GID_VAL,umask=022 "$LOOP_CAM" "$RO_MNT_DIR/part1-ro"
@@ -507,9 +507,9 @@ if [ -n "$LOOP_CAM" ] && [ -e "$LOOP_CAM" ]; then
     sudo nsenter --mount=/proc/1/ns/mnt mount -o ro "$LOOP_CAM" "$RO_MNT_DIR/part1-ro"
   fi
 
-  echo "  Mounted successfully at $RO_MNT_DIR/part1-ro"
+  echo "  已成功挂载到 $RO_MNT_DIR/part1-ro"
 else
-  echo "  Warning: Unable to attach loop device for TeslaCam read-only mounting"
+  echo "  警告：无法为 TeslaCam 只读挂载附加循环设备"
 fi
 
 # Mount Lightshow image (part2) - reuse fsck loop device if available, otherwise create
@@ -521,7 +521,7 @@ if [ -n "$LOOP_LIGHTSHOW" ] && [ -e "$LOOP_LIGHTSHOW" ]; then
   # Detect filesystem type
   FS_TYPE=$(sudo blkid -o value -s TYPE "$LOOP_LIGHTSHOW" 2>/dev/null || echo "vfat")
 
-  echo "  Mounting ${LOOP_LIGHTSHOW} (Lightshow) at $RO_MNT_DIR/part2-ro (read-only)..."
+  echo "  正在挂载 ${LOOP_LIGHTSHOW}（Lightshow）到 $RO_MNT_DIR/part2-ro（只读）..."
 
   if [ "$FS_TYPE" = "vfat" ]; then
     sudo nsenter --mount=/proc/1/ns/mnt mount -t vfat -o ro,uid=$UID_VAL,gid=$GID_VAL,umask=022 "$LOOP_LIGHTSHOW" "$RO_MNT_DIR/part2-ro"
@@ -531,9 +531,9 @@ if [ -n "$LOOP_LIGHTSHOW" ] && [ -e "$LOOP_LIGHTSHOW" ]; then
     sudo nsenter --mount=/proc/1/ns/mnt mount -o ro "$LOOP_LIGHTSHOW" "$RO_MNT_DIR/part2-ro"
   fi
 
-  echo "  Mounted successfully at $RO_MNT_DIR/part2-ro"
+  echo "  已成功挂载到 $RO_MNT_DIR/part2-ro"
 else
-  echo "  Warning: Unable to attach loop device for Lightshow read-only mounting"
+  echo "  警告：无法为 Lightshow 只读挂载附加循环设备"
 fi
 
 # Mount Music image (part3) when enabled - reuse fsck loop device if available, otherwise create
@@ -545,7 +545,7 @@ if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
   if [ -n "$LOOP_MUSIC" ] && [ -e "$LOOP_MUSIC" ]; then
     FS_TYPE=$(sudo blkid -o value -s TYPE "$LOOP_MUSIC" 2>/dev/null || echo "vfat")
 
-    echo "  Mounting ${LOOP_MUSIC} (Music) at $RO_MNT_DIR/part3-ro (read-only)..."
+    echo "  正在挂载 ${LOOP_MUSIC}（Music）到 $RO_MNT_DIR/part3-ro（只读）..."
 
     if [ "$FS_TYPE" = "vfat" ]; then
       sudo nsenter --mount=/proc/1/ns/mnt mount -t vfat -o ro,uid=$UID_VAL,gid=$GID_VAL,umask=022 "$LOOP_MUSIC" "$RO_MNT_DIR/part3-ro"
@@ -555,29 +555,29 @@ if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
       sudo nsenter --mount=/proc/1/ns/mnt mount -o ro "$LOOP_MUSIC" "$RO_MNT_DIR/part3-ro"
     fi
 
-    echo "  Mounted successfully at $RO_MNT_DIR/part3-ro"
+    echo "  已成功挂载到 $RO_MNT_DIR/part3-ro"
   else
-    echo "  Warning: Unable to attach loop device for Music read-only mounting"
+    echo "  警告：无法为 Music 只读挂载附加循环设备"
   fi
 fi
-log_timing "USB gadget fully configured and mounted"
+log_timing "USB 设备已完全配置并挂载"
 
-echo "USB gadget presented successfully!"
+echo "USB 设备展示成功！"
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
-  echo "The Pi should now appear as THREE USB storage devices when connected:"
+  echo "Pi 现在应显示为三个 USB 存储设备："
 else
-  echo "The Pi should now appear as TWO USB storage devices when connected:"
+  echo "Pi 现在应显示为两个 USB 存储设备："
 fi
-echo "  - LUN 0: TeslaCam (Read-Write) - Tesla can record dashcam footage"
-echo "  - LUN 1: Lightshow (Read-Only) - Optimized read performance for Tesla"
+echo "  - LUN 0: TeslaCam（读写）- Tesla 可录制行车记录仪视频"
+echo "  - LUN 1: Lightshow（只读）- 为 Tesla 优化读取性能"
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
-  echo "  - LUN 2: Music (Read-Only) - Media files for Tesla audio"
+  echo "  - LUN 2: Music（只读）- Tesla 音频媒体文件"
 fi
 if [ $MUSIC_ENABLED_BOOL -eq 1 ]; then
-  echo "Read-only mounts available at: $RO_MNT_DIR/part1-ro, $RO_MNT_DIR/part2-ro, $RO_MNT_DIR/part3-ro"
+  echo "只读挂载点位于：$RO_MNT_DIR/part1-ro, $RO_MNT_DIR/part2-ro, $RO_MNT_DIR/part3-ro"
 else
-  echo "Read-only mounts available at: $RO_MNT_DIR/part1-ro and $RO_MNT_DIR/part2-ro"
+  echo "只读挂载点位于：$RO_MNT_DIR/part1-ro 和 $RO_MNT_DIR/part2-ro"
 fi
 
-log_timing "Script completed successfully"
-echo "[PERFORMANCE] Total execution time: $(($(date +%s%3N) - SCRIPT_START))ms"
+log_timing "脚本成功完成"
+echo "[PERFORMANCE] 总执行时间：$(($(date +%s%3N) - SCRIPT_START))ms"

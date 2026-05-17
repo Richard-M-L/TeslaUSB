@@ -108,12 +108,12 @@ EOF
 
 usage() {
   cat <<EOF
-Usage: $0 [status|force-on|force-off|force-auto|reload]
-  status      Print JSON status
-  force-on    Force AP on until changed
-  force-off   Force AP off (blocks auto start)
-  force-auto  Return to automatic behavior
-  reload      Reload config and restart AP if currently active
+用法: $0 [status|force-on|force-off|force-auto|reload]
+  status      输出 JSON 状态信息
+  force-on    强制开启 AP 直至更改
+  force-off   强制关闭 AP（阻止自动启动）
+  force-auto  恢复自动模式
+  reload      重新加载配置，若 AP 当前活动则重启
 EOF
 }
 

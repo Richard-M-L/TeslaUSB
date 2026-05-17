@@ -16,11 +16,11 @@ log_timing() {
     echo "[DEFERRED TASKS] +${elapsed}ms: $checkpoint"
 }
 
-log_timing "Starting deferred boot tasks"
+log_timing "正在启动延迟启动任务"
 
 # Load configuration
 source "$SCRIPT_DIR/config.sh"
-log_timing "Config loaded"
+log_timing "配置已加载"
 
 CLEANUP_CONFIG="$GADGET_DIR/cleanup_config.json"
 CLEANUP_SCRIPT="$GADGET_DIR/scripts/run_boot_cleanup.py"
@@ -40,12 +40,12 @@ needs_cleanup() {
 }
 
 if needs_cleanup; then
-    log_timing "Running auto-cleanup (via quick_edit if needed)..."
+    log_timing "正在运行自动清理（必要时通过 quick_edit）..."
     # Cleanup uses the web app's cleanup service which handles mount operations
     /usr/bin/python3 "$CLEANUP_SCRIPT" 2>&1 | tee -a "$LOG_FILE" || true
-    log_timing "Cleanup complete"
+    log_timing "清理完成"
 else
-    log_timing "Cleanup not enabled, skipping"
+    log_timing "清理未启用，跳过"
 fi
 
 # ============================================================================
@@ -54,10 +54,10 @@ fi
 RANDOM_CHIME_SCRIPT="$GADGET_DIR/scripts/select_random_chime.py"
 
 if [ -f "$RANDOM_CHIME_SCRIPT" ]; then
-    log_timing "Checking random chime mode..."
+    log_timing "正在检查随机提示音模式..."
     # select_random_chime.py handles quick_edit internally if needed
     /usr/bin/python3 "$RANDOM_CHIME_SCRIPT" || true
-    log_timing "Random chime check complete"
+    log_timing "随机提示音检查完成"
 fi
 
-log_timing "All deferred tasks complete (total: $(($(date +%s%3N) - BOOT_START_MS))ms)"
+log_timing "所有延迟任务完成（总计：$(($(date +%s%3N) - BOOT_START_MS))ms）"

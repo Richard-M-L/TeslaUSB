@@ -7,11 +7,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # ===== Early memory optimization (critical for Pi Zero/2W) =====
 # Enable swap and free memory BEFORE any package installations
 early_memory_optimization() {
-  echo "Preparing system memory for installation..."
+  echo "正在准备系统内存以进行安装..."
 
   # Stop lightdm to free ~100MB RAM (critical for package installs)
   if systemctl is-active --quiet lightdm 2>/dev/null; then
-    echo "  Stopping display manager to free memory..."
+    echo "  正在停止显示管理器以释放内存..."
     systemctl stop lightdm 2>/dev/null || true
   fi
 
@@ -24,13 +24,13 @@ early_memory_optimization() {
   sync
   echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
-  echo "  Memory optimization complete"
+  echo "  内存优化完成"
 }
 
 # Handle legacy /var/swap file (Raspberry Pi OS creates it as a file;
 # we need it to be a directory for /var/swap/fsck.swap)
 if [ -f "/var/swap" ] && [ ! -d "/var/swap" ]; then
-  echo "  Moving legacy /var/swap file to /var/swap.old..."
+  echo "  正在将旧版 /var/swap 文件移至 /var/swap.old..."
   swapoff /var/swap 2>/dev/null || true
   mv /var/swap /var/swap.old
 fi
@@ -40,23 +40,23 @@ early_memory_optimization
 
 # Check if yq is installed (required to read config.yaml)
 if ! command -v yq &> /dev/null; then
-  echo "yq is not installed. Installing yq and python3-yaml..."
+  echo "yq 未安装。正在安装 yq 和 python3-yaml..."
   apt-get update -qq
   apt-get install -y yq python3-yaml
-  echo "✓ yq and python3-yaml installed"
+  echo "✓ yq 和 python3-yaml 已安装"
 fi
 
 # Source the configuration file
 if [ -f "$SCRIPT_DIR/scripts/config.sh" ]; then
   source "$SCRIPT_DIR/scripts/config.sh"
 else
-  echo "Error: Configuration file not found at $SCRIPT_DIR/scripts/config.sh"
+  echo "错误：未找到配置文件 $SCRIPT_DIR/scripts/config.sh"
   exit 1
 fi
 
 # Validate that required config values are set
 if [ -z "$GADGET_DIR" ] || [ -z "$TARGET_USER" ] || [ -z "$IMG_CAM_NAME" ] || [ -z "$IMG_LIGHTSHOW_NAME" ]; then
-  echo "Error: Required configuration values not set in config.sh"
+  echo "错误：config.sh 中未设置必要的配置值"
   exit 1
 fi
 
@@ -107,7 +107,7 @@ show_image_dashboard() {
       total_logical=$(( total_logical + logical_bytes ))
       image_lines+="$(printf "  %-10s %-10s  %s  (%s)" "$label:" "$(bytes_to_human $logical_bytes)" "$path" "$fs_type")\n"
     else
-      image_lines+="$(printf "  %-10s %-10s  %s" "$label:" "MISSING" "$path")\n"
+      image_lines+="$(printf "  %-10s %-10s  %s" "$label:" "缺失" "$path")\n"
     fi
   done
 
@@ -146,30 +146,30 @@ show_image_dashboard() {
 
   echo ""
   echo "============================================"
-  echo "Existing Image Dashboard"
+  echo "现有镜像概览"
   echo "============================================"
   echo ""
-  printf "  Total storage:        %s\n" "$(bytes_to_human $fs_total_bytes)"
-  printf "  OS reserve:           %s  (OS + 5 GiB headroom)\n" "$(bytes_to_human $os_reserve_display)"
-  printf "  Archive reserve:      %s  (RecentClips backup)\n" "$(bytes_to_human $archive_reserve_bytes)"
+  printf "  总存储空间:            %s\n" "$(bytes_to_human $fs_total_bytes)"
+  printf "  OS 预留:               %s  (系统 + 5 GiB 余量)\n" "$(bytes_to_human $os_reserve_display)"
+  printf "  归档预留:              %s  (RecentClips 备份)\n" "$(bytes_to_human $archive_reserve_bytes)"
   echo "  ────────────────────────────────────────"
   printf "%b" "$image_lines"
   echo "  ────────────────────────────────────────"
-  printf "  Free for new images:  %s\n" "$(bytes_to_human $free_for_images_bytes)"
+  printf "  可用于新镜像的空间:    %s\n" "$(bytes_to_human $free_for_images_bytes)"
   echo ""
 }
 
 delete_all_images() {
-  echo "Deleting all existing image files..."
+  echo "正在删除所有现有镜像文件..."
   for img_pair in "TeslaCam:$IMG_CAM_PATH" "Lightshow:$IMG_LIGHTSHOW_PATH" "Music:$IMG_MUSIC_PATH"; do
     local label="${img_pair%%:*}"
     local path="${img_pair#*:}"
     if [ -f "$path" ]; then
       rm -f "$path"
-      echo "  Deleted: $path ($label)"
+      echo "  已删除: $path ($label)"
     fi
   done
-  echo "All image files deleted."
+  echo "所有镜像文件已删除。"
   echo ""
 }
 
@@ -191,7 +191,7 @@ MISSING_COUNT=$(( REQUIRED_COUNT - EXISTING_COUNT ))
 
 if [ "$EXISTING_COUNT" -eq 0 ]; then
   # ── Path A: Fresh install ──
-  echo "No existing image files found. Will create all required images."
+  echo "未找到现有镜像文件。将创建所有必需的镜像。"
   SKIP_IMAGE_CREATION=0
   NEED_CAM_IMAGE=1
   NEED_LIGHTSHOW_IMAGE=1
@@ -210,7 +210,7 @@ else
   [ $MUSIC_REQUIRED -eq 1 ] && [ ! -f "$IMG_MUSIC_PATH" ] && NEED_MUSIC_IMAGE=1
 
   # Build menu options dynamically
-  echo "What would you like to do?"
+  echo "请选择要执行的操作："
   echo ""
   OPTION_NUM=1
   OPT_CREATE_MISSING=""
@@ -223,16 +223,16 @@ else
     [ "$NEED_CAM_IMAGE" -eq 1 ] && MISSING_NAMES="${MISSING_NAMES}TeslaCam "
     [ "$NEED_LIGHTSHOW_IMAGE" -eq 1 ] && MISSING_NAMES="${MISSING_NAMES}Lightshow "
     [ "$NEED_MUSIC_IMAGE" -eq 1 ] && MISSING_NAMES="${MISSING_NAMES}Music "
-    echo "  ${OPTION_NUM}) Create missing image(s): ${MISSING_NAMES}(using available space)"
+    echo "  ${OPTION_NUM}) 创建缺失镜像: ${MISSING_NAMES}(使用可用空间)"
     OPTION_NUM=$((OPTION_NUM + 1))
   fi
 
   OPT_DELETE_ALL="$OPTION_NUM"
-  echo "  ${OPTION_NUM}) Delete ALL images and reconfigure sizes"
+  echo "  ${OPTION_NUM}) 删除所有镜像并重新配置大小"
   OPTION_NUM=$((OPTION_NUM + 1))
 
   OPT_KEEP="$OPTION_NUM"
-  echo "  ${OPTION_NUM}) Keep existing images, skip image configuration"
+  echo "  ${OPTION_NUM}) 保留现有镜像，跳过镜像配置"
   echo ""
 
   read -r -p "Select an option [${OPT_KEEP}]: " UPGRADE_CHOICE
@@ -241,24 +241,22 @@ else
   if [ -n "$OPT_CREATE_MISSING" ] && [ "$UPGRADE_CHOICE" = "$OPT_CREATE_MISSING" ]; then
     # Option: Create only missing images
     echo ""
-    echo "Will create only missing image(s)."
+    echo "将仅创建缺失的镜像。"
     SKIP_IMAGE_CREATION=0
 
   elif [ "$UPGRADE_CHOICE" = "$OPT_DELETE_ALL" ]; then
     # Option: Delete all and reconfigure
     echo ""
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║  WARNING: This will permanently delete ALL image files  ║"
-    echo "║  and their contents.                                    ║"
+    echo "║  警告：这将永久删除所有镜像文件及其内容。                ║"
     echo "║                                                         ║"
-    echo "║  You can download your lock chimes, light shows, wraps, ║"
-    echo "║  and other content from the TeslaUSB web UI before      ║"
-    echo "║  proceeding.                                            ║"
+    echo "║  在继续之前，您可以从 TeslaUSB Web UI 下载您的锁车音效、 ║"
+    echo "║  灯光秀、装饰贴纸以及其他内容。                         ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
     read -r -p "Type YES to confirm deletion: " CONFIRM_DELETE
     if [ "$CONFIRM_DELETE" != "YES" ]; then
-      echo "Deletion not confirmed. Aborting."
+      echo "删除未确认。正在中止。"
       exit 0
     fi
     echo ""
@@ -271,11 +269,11 @@ else
   elif [ "$UPGRADE_CHOICE" = "$OPT_KEEP" ]; then
     # Option: Keep existing, skip configuration
     echo ""
-    echo "Keeping existing images. Skipping size configuration and image creation."
+    echo "保留现有镜像。跳过大小配置和镜像创建。"
     SKIP_IMAGE_CREATION=1
 
   else
-    echo "Invalid option. Aborting."
+    echo "无效选项。正在中止。"
     exit 1
   fi
   echo ""
@@ -314,7 +312,7 @@ size_to_bytes() {
   elif [[ "$s" =~ ^([0-9]+)([Gg])$ ]]; then
     echo $(( ${BASH_REMATCH[1]} * 1024 * 1024 * 1024 ))
   else
-    echo "Invalid size format: $s (use 512M or 5G)" >&2
+    echo "无效的大小格式: $s (请使用 512M 或 5G)" >&2
     exit 2
   fi
 }
@@ -346,11 +344,11 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
   TOTAL_RESERVE_BYTES=$(( RESERVE_BYTES + ARCHIVE_RESERVE_BYTES ))
 
   if [ "$FS_AVAIL_BYTES" -le "$TOTAL_RESERVE_BYTES" ]; then
-    echo "ERROR: Not enough free space to safely create image files under $GADGET_DIR."
-    echo "Free:          $((FS_AVAIL_BYTES / 1024 / 1024)) MiB"
-    echo "OS reserve:    $RESERVE_SIZE ($((RESERVE_BYTES / 1024 / 1024)) MiB)"
-    echo "Archive reserve: $ARCHIVE_RESERVE_STR ($((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB)"
-    echo "Free up space or move GADGET_DIR to a larger filesystem."
+    echo "错误：在 $GADGET_DIR 下没有足够的空闲空间来安全创建镜像文件。"
+    echo "空闲空间:      $((FS_AVAIL_BYTES / 1024 / 1024)) MiB"
+    echo "OS 预留:       $RESERVE_SIZE ($((RESERVE_BYTES / 1024 / 1024)) MiB)"
+    echo "归档预留:      $ARCHIVE_RESERVE_STR ($((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB)"
+    echo "请释放空间或将 GADGET_DIR 移至更大的文件系统。"
     exit 1
   fi
 
@@ -405,9 +403,9 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
     fi
 
     if [ "$BASELINE_MIB" -gt 0 ] && [ "$USABLE_MIB" -le "$BASELINE_MIB" ]; then
-      echo "ERROR: Not enough usable space for defaults after OS reserve."
-      echo "Usable: ${USABLE_MIB} MiB, Baseline required: ${BASELINE_MIB} MiB"
-      echo "Free up space or reduce Lightshow/Music size."
+      echo "错误：OS 预留后没有足够的可用空间来满足默认大小。"
+      echo "可用空间: ${USABLE_MIB} MiB，基线需求: ${BASELINE_MIB} MiB"
+      echo "请释放空间或减小 Lightshow/Music 的大小。"
       exit 1
     fi
 
@@ -419,18 +417,18 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
 
   echo ""
   echo "============================================"
-  echo "TeslaUSB image sizing"
+  echo "TeslaUSB 镜像大小设置"
   echo "============================================"
-  echo "Images will be created under: $GADGET_DIR"
-  echo "Filesystem free space:  $((FS_AVAIL_BYTES / 1024 / 1024)) MiB"
-  echo "OS reserve:             $((RESERVE_BYTES / 1024 / 1024)) MiB"
-  echo "Archive reserve:        $((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB  (RecentClips backup)"
-  echo "Usable for images:      ${USABLE_MIB} MiB"
+  echo "镜像将被创建在：$GADGET_DIR"
+  echo "文件系统空闲空间:  $((FS_AVAIL_BYTES / 1024 / 1024)) MiB"
+  echo "OS 预留:             $((RESERVE_BYTES / 1024 / 1024)) MiB"
+  echo "归档预留:            $((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB  (RecentClips 备份)"
+  echo "可用于镜像的空间:    ${USABLE_MIB} MiB"
   echo ""
-  echo "Recommended sizes (safe, leaves headroom for Raspberry Pi OS):"
+  echo "推荐大小（安全，为 Raspberry Pi OS 留有余量）："
   [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  Lightshow (PART2_SIZE): $SUG_P2_STR"
   [ "$NEED_MUSIC_IMAGE" = "1" ] && echo "  Music     (PART3_SIZE): $SUG_P3_STR"
-  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  TeslaCam  (PART1_SIZE): $SUG_P1_STR (uses remaining usable space)"
+  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  TeslaCam  (PART1_SIZE): $SUG_P1_STR（使用剩余可用空间）"
   echo ""
 
   # Only prompt for sizes needed for missing images
@@ -439,8 +437,8 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
     PART2_SIZE="${PART2_SIZE_INPUT:-$SUG_P2_STR}"
     # Validate format immediately
     if ! size_to_bytes "$PART2_SIZE" >/dev/null 2>&1; then
-      echo "ERROR: Invalid size format for Lightshow: $PART2_SIZE"
-      echo "Use format like 512M or 5G (whole numbers only)"
+      echo "错误：Lightshow 的大小格式无效: $PART2_SIZE"
+      echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
   elif [ "$NEED_LIGHTSHOW_IMAGE" = "0" ]; then
@@ -452,8 +450,8 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
     read -r -p "Enter Music size (default ${SUG_P3_STR}): " PART3_SIZE_INPUT
     PART3_SIZE="${PART3_SIZE_INPUT:-$SUG_P3_STR}"
     if ! size_to_bytes "$PART3_SIZE" >/dev/null 2>&1; then
-      echo "ERROR: Invalid size format for Music: $PART3_SIZE"
-      echo "Use format like 512M or 5G (whole numbers only)"
+      echo "错误：Music 的大小格式无效: $PART3_SIZE"
+      echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
   elif [ $MUSIC_REQUIRED -eq 1 ] && [ "$NEED_MUSIC_IMAGE" = "0" ]; then
@@ -465,8 +463,8 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
     PART1_SIZE="${PART1_SIZE_INPUT:-$SUG_P1_STR}"
     # Validate format immediately
     if ! size_to_bytes "$PART1_SIZE" >/dev/null 2>&1; then
-      echo "ERROR: Invalid size format for TeslaCam: $PART1_SIZE"
-      echo "Use format like 512M or 5G (whole numbers only)"
+      echo "错误：TeslaCam 的大小格式无效: $PART1_SIZE"
+      echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
   elif [ "$NEED_CAM_IMAGE" = "0" ]; then
@@ -475,11 +473,11 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
   fi
 
   echo ""
-  echo "Selected sizes:"
-  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  PART1_SIZE=$PART1_SIZE" || echo "  PART1_SIZE=(existing)"
-  [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  PART2_SIZE=$PART2_SIZE" || echo "  PART2_SIZE=(existing)"
+  echo "选定的大小："
+  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  PART1_SIZE=$PART1_SIZE" || echo "  PART1_SIZE=(已存在)"
+  [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  PART2_SIZE=$PART2_SIZE" || echo "  PART2_SIZE=(已存在)"
   if [ $MUSIC_REQUIRED -eq 1 ]; then
-    [ "$NEED_MUSIC_IMAGE" = "1" ] && echo "  PART3_SIZE=$PART3_SIZE" || echo "  PART3_SIZE=(existing)"
+    [ "$NEED_MUSIC_IMAGE" = "1" ] && echo "  PART3_SIZE=$PART3_SIZE" || echo "  PART3_SIZE=(已存在)"
   fi
   echo ""
 
@@ -495,12 +493,12 @@ fi
 
 # Validate user exists
 if ! id "$TARGET_USER" >/dev/null 2>&1; then
-  echo "User $TARGET_USER not found. Create it or run with a different sudo user."
+  echo "未找到用户 $TARGET_USER。请创建该用户或使用其他 sudo 用户运行。"
   exit 1
 fi
 TARGET_UID=$(id -u "$TARGET_USER")
 TARGET_GID=$(id -g "$TARGET_USER")
-echo "Target user: $TARGET_USER (uid=$TARGET_UID gid=$TARGET_GID)"
+echo "目标用户: $TARGET_USER (uid=$TARGET_UID gid=$TARGET_GID)"
 
 # Helper: convert size to MiB
 to_mib() {
@@ -510,7 +508,7 @@ to_mib() {
   elif [[ "$s" =~ ^([0-9]+)([Gg])$ ]]; then
     echo $(( ${BASH_REMATCH[1]} * 1024 ))
   else
-    echo "Invalid size format: $s (use 2048M or 4G)" >&2
+    echo "无效的大小格式: $s (请使用 2048M 或 4G)" >&2
     exit 2
   fi
 }
@@ -532,10 +530,10 @@ if [ "${NEED_SIZE_VALIDATION:-0}" = "1" ] && [ "$SKIP_IMAGE_CREATION" = "0" ]; t
   [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && TOTAL_MIB=$(( TOTAL_MIB + P2_MB ))
   [ "$NEED_MUSIC_IMAGE" = "1" ] && TOTAL_MIB=$(( TOTAL_MIB + P3_MB ))
   if [ "$TOTAL_MIB" -gt "$USABLE_MIB" ]; then
-    echo "ERROR: Selected sizes exceed safe usable space under $GADGET_DIR."
-    echo "Usable:  ${USABLE_MIB} MiB (after OS + archive reserve)"
-    echo "Chosen:  ${TOTAL_MIB} MiB (only counting images being created)"
-    echo "Reduce TeslaCam, Lightshow, and/or Music sizes."
+    echo "错误：选定的大小超过 $GADGET_DIR 下的安全可用空间。"
+    echo "可用空间:  ${USABLE_MIB} MiB（扣除 OS + 归档预留后）"
+    echo "已选择:  ${TOTAL_MIB} MiB（仅计算正在创建的镜像）"
+    echo "请减小 TeslaCam、Lightshow 和/或 Music 的大小。"
     exit 1
   fi
 fi
@@ -543,29 +541,29 @@ fi
 # Skip preview if both images already exist
 if [ "$SKIP_IMAGE_CREATION" = "0" ]; then
   echo "============================================"
-  echo "Preview"
+  echo "预览"
   echo "============================================"
   if [ "$NEED_CAM_IMAGE" = "1" ] || [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] || [ "$NEED_MUSIC_IMAGE" = "1" ]; then
-    echo "This will create the following image files:"
-    [ "$NEED_CAM_IMAGE" = "1" ] && echo "  - TeslaCam  : $IMG_CAM_PATH  size=$PART1_SIZE  label=$LABEL1  (read-write)" || echo "  - TeslaCam  : already exists"
-    [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  - Lightshow : $IMG_LIGHTSHOW_PATH  size=$PART2_SIZE  label=$LABEL2  (read-only)" || echo "  - Lightshow : already exists"
+    echo "将创建以下镜像文件："
+    [ "$NEED_CAM_IMAGE" = "1" ] && echo "  - TeslaCam  : $IMG_CAM_PATH  size=$PART1_SIZE  label=$LABEL1  (读写)" || echo "  - TeslaCam  : 已存在"
+    [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  - Lightshow : $IMG_LIGHTSHOW_PATH  size=$PART2_SIZE  label=$LABEL2  (只读)" || echo "  - Lightshow : 已存在"
     if [ $MUSIC_REQUIRED -eq 1 ]; then
       if [ "$NEED_MUSIC_IMAGE" = "1" ]; then
-        echo "  - Music     : $IMG_MUSIC_PATH  size=$PART3_SIZE  label=$LABEL3  (read-only by Tesla)"
+        echo "  - Music     : $IMG_MUSIC_PATH  size=$PART3_SIZE  label=$LABEL3  (Tesla 只读)"
       else
-        echo "  - Music     : already exists"
+        echo "  - Music     : 已存在"
       fi
     fi
   fi
   echo ""
-  echo "Images are stored under: $GADGET_DIR"
-  echo "If these sizes are too large, the Pi can run out of disk and behave badly."
+  echo "镜像存储位置: $GADGET_DIR"
+  echo "如果这些大小过大，Pi 可能会耗尽磁盘空间并运行异常。"
   echo ""
   read -r -p "Proceed with these sizes? [y/N]: " PROCEED
   PROCEED_LC="$(printf '%s' "$PROCEED" | tr '[:upper:]' '[:lower:]')"
   case "$PROCEED_LC" in
-    y|yes) echo "Proceeding..." ;;
-    *) echo "Aborted by user."; exit 0 ;;
+    y|yes) echo "正在继续..." ;;
+    *) echo "用户已中止。"; exit 0 ;;
   esac
   echo ""
 fi
@@ -612,7 +610,7 @@ apt_update_safe() {
   local attempt=1
   local max_attempts=3
   while [ $attempt -le $max_attempts ]; do
-    echo "Running apt-get update (attempt $attempt/$max_attempts)..."
+    echo "正在运行 apt-get update（第 $attempt/$max_attempts 次尝试）..."
     if apt-get update \
       -o Acquire::Retries=3 \
       -o Acquire::http::No-Cache=true \
@@ -622,46 +620,46 @@ apt_update_safe() {
       -o Acquire::http::Pipeline-Depth=0; then
       return 0
     fi
-    echo "apt-get update failed (attempt $attempt). Cleaning lists and retrying..."
+    echo "apt-get update 失败（第 $attempt 次）。正在清除列表并重试..."
     rm -rf /var/lib/apt/lists/*
     attempt=$((attempt + 1))
     sleep 2
   done
-  echo "apt-get update failed after $max_attempts attempts" >&2
+  echo "apt-get update 在 $max_attempts 次尝试后失败" >&2
   return 1
 }
 
 install_pkg_safe() {
   local pkg="$1"
-  echo "Installing $pkg (no-recommends)..."
+  echo "正在安装 $pkg（无推荐依赖）..."
   if apt-get install -y --no-install-recommends "$pkg"; then
     return 0
   fi
-  echo "Retrying $pkg with default recommends..."
+  echo "正在使用默认推荐重试安装 $pkg..."
   apt-get install -y "$pkg"
 }
 
 enable_install_swap() {
   INSTALL_SWAP="/var/swap/teslausb_pkg.swap"
   if swapon --show | grep -q "$INSTALL_SWAP" 2>/dev/null; then
-    echo "Temporary swap already active"
+    echo "临时交换已激活"
     return
   fi
-  echo "Enabling temporary swap for package installs (1GB)..."
+  echo "正在为软件包安装启用临时交换空间（1GB）..."
   # Use existing swap if available, otherwise create temporary
   if [ -f "/var/swap/fsck.swap" ] && ! swapon --show | grep -q "fsck.swap" 2>/dev/null; then
-    echo "  Using existing fsck swap file"
+    echo "  使用现有的 fsck 交换文件"
     swapon /var/swap/fsck.swap 2>/dev/null && return
   fi
   # Create temporary 1GB swap
   mkdir -p /var/swap
   if fallocate -l 1G "$INSTALL_SWAP" 2>/dev/null || dd if=/dev/zero of="$INSTALL_SWAP" bs=1M count=1024 status=none; then
     chmod 600 "$INSTALL_SWAP"
-    mkswap "$INSTALL_SWAP" >/dev/null 2>&1 || { echo "mkswap failed"; return 1; }
-    swapon "$INSTALL_SWAP" 2>/dev/null || { echo "swapon failed"; return 1; }
-    echo "  Swap enabled: $(swapon --show | grep -E 'teslausb|fsck' || echo 'NONE - FAILED')"
+    mkswap "$INSTALL_SWAP" >/dev/null 2>&1 || { echo "mkswap 失败"; return 1; }
+    swapon "$INSTALL_SWAP" 2>/dev/null || { echo "swapon 失败"; return 1; }
+    echo "  交换已启用: $(swapon --show | grep -E 'teslausb|fsck' || echo '无 - 失败')"
   else
-    echo "ERROR: could not create temporary swap"
+    echo "错误：无法创建临时交换空间"
     return 1
   fi
 }
@@ -675,7 +673,7 @@ disable_install_swap() {
 
 stop_nonessential_services() {
   # Stop heavy memory users during package install (keep WiFi up)
-  echo "Stopping memory-intensive services..."
+  echo "正在停止高内存占用的服务..."
   systemctl is-active gadget_web.service >/dev/null 2>&1 && systemctl stop gadget_web.service 2>/dev/null || true
   systemctl is-active chime_scheduler.service >/dev/null 2>&1 && systemctl stop chime_scheduler.service 2>/dev/null || true
   systemctl is-active chime_scheduler.timer >/dev/null 2>&1 && systemctl stop chime_scheduler.timer 2>/dev/null || true
@@ -686,11 +684,11 @@ stop_nonessential_services() {
   systemctl is-active ModemManager.service >/dev/null 2>&1 && systemctl stop ModemManager.service 2>/dev/null || true
   systemctl is-active packagekit.service >/dev/null 2>&1 && systemctl stop packagekit.service 2>/dev/null || true
   systemctl is-active lightdm.service >/dev/null 2>&1 && systemctl stop lightdm.service 2>/dev/null || true
-  echo "  Stopped active services to free memory"
+  echo "  已停止活动服务以释放内存"
 }
 
 start_nonessential_services() {
-  echo "Restarting services..."
+  echo "正在重启服务..."
   systemctl is-enabled smbd >/dev/null 2>&1 && systemctl start smbd 2>/dev/null || true
   systemctl is-enabled nmbd >/dev/null 2>&1 && systemctl start nmbd 2>/dev/null || true
   systemctl is-enabled chime_scheduler.timer >/dev/null 2>&1 && systemctl start chime_scheduler.timer 2>/dev/null || true
@@ -698,16 +696,16 @@ start_nonessential_services() {
   # Only restart if enabled (don't re-enable lightdm if we just disabled it)
   systemctl is-enabled lightdm.service >/dev/null 2>&1 && systemctl start lightdm.service 2>/dev/null || true
   systemctl is-enabled cups.service >/dev/null 2>&1 && systemctl start cups.service 2>/dev/null || true
-  echo "  Services restarted"
+  echo "  服务已重启"
 }
 
 # ===== Clean up old/unused services from previous installations =====
 cleanup_old_services() {
-  echo "Checking for old/unused services from previous installations..."
+  echo "正在检查来自之前安装的旧/未使用服务..."
 
   # Stop and disable old thumbnail generator service (replaced by on-demand generation)
   if systemctl list-unit-files | grep -q 'thumbnail_generator'; then
-    echo "  Removing old thumbnail_generator service..."
+    echo "  正在删除旧的 thumbnail_generator 服务..."
     systemctl stop thumbnail_generator.service 2>/dev/null || true
     systemctl stop thumbnail_generator.timer 2>/dev/null || true
     systemctl disable thumbnail_generator.service 2>/dev/null || true
@@ -717,82 +715,82 @@ cleanup_old_services() {
     rm -f /etc/systemd/system/thumbnail_generator.service
     rm -f /etc/systemd/system/thumbnail_generator.timer
     systemctl daemon-reload
-    echo "    ✓ Removed thumbnail_generator service and timer"
+    echo "    ✓ 已删除 thumbnail_generator 服务和定时器"
   fi
 
   # Remove old template files if they exist
   if [ -f "$GADGET_DIR/templates/thumbnail_generator.service" ] || [ -f "$GADGET_DIR/templates/thumbnail_generator.timer" ]; then
-    echo "  Removing old thumbnail generator templates..."
+    echo "  正在删除旧的缩略图生成器模板..."
     rm -f "$GADGET_DIR/templates/thumbnail_generator.service"
     rm -f "$GADGET_DIR/templates/thumbnail_generator.timer"
-    echo "    ✓ Removed old template files"
+    echo "    ✓ 已删除旧模板文件"
   fi
 
   # Remove old background thumbnail generation script
   if [ -f "$GADGET_DIR/scripts/generate_thumbnails.py" ]; then
-    echo "  Removing old background thumbnail generator script..."
+    echo "  正在删除旧的后台缩略图生成脚本..."
     rm -f "$GADGET_DIR/scripts/generate_thumbnails.py"
-    echo "    ✓ Removed generate_thumbnails.py"
+    echo "    ✓ 已删除 generate_thumbnails.py"
   fi
 
   # Remove old wifi-powersave-off service (replaced by network-optimizations.service)
   if systemctl list-unit-files | grep -q 'wifi-powersave-off'; then
-    echo "  Removing old wifi-powersave-off service (replaced by network-optimizations)..."
+    echo "  正在删除旧的 wifi-powersave-off 服务（已被 network-optimizations 替代）..."
     systemctl stop wifi-powersave-off.service 2>/dev/null || true
     systemctl disable wifi-powersave-off.service 2>/dev/null || true
     rm -f /etc/systemd/system/wifi-powersave-off.service
     systemctl daemon-reload
-    echo "    ✓ Removed wifi-powersave-off service"
+    echo "    ✓ 已删除 wifi-powersave-off 服务"
   fi
 
-  echo "Old service cleanup complete."
+  echo "旧服务清理完成。"
 }
 
 # ===== Optimize memory for setup (disable unnecessary services) =====
 optimize_memory_for_setup() {
-  echo "Optimizing memory for setup..."
+  echo "正在为安装优化内存..."
 
   # Disable graphical desktop services if present (saves 50-60MB on Pi Zero 2W)
   if systemctl is-enabled lightdm.service >/dev/null 2>&1; then
-    echo "  Disabling graphical desktop (lightdm)..."
+    echo "  正在禁用图形桌面 (lightdm)..."
     systemctl stop lightdm graphical.target 2>/dev/null || true
     systemctl disable lightdm 2>/dev/null || true
     systemctl set-default multi-user.target 2>/dev/null || true
-    echo "    ✓ Graphical desktop disabled (saves ~50-60MB RAM)"
+    echo "    ✓ 图形桌面已禁用（节省约 50-60MB 内存）"
   else
-    echo "  Graphical desktop not installed or already disabled"
+    echo "  图形桌面未安装或已禁用"
   fi
 
   # Ensure swap is available early (critical for low-memory systems)
   if ! swapon --show 2>/dev/null | grep -q '/'; then
-    echo "  No active swap detected, enabling swap for setup..."
+    echo "  未检测到活动交换空间，正在为安装启用交换空间..."
 
     # Try to use existing fsck swap if available
     if [ -f "/var/swap/fsck.swap" ]; then
-      echo "    Using existing fsck.swap file"
-      swapon /var/swap/fsck.swap 2>/dev/null && echo "    ✓ Swap enabled (fsck.swap)" && return
+      echo "    使用现有的 fsck.swap 文件"
+      swapon /var/swap/fsck.swap 2>/dev/null && echo "    ✓ 交换已启用 (fsck.swap)" && return
     fi
 
     # Try to use any existing swapfile
     if [ -f "/swapfile" ]; then
-      echo "    Using existing /swapfile"
-      swapon /swapfile 2>/dev/null && echo "    ✓ Swap enabled (/swapfile)" && return
+      echo "    使用现有的 /swapfile"
+      swapon /swapfile 2>/dev/null && echo "    ✓ 交换已启用 (/swapfile)" && return
     fi
 
     # Create temporary swap for setup
-    echo "    Creating temporary 512MB swap..."
+    echo "    正在创建临时 512MB 交换空间..."
     if dd if=/dev/zero of=/swapfile bs=1M count=512 status=none 2>/dev/null; then
       chmod 600 /swapfile
       mkswap /swapfile >/dev/null 2>&1
-      swapon /swapfile 2>/dev/null && echo "    ✓ Temporary swap created and enabled (512MB)"
+      swapon /swapfile 2>/dev/null && echo "    ✓ 临时交换空间已创建并启用 (512MB)"
     else
-      echo "    Warning: Could not create swap (may cause OOM on low-memory systems)"
+      echo "    警告：无法创建交换空间（在低内存系统上可能导致 OOM）"
     fi
   else
-    echo "  Swap already active: $(swapon --show 2>/dev/null | tail -n +2 | awk '{print $1, $3}')"
+    echo "  交换已激活: $(swapon --show 2>/dev/null | tail -n +2 | awk '{print $1, $3}')"
   fi
 
-  echo "Memory optimization complete."
+  echo "内存优化完成。"
   echo ""
 }
 
@@ -810,18 +808,18 @@ for pkg in "${REQUIRED_PACKAGES[@]}"; do
 done
 
 if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
-  echo "Installing missing packages: ${MISSING_PACKAGES[*]}"
+  echo "正在安装缺失的软件包: ${MISSING_PACKAGES[*]}"
 
   # Prepare for low-memory install
   stop_nonessential_services
-  enable_install_swap || { echo "ERROR: Failed to enable swap. Cannot proceed."; exit 1; }
+  enable_install_swap || { echo "错误：启用交换空间失败。无法继续。"; exit 1; }
 
   # Run apt-get update
   apt_update_safe
 
   # Install packages one at a time to avoid OOM on low-memory systems
   for pkg in "${MISSING_PACKAGES[@]}"; do
-    install_pkg_safe "$pkg" || echo "Warning: install of $pkg reported an error"
+    install_pkg_safe "$pkg" || echo "警告：安装 $pkg 时报告了错误"
   done
 
   # Cleanup
@@ -829,25 +827,25 @@ if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
   start_nonessential_services
 
   # Remove orphaned packages to save disk space
-  echo "Removing orphaned packages..."
+  echo "正在移除孤立软件包..."
   apt-get autoremove -y >/dev/null 2>&1 || true
-  echo "  ✓ Orphaned packages removed"
+  echo "  ✓ 孤立软件包已移除"
 else
-  echo "All required packages already installed; skipping apt install."
+  echo "所有必需软件包已安装；跳过 apt 安装。"
 fi
 
 # Install rclone from official source (distro version is too old for OneDrive)
 RCLONE_MIN_VERSION="1.65.0"
 RCLONE_CURRENT=$(rclone version 2>/dev/null | head -1 | grep -oP 'v\K[0-9.]+' || echo "0.0.0")
 if [ "$(printf '%s\n' "$RCLONE_MIN_VERSION" "$RCLONE_CURRENT" | sort -V | head -1)" != "$RCLONE_MIN_VERSION" ]; then
-  echo "Installing rclone from official source (current: v${RCLONE_CURRENT}, need >= v${RCLONE_MIN_VERSION})..."
+  echo "正在从官方源安装 rclone（当前版本: v${RCLONE_CURRENT}，需要 >= v${RCLONE_MIN_VERSION}）..."
   curl -sL https://rclone.org/install.sh | bash 2>/dev/null || {
-    echo "Warning: rclone install from official source failed, falling back to apt"
+    echo "警告：从官方源安装 rclone 失败，正在回退到 apt"
     apt-get install -y rclone 2>/dev/null || true
   }
-  echo "  ✓ rclone $(rclone version 2>/dev/null | head -1 | grep -oP 'v[0-9.]+' || echo 'installed')"
+  echo "  ✓ rclone $(rclone version 2>/dev/null | head -1 | grep -oP 'v[0-9.]+' || echo '已安装')"
 else
-  echo "rclone v${RCLONE_CURRENT} already meets minimum v${RCLONE_MIN_VERSION}"
+  echo "rclone v${RCLONE_CURRENT} 已满足最低版本要求 v${RCLONE_MIN_VERSION}"
 fi
 
 # Ensure hostapd/dnsmasq don't auto-start outside our controller
@@ -865,12 +863,12 @@ if [ ! -f "$NM_UNMANAGED_CONF" ]; then
 [keyfile]
 unmanaged-devices=interface-name:uap0
 EOF
-  echo "Created NetworkManager config to ignore uap0 interface"
+  echo "已创建 NetworkManager 配置以忽略 uap0 接口"
   if systemctl is-active --quiet NetworkManager; then
     systemctl reload NetworkManager 2>/dev/null || true
   fi
 else
-  echo "NetworkManager already configured to ignore uap0"
+  echo "NetworkManager 已配置为忽略 uap0"
 fi
 
 # Configure WiFi roaming for mesh/extender networks (multiple APs with same SSID)
@@ -894,12 +892,12 @@ wifi.mac-address-randomization = 1
 # Check connectivity frequently to detect network issues and trigger roaming
 interval = 60
 EOF
-  echo "Created WiFi roaming configuration for mesh/extender networks"
+  echo "已创建用于 Mesh/扩展器网络的 WiFi 漫游配置"
   if systemctl is-active --quiet NetworkManager; then
     systemctl reload NetworkManager 2>/dev/null || true
   fi
 else
-  echo "WiFi roaming configuration already exists"
+  echo "WiFi 漫游配置已存在"
 fi
 
 # Note: NetworkManager manages wpa_supplicant directly via D-Bus (-u -s flags)
@@ -915,22 +913,22 @@ fi
 for svc in rpi-usb-gadget.service usb-gadget.service; do
   if systemctl list-unit-files "$svc" >/dev/null 2>&1 && \
      systemctl list-unit-files "$svc" | grep -q "$svc"; then
-    echo "Detected conflicting service: $svc"
+    echo "检测到冲突的服务: $svc"
     # Stop it if running (releases UDC)
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
-      echo "  Stopping $svc..."
+      echo "  正在停止 $svc..."
       systemctl stop "$svc" 2>/dev/null || true
       sleep 0.5
     fi
     # Disable so it doesn't start on next boot
     if systemctl is-enabled --quiet "$svc" 2>/dev/null; then
-      echo "  Disabling $svc..."
+      echo "  正在禁用 $svc..."
       systemctl disable "$svc" 2>/dev/null || true
     fi
     # Mask to prevent manual/dependency activation
-    echo "  Masking $svc to prevent conflicts..."
+    echo "  正在屏蔽 $svc 以防止冲突..."
     systemctl mask "$svc" 2>/dev/null || true
-    echo "  $svc has been stopped, disabled, and masked."
+    echo "  $svc 已被停止、禁用和屏蔽。"
   fi
 done
 
@@ -939,12 +937,12 @@ done
 # Pi USB gadget appliance — we don't need cloud metadata, datasource probing,
 # or per-instance config. Drop the disabled flag (recognized by every cloud-init
 # version) and mask the units as defense in depth.
-echo "Checking for cloud-init..."
+echo "正在检查 cloud-init..."
 # One glob is faster than three separate `cloud-init*`/`cloud-config*`/`cloud-final*`
 # probes; the inner masking loop only touches a fixed allowlist of unit names.
 if [ -d /etc/cloud ] || \
    systemctl list-unit-files 'cloud-*' --no-legend 2>/dev/null | grep -q '.'; then
-  echo "Disabling cloud-init (not needed for Pi USB gadget; saves ~6s at boot)..."
+  echo "正在禁用 cloud-init（Pi USB 设备不需要；启动时节省约 6 秒）..."
   mkdir -p /etc/cloud
   touch /etc/cloud/cloud-init.disabled
   for svc in cloud-init.target cloud-init.service cloud-init-local.service \
@@ -958,12 +956,12 @@ if [ -d /etc/cloud ] || \
   # version). Masks are defense in depth. Report status based on the flag,
   # since mask failures are silently swallowed above.
   if [ -f /etc/cloud/cloud-init.disabled ]; then
-    echo "  ✓ cloud-init disabled (flag set, units mask-attempted)"
+    echo "  ✓ cloud-init 已禁用（标志已设置，单元尝试屏蔽）"
   else
-    echo "  ⚠ cloud-init disable failed (could not create /etc/cloud/cloud-init.disabled)" >&2
+    echo "  ⚠ cloud-init 禁用失败（无法创建 /etc/cloud/cloud-init.disabled）" >&2
   fi
 else
-  echo "  cloud-init not installed; nothing to do"
+  echo "  cloud-init 未安装；无需操作"
 fi
 
 # Also clean up any gadget left behind by rpi-usb-gadget in configfs
@@ -974,7 +972,7 @@ for other_gadget in /sys/kernel/config/usb_gadget/*/; do
   [ "$gadget_name" = "teslausb" ] && continue
   [ "$gadget_name" = "*" ] && continue
   if [ -d "$other_gadget" ]; then
-    echo "Cleaning up leftover USB gadget: $gadget_name"
+    echo "正在清理残留的 USB gadget: $gadget_name"
     # Unbind UDC
     if [ -f "$other_gadget/UDC" ]; then
       echo "" > "$other_gadget/UDC" 2>/dev/null || true
@@ -995,7 +993,7 @@ for other_gadget in /sys/kernel/config/usb_gadget/*/; do
     # Remove strings and gadget
     rmdir "$other_gadget"/strings/* 2>/dev/null || true
     rmdir "$other_gadget" 2>/dev/null || true
-    echo "  Removed gadget: $gadget_name"
+    echo "  已移除 gadget: $gadget_name"
   fi
 done
 
@@ -1011,79 +1009,79 @@ if [ -f "$CONFIG_FILE" ]; then
     if ! grep -q '^dtoverlay=dwc2$' "$CONFIG_FILE"; then
       # Add dtoverlay=dwc2 right after [all] line
       sed -i '/^\[all\]/a dtoverlay=dwc2' "$CONFIG_FILE"
-      echo "Added dtoverlay=dwc2 under [all] section in $CONFIG_FILE"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 dtoverlay=dwc2"
       CONFIG_CHANGED=1
     else
-      echo "dtoverlay=dwc2 already present in $CONFIG_FILE"
+      echo "dtoverlay=dwc2 已存在于 $CONFIG_FILE"
     fi
 
     # Check and add dtparam=watchdog=on (only if not already present)
     if ! grep -q '^dtparam=watchdog=on$' "$CONFIG_FILE"; then
       # Add dtparam=watchdog=on right after [all] line
       sed -i '/^\[all\]/a dtparam=watchdog=on' "$CONFIG_FILE"
-      echo "Added dtparam=watchdog=on under [all] section in $CONFIG_FILE"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 dtparam=watchdog=on"
       CONFIG_CHANGED=1
     else
-      echo "dtparam=watchdog=on already present in $CONFIG_FILE"
+      echo "dtparam=watchdog=on 已存在于 $CONFIG_FILE"
     fi
 
     # Reduce GPU memory to 16MB (headless system doesn't need GPU, frees 48MB RAM)
     if ! grep -q '^gpu_mem=' "$CONFIG_FILE"; then
       sed -i '/^\[all\]/a gpu_mem=16' "$CONFIG_FILE"
-      echo "Added gpu_mem=16 under [all] section in $CONFIG_FILE (saves 48MB RAM)"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 gpu_mem=16（节省 48MB 内存）"
       CONFIG_CHANGED=1
     else
-      echo "gpu_mem already configured in $CONFIG_FILE"
+      echo "gpu_mem 已在 $CONFIG_FILE 中配置"
     fi
 
     # Disable HDMI output (headless, saves boot time + power)
     if ! grep -q '^hdmi_blanking=' "$CONFIG_FILE"; then
       sed -i '/^\[all\]/a hdmi_blanking=2' "$CONFIG_FILE"
-      echo "Added hdmi_blanking=2 under [all] section in $CONFIG_FILE (disables HDMI for faster boot)"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 hdmi_blanking=2（禁用 HDMI 以加快启动速度）"
       CONFIG_CHANGED=1
     else
-      echo "hdmi_blanking already configured in $CONFIG_FILE"
+      echo "hdmi_blanking 已在 $CONFIG_FILE 中配置"
     fi
 
     # Disable Bluetooth (not needed for TeslaUSB, saves boot time + frees UART)
     if ! grep -q '^dtoverlay=disable-bt$' "$CONFIG_FILE"; then
       sed -i '/^\[all\]/a dtoverlay=disable-bt' "$CONFIG_FILE"
-      echo "Added dtoverlay=disable-bt under [all] section in $CONFIG_FILE (disables Bluetooth)"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 dtoverlay=disable-bt（禁用蓝牙）"
       CONFIG_CHANGED=1
     else
-      echo "dtoverlay=disable-bt already present in $CONFIG_FILE"
+      echo "dtoverlay=disable-bt 已存在于 $CONFIG_FILE"
     fi
 
     # Disable onboard audio (not needed for TeslaUSB)
     if ! grep -q '^dtparam=audio=off$' "$CONFIG_FILE"; then
       sed -i '/^\[all\]/a dtparam=audio=off' "$CONFIG_FILE"
-      echo "Added dtparam=audio=off under [all] section in $CONFIG_FILE (disables onboard audio)"
+      echo "已在 $CONFIG_FILE 的 [all] 部分下添加 dtparam=audio=off（禁用板载音频）"
       CONFIG_CHANGED=1
     else
-      echo "dtparam=audio=off already present in $CONFIG_FILE"
+      echo "dtparam=audio=off 已存在于 $CONFIG_FILE"
     fi
   else
     # No [all] section - append it with all entries
     printf '\n[all]\ndtoverlay=dwc2\ndtparam=watchdog=on\ngpu_mem=16\nhdmi_blanking=2\ndtoverlay=disable-bt\ndtparam=audio=off\n' >> "$CONFIG_FILE"
-    echo "Appended [all] section with all TeslaUSB config entries to $CONFIG_FILE"
+    echo "已将包含所有 TeslaUSB 配置项的 [all] 部分追加到 $CONFIG_FILE"
     CONFIG_CHANGED=1
   fi
 else
-  echo "Warning: $CONFIG_FILE not found. Ensure your Pi uses /boot/firmware/config.txt"
+  echo "警告：未找到 $CONFIG_FILE。请确保您的 Pi 使用 /boot/firmware/config.txt"
 fi
 
 # Configure modules to load at boot via systemd
 MODULES_LOAD_CONF="/etc/modules-load.d/dwc2.conf"
 if [ ! -f "$MODULES_LOAD_CONF" ]; then
-  echo "Configuring modules to load at boot..."
+  echo "正在配置开机加载模块..."
   cat > "$MODULES_LOAD_CONF" <<EOF
 # USB gadget modules for Tesla USB storage
 dwc2
 libcomposite
 EOF
-  echo "Created $MODULES_LOAD_CONF"
+  echo "已创建 $MODULES_LOAD_CONF"
 else
-  echo "Module loading configuration already exists at $MODULES_LOAD_CONF"
+  echo "模块加载配置已存在于 $MODULES_LOAD_CONF"
 fi
 
 # Create gadget folder
@@ -1093,17 +1091,17 @@ chown "$TARGET_USER:$TARGET_USER" "$GADGET_DIR"
 # Cleanup function for loop devices
 cleanup_loop_devices() {
   if [ -n "${LOOP_CAM:-}" ]; then
-    echo "Cleaning up loop device: $LOOP_CAM"
+    echo "正在清理循环设备: $LOOP_CAM"
     losetup -d "$LOOP_CAM" 2>/dev/null || true
     LOOP_CAM=""
   fi
   if [ -n "${LOOP_LIGHTSHOW:-}" ]; then
-    echo "Cleaning up loop device: $LOOP_LIGHTSHOW"
+    echo "正在清理循环设备: $LOOP_LIGHTSHOW"
     losetup -d "$LOOP_LIGHTSHOW" 2>/dev/null || true
     LOOP_LIGHTSHOW=""
   fi
   if [ -n "${LOOP_MUSIC:-}" ]; then
-    echo "Cleaning up loop device: $LOOP_MUSIC"
+    echo "正在清理循环设备: $LOOP_MUSIC"
     losetup -d "$LOOP_MUSIC" 2>/dev/null || true
     LOOP_MUSIC=""
   fi
@@ -1114,38 +1112,38 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ "$NEED_CAM_IMAGE" = "1" ]; then
   # Set trap to cleanup on exit/error
   trap cleanup_loop_devices EXIT INT TERM
 
-  echo "Creating TeslaCam image $IMG_CAM_PATH (${P1_MB}M)..."
+  echo "正在创建 TeslaCam 镜像 $IMG_CAM_PATH (${P1_MB}M)..."
   # Create sparse file (thin provisioned) - only allocates space as needed
   truncate -s "${P1_MB}M" "$IMG_CAM_PATH" || {
-    echo "Error: Failed to create TeslaCam image file"
+    echo "错误：创建 TeslaCam 镜像文件失败"
     exit 1
   }
 
   LOOP_CAM=$(losetup --find --show "$IMG_CAM_PATH") || {
-    echo "Error: Failed to create loop device for TeslaCam"
+    echo "错误：为 TeslaCam 创建循环设备失败"
     exit 1
   }
 
   # Validate loop device was created
   if [ -z "$LOOP_CAM" ] || [ ! -e "$LOOP_CAM" ]; then
-    echo "Error: Loop device creation failed or device not accessible"
+    echo "错误：循环设备创建失败或设备不可访问"
     exit 1
   fi
 
-  echo "Using loop device: $LOOP_CAM"
+  echo "正在使用循环设备: $LOOP_CAM"
 
   # Format as single filesystem - use exFAT for large drives (>32GB), FAT32 for smaller
-  echo "Formatting TeslaCam drive (${LABEL1})..."
+  echo "正在格式化 TeslaCam 驱动器 (${LABEL1})..."
   if [ "$P1_MB" -gt 32768 ]; then
-    echo "  Using exFAT (drive size: ${P1_MB}MB > 32GB)"
+    echo "  使用 exFAT（驱动器大小: ${P1_MB}MB > 32GB）"
     mkfs.exfat -n "$LABEL1" "$LOOP_CAM" || {
-      echo "Error: Failed to format TeslaCam drive with exFAT"
+      echo "错误：使用 exFAT 格式化 TeslaCam 驱动器失败"
       exit 1
     }
   else
-    echo "  Using FAT32 (drive size: ${P1_MB}MB <= 32GB)"
+    echo "  使用 FAT32（驱动器大小: ${P1_MB}MB <= 32GB）"
     mkfs.vfat -F 32 -n "$LABEL1" "$LOOP_CAM" || {
-      echo "Error: Failed to format TeslaCam drive with FAT32"
+      echo "错误：使用 FAT32 格式化 TeslaCam 驱动器失败"
       exit 1
     }
   fi
@@ -1154,7 +1152,7 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ "$NEED_CAM_IMAGE" = "1" ]; then
   losetup -d "$LOOP_CAM" 2>/dev/null || true
   LOOP_CAM=""
 
-  echo "TeslaCam image created and formatted."
+  echo "TeslaCam 镜像已创建并格式化。"
 fi
 
 # Create Lightshow image (if missing)
@@ -1162,36 +1160,36 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ "$NEED_LIGHTSHOW_IMAGE" = "1" ]; then
   # Set trap to cleanup on exit/error (if not already set)
   trap cleanup_loop_devices EXIT INT TERM
 
-  echo "Creating Lightshow image $IMG_LIGHTSHOW_PATH (${P2_MB}M)..."
+  echo "正在创建 Lightshow 镜像 $IMG_LIGHTSHOW_PATH (${P2_MB}M)..."
   truncate -s "${P2_MB}M" "$IMG_LIGHTSHOW_PATH" || {
-    echo "Error: Failed to create Lightshow image file"
+    echo "错误：创建 Lightshow 镜像文件失败"
     exit 1
   }
 
   LOOP_LIGHTSHOW=$(losetup --find --show "$IMG_LIGHTSHOW_PATH") || {
-    echo "Error: Failed to create loop device for Lightshow"
+    echo "错误：为 Lightshow 创建循环设备失败"
     exit 1
   }
 
   if [ -z "$LOOP_LIGHTSHOW" ] || [ ! -e "$LOOP_LIGHTSHOW" ]; then
-    echo "Error: Loop device creation failed or device not accessible"
+    echo "错误：循环设备创建失败或设备不可访问"
     exit 1
   fi
 
-  echo "Using loop device: $LOOP_LIGHTSHOW"
+  echo "正在使用循环设备: $LOOP_LIGHTSHOW"
 
   # Format Lightshow drive
-  echo "Formatting Lightshow drive (${LABEL2})..."
+  echo "正在格式化 Lightshow 驱动器 (${LABEL2})..."
   if [ "$P2_MB" -gt 32768 ]; then
-    echo "  Using exFAT (drive size: ${P2_MB}MB > 32GB)"
+    echo "  使用 exFAT（驱动器大小: ${P2_MB}MB > 32GB）"
     mkfs.exfat -n "$LABEL2" "$LOOP_LIGHTSHOW" || {
-      echo "Error: Failed to format Lightshow drive with exFAT"
+      echo "错误：使用 exFAT 格式化 Lightshow 驱动器失败"
       exit 1
     }
   else
-    echo "  Using FAT32 (drive size: ${P2_MB}MB <= 32GB)"
+    echo "  使用 FAT32（驱动器大小: ${P2_MB}MB <= 32GB）"
     mkfs.vfat -F 32 -n "$LABEL2" "$LOOP_LIGHTSHOW" || {
-      echo "Error: Failed to format Lightshow drive with FAT32"
+      echo "错误：使用 FAT32 格式化 Lightshow 驱动器失败"
       exit 1
     }
   fi
@@ -1200,42 +1198,42 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ "$NEED_LIGHTSHOW_IMAGE" = "1" ]; then
   losetup -d "$LOOP_LIGHTSHOW" 2>/dev/null || true
   LOOP_LIGHTSHOW=""
 
-  echo "Lightshow image created and formatted."
+  echo "Lightshow 镜像已创建并格式化。"
 fi
 
 # Create Music image (if enabled and missing)
 if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ $MUSIC_REQUIRED -eq 1 ] && [ "${NEED_MUSIC_IMAGE:-0}" = "1" ]; then
   trap cleanup_loop_devices EXIT INT TERM
 
-  echo "Creating Music image $IMG_MUSIC_PATH (${P3_MB}M)..."
+  echo "正在创建 Music 镜像 $IMG_MUSIC_PATH (${P3_MB}M)..."
   truncate -s "${P3_MB}M" "$IMG_MUSIC_PATH" || {
-    echo "Error: Failed to create Music image file"
+    echo "错误：创建 Music 镜像文件失败"
     exit 1
   }
 
   LOOP_MUSIC=$(losetup --find --show "$IMG_MUSIC_PATH") || {
-    echo "Error: Failed to create loop device for Music"
+    echo "错误：为 Music 创建循环设备失败"
     exit 1
   }
 
   if [ -z "$LOOP_MUSIC" ] || [ ! -e "$LOOP_MUSIC" ]; then
-    echo "Error: Loop device creation failed or device not accessible"
+    echo "错误：循环设备创建失败或设备不可访问"
     exit 1
   fi
 
-  echo "Using loop device: $LOOP_MUSIC"
+  echo "正在使用循环设备: $LOOP_MUSIC"
 
   # Format Music drive (Tesla prefers FAT32 for media)
-  echo "Formatting Music drive (${LABEL3})..."
+  echo "正在格式化 Music 驱动器 (${LABEL3})..."
   FS_LOWER="$(printf '%s' "$MUSIC_FS" | tr '[:upper:]' '[:lower:]')"
   if [ "$FS_LOWER" = "exfat" ]; then
     mkfs.exfat -n "$LABEL3" "$LOOP_MUSIC" || {
-      echo "Error: Failed to format Music drive with exFAT"
+      echo "错误：使用 exFAT 格式化 Music 驱动器失败"
       exit 1
     }
   else
     mkfs.vfat -F 32 -n "$LABEL3" "$LOOP_MUSIC" || {
-      echo "Error: Failed to format Music drive with FAT32"
+      echo "错误：使用 FAT32 格式化 Music 驱动器失败"
       exit 1
     }
   fi
@@ -1243,7 +1241,7 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && [ $MUSIC_REQUIRED -eq 1 ] && [ "${NEED_MU
   losetup -d "$LOOP_MUSIC" 2>/dev/null || true
   LOOP_MUSIC=""
 
-  echo "Music image created and formatted."
+  echo "Music 镜像已创建并格式化。"
 fi
 
 # Clean up any remaining loop devices
@@ -1265,7 +1263,7 @@ ARCHIVE_DIR="/home/$TARGET_USER/ArchivedClips"
 mkdir -p "$ARCHIVE_DIR"
 chown "$TARGET_USER:$TARGET_USER" "$ARCHIVE_DIR"
 chmod 775 "$ARCHIVE_DIR"
-echo "Archive directory at: $ARCHIVE_DIR"
+echo "归档目录位置: $ARCHIVE_DIR"
 
 # ===== Configure Samba for authenticated user =====
 # Add user to Samba with configured password
@@ -1359,7 +1357,7 @@ systemctl restart smbd nmbd 2>/dev/null || systemctl restart smbd || true
 # demand when the user enters edit mode. Disable here so they don't auto-start
 # at the next reboot. We do NOT stop the running daemons — if the operator
 # happens to be in an edit session right now, that session keeps working.
-echo "Disabling Samba auto-start at boot (will start on demand in edit mode)..."
+echo "禁用 Samba 开机自启（将在编辑模式下按需启动）..."
 systemctl disable smbd 2>/dev/null || true
 systemctl disable nmbd 2>/dev/null || true
 # Verify both services actually disabled — `disable` failures (read-only fs,
@@ -1368,9 +1366,9 @@ systemctl disable nmbd 2>/dev/null || true
 smbd_state="$(systemctl is-enabled smbd 2>/dev/null || echo unknown)"
 nmbd_state="$(systemctl is-enabled nmbd 2>/dev/null || echo unknown)"
 if [ "$smbd_state" != "enabled" ] && [ "$nmbd_state" != "enabled" ]; then
-  echo "  ✓ Samba auto-start disabled (smbd=$smbd_state nmbd=$nmbd_state)"
+  echo "  ✓ Samba 开机自启已禁用 (smbd=$smbd_state nmbd=$nmbd_state)"
 else
-  echo "  ⚠ Samba auto-start not fully disabled (smbd=$smbd_state nmbd=$nmbd_state)" >&2
+  echo "  ⚠ Samba 开机自启未完全禁用 (smbd=$smbd_state nmbd=$nmbd_state)" >&2
 fi
 
 # ===== Configure scripts (no copying - run in place) =====
@@ -1378,14 +1376,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
 SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 
-echo "Verifying scripts directory structure..."
+echo "正在验证脚本目录结构..."
 if [ ! -d "$SCRIPTS_DIR/web" ]; then
-  echo "ERROR: scripts/web directory not found at $SCRIPTS_DIR/web"
+  echo "错误：未在 $SCRIPTS_DIR/web 找到 scripts/web 目录"
   exit 1
 fi
 
 # GADGET_DIR is auto-derived by config.sh — verify it matches expectations
-echo "Using GADGET_DIR: $GADGET_DIR (auto-derived from script location)"
+echo "使用 GADGET_DIR: $GADGET_DIR（从脚本位置自动派生）"
 
 # Create runtime directories
 
@@ -1400,27 +1398,27 @@ chown -R "$TARGET_USER:$TARGET_USER" "$SCRIPTS_DIR"
 PROTO_SRC="$SCRIPTS_DIR/web/static/dashcam.proto"
 PROTO_OUT="$SCRIPTS_DIR/web/services/dashcam_pb2.py"
 if [ -f "$PROTO_SRC" ]; then
-  echo "Compiling protobuf definition for SEI parser..."
+  echo "正在编译 SEI 解析器的 protobuf 定义..."
   protoc --python_out="$SCRIPTS_DIR/web/services/" --proto_path="$SCRIPTS_DIR/web/static" "$PROTO_SRC"
   chown "$TARGET_USER:$TARGET_USER" "$PROTO_OUT"
-  echo "  ✓ dashcam_pb2.py compiled"
+  echo "  ✓ dashcam_pb2.py 已编译"
 fi
 
 echo ""
 echo "============================================"
-echo "Scripts are running in-place from:"
+echo "脚本正在从以下位置原地运行："
 echo "  $SCRIPTS_DIR"
 echo ""
-echo "Edit configuration files:"
-echo "  - $SCRIPTS_DIR/config.sh (shell scripts)"
-echo "  - $SCRIPTS_DIR/web/config.py (web app)"
+echo "编辑配置文件："
+echo "  - $SCRIPTS_DIR/config.sh (shell 脚本)"
+echo "  - $SCRIPTS_DIR/web/config.py (Web 应用)"
 echo "============================================"
 echo ""
 
 # ===== Configure passwordless sudo for gadget scripts =====
 SUDOERS_D_DIR="/etc/sudoers.d"
 SUDOERS_ENTRY="$SUDOERS_D_DIR/teslausb-gadget"
-echo "Configuring passwordless sudo for gadget scripts..."
+echo "正在为 gadget 脚本配置免密码 sudo..."
 if [ ! -d "$SUDOERS_D_DIR" ]; then
   mkdir -p "$SUDOERS_D_DIR"
   chmod 755 "$SUDOERS_D_DIR"
@@ -1479,22 +1477,22 @@ chmod 440 "$SUDOERS_ENTRY"
 
 # Validate sudoers file syntax
 if ! visudo -c -f "$SUDOERS_ENTRY" >/dev/null 2>&1; then
-  echo "ERROR: Generated sudoers file has syntax errors. Rolling back..."
+  echo "错误：生成的 sudoers 文件存在语法错误。正在回滚..."
   rm -f "$SUDOERS_ENTRY"
   exit 1
 fi
 
-echo "Sudoers configuration completed successfully."
+echo "Sudoers 配置已成功完成。"
 
 STATE_FILE="$GADGET_DIR/state.txt"
 if [ ! -f "$STATE_FILE" ]; then
-  echo "Initializing mode state file..."
+  echo "正在初始化模式状态文件..."
   echo "unknown" > "$STATE_FILE"
   chown "$TARGET_USER:$TARGET_USER" "$STATE_FILE"
 fi
 
 # ===== Systemd services =====
-echo "Installing systemd services..."
+echo "正在安装 systemd 服务..."
 
 # Helper function to process systemd service templates
 configure_service() {
@@ -1529,7 +1527,7 @@ for sshd_name in ssh sshd; do
   if systemctl list-unit-files "${sshd_name}.service" >/dev/null 2>&1; then
     mkdir -p "$SSHD_DROPIN_DIR"
     cp "$TEMPLATES_DIR/sshd-protect.conf" "$SSHD_DROPIN_DIR/teslausb-protect.conf"
-    echo "  Installed SSH protection drop-in for ${sshd_name}.service"
+    echo "  已为 ${sshd_name}.service 安装 SSH 保护插入文件"
   fi
 done
 
@@ -1549,7 +1547,7 @@ configure_service "$TEMPLATES_DIR/chime_scheduler.timer" "$CHIME_SCHEDULER_TIMER
 # manual UI clicks. Disable + remove any pre-existing units from
 # previous installs so we don't keep firing the dead timer.
 if systemctl list-unit-files cloud_archive_sync.timer 2>/dev/null | grep -q cloud_archive_sync; then
-  echo "Removing legacy cloud_archive_sync.timer / .service (replaced by continuous worker)"
+  echo "正在移除旧的 cloud_archive_sync.timer / .service（已被持续工作进程替代）"
   systemctl disable --now cloud_archive_sync.timer 2>/dev/null || true
   systemctl disable --now cloud_archive_sync.service 2>/dev/null || true
   rm -f /etc/systemd/system/cloud_archive_sync.timer
@@ -1572,8 +1570,8 @@ chmod +x "$SCRIPT_DIR/scripts/optimize_network.sh" 2>/dev/null || true
 
 # Apply network optimizations immediately during setup
 if [ -f "$SCRIPT_DIR/scripts/optimize_network.sh" ]; then
-  echo "Applying network optimizations..."
-  "$SCRIPT_DIR/scripts/optimize_network.sh" 2>/dev/null || echo "  Note: Some optimizations require reboot to take effect"
+  echo "正在应用网络优化..."
+  "$SCRIPT_DIR/scripts/optimize_network.sh" 2>/dev/null || echo "  注意：部分优化需要重启才能生效"
 fi
 
 # Reload systemd and enable services
@@ -1623,12 +1621,12 @@ chmod +x "$SCRIPT_DIR/scripts/web/helpers/refresh_cloud_token.py" 2>/dev/null ||
 
 # ===== Configure System Reliability Features =====
 echo
-echo "Configuring system reliability features..."
+echo "正在配置系统可靠性功能..."
 
 # Configure sysctl for kernel panic auto-reboot and network performance
 SYSCTL_CONF="/etc/sysctl.d/99-teslausb.conf"
 if [ ! -f "$SYSCTL_CONF" ] || ! grep -q "kernel.panic" "$SYSCTL_CONF" 2>/dev/null; then
-  echo "Creating sysctl configuration for system reliability and network performance..."
+  echo "正在为系统可靠性和网络性能创建 sysctl 配置..."
   cat > "$SYSCTL_CONF" <<'EOF'
 # TeslaUSB System Reliability Configuration
 
@@ -1678,22 +1676,22 @@ net.ipv4.tcp_fastopen = 3
 # Disabling IPv6 breaks cybertruckusb.local and similar hostnames
 EOF
   chmod 644 "$SYSCTL_CONF"
-  echo "  Created $SYSCTL_CONF"
+  echo "  已创建 $SYSCTL_CONF"
 
   # Apply sysctl settings immediately
   sysctl -p "$SYSCTL_CONF" >/dev/null 2>&1 || true
-  echo "  Applied sysctl settings"
+  echo "  已应用 sysctl 设置"
 else
-  echo "Sysctl configuration already exists at $SYSCTL_CONF"
+  echo "Sysctl 配置已存在于 $SYSCTL_CONF"
 fi
 
 # Configure hardware watchdog
 # ALWAYS overwrite with known-good config to prevent boot loops from aggressive settings
 WATCHDOG_CONF="/etc/watchdog.conf"
-echo "Configuring hardware watchdog..."
+echo "正在配置硬件看门狗..."
 if [ -f "$WATCHDOG_CONF" ]; then
   cp "$WATCHDOG_CONF" "${WATCHDOG_CONF}.bak.$(date +%s)"
-  echo "  Backed up existing config"
+  echo "  已备份现有配置"
 fi
 cat > "$WATCHDOG_CONF" <<'EOF'
 # TeslaUSB Hardware Watchdog Configuration
@@ -1731,7 +1729,7 @@ realtime = yes
 priority = 1
 EOF
 chmod 644 "$WATCHDOG_CONF"
-echo "  Applied TeslaUSB watchdog configuration"
+echo "  已应用 TeslaUSB 看门狗配置"
 
 # Issue #104 mitigation D: boost the watchdog daemon's CPU + I/O
 # scheduling so a heavy archive backlog drain (which saturates the
@@ -1744,7 +1742,7 @@ echo "  Applied TeslaUSB watchdog configuration"
 # overwritten so a corrupted prior file can't survive.
 WATCHDOG_DROPIN_DIR="/etc/systemd/system/watchdog.service.d"
 WATCHDOG_DROPIN_FILE="${WATCHDOG_DROPIN_DIR}/teslausb-priority.conf"
-echo "Configuring watchdog.service priority drop-in (issue #104)..."
+echo "正在配置 watchdog.service 优先级插入文件（问题 #104）..."
 mkdir -p "$WATCHDOG_DROPIN_DIR"
 cat > "$WATCHDOG_DROPIN_FILE" <<'EOF'
 # TeslaUSB watchdog.service priority boost (issue #104)
@@ -1764,25 +1762,25 @@ IOSchedulingPriority=0
 EOF
 chmod 644 "$WATCHDOG_DROPIN_FILE"
 systemctl daemon-reload
-echo "  Installed $WATCHDOG_DROPIN_FILE"
+echo "  已安装 $WATCHDOG_DROPIN_FILE"
 
 # Enable and start watchdog service
-echo "Enabling watchdog service..."
+echo "正在启用看门狗服务..."
 systemctl enable watchdog.service || true
-systemctl restart watchdog.service 2>/dev/null || echo "  Note: Watchdog will start on next reboot (requires dtparam=watchdog=on)"
+systemctl restart watchdog.service 2>/dev/null || echo "  注意：看门狗将在下次重启后启动（需要 dtparam=watchdog=on）"
 
-echo "System reliability features configured."
+echo "系统可靠性功能已配置。"
 
 # ===== Create Persistent Swapfile for FSCK Operations =====
 echo
-echo "Creating persistent swapfile for filesystem checks..."
+echo "正在为文件系统检查创建持久交换文件..."
 SWAP_DIR="/var/swap"
 SWAP_FILE="$SWAP_DIR/fsck.swap"
 SWAP_SIZE_MB=1024  # 1GB swap
 
 # Handle legacy /var/swap file (move it aside if it exists as a file)
 if [ -f "/var/swap" ] && [ ! -d "/var/swap" ]; then
-  echo "  Moving legacy /var/swap file to /var/swap.old..."
+  echo "  正在将旧版 /var/swap 文件移至 /var/swap.old..."
   swapoff /var/swap 2>/dev/null || true
   mv /var/swap /var/swap.old
 fi
@@ -1794,10 +1792,10 @@ if [ ! -f "$SWAP_FILE" ]; then
   fi
 
   # Create swapfile using fallocate (faster than dd)
-  echo "  Creating 1GB swapfile at $SWAP_FILE..."
+  echo "  正在 $SWAP_FILE 创建 1GB 交换文件..."
   fallocate -l ${SWAP_SIZE_MB}M "$SWAP_FILE" || {
     # Fallback to dd if fallocate fails
-    echo "  fallocate failed, using dd instead..."
+    echo "  fallocate 失败，正在改用 dd..."
     dd if=/dev/zero of="$SWAP_FILE" bs=1M count=$SWAP_SIZE_MB status=progress
   }
 
@@ -1805,49 +1803,49 @@ if [ ! -f "$SWAP_FILE" ]; then
   chmod 600 "$SWAP_FILE"
   mkswap "$SWAP_FILE"
 
-  echo "  ✓ Swapfile created successfully"
+  echo "  ✓ 交换文件创建成功"
 
   # Add to /etc/fstab for automatic mounting on boot
   if ! grep -q "$SWAP_FILE" /etc/fstab 2>/dev/null; then
-    echo "  Adding swap to /etc/fstab for persistent mounting..."
+    echo "  正在将交换添加到 /etc/fstab 以实现持久挂载..."
     echo "$SWAP_FILE none swap sw 0 0" >> /etc/fstab
     systemctl daemon-reload
-    echo "  ✓ Swap will be enabled automatically on boot"
+    echo "  ✓ 交换将在开机时自动启用"
   fi
 
   # Enable swap now
-  swapon "$SWAP_FILE" 2>/dev/null || echo "  Note: Swap enabled, will activate on reboot"
+  swapon "$SWAP_FILE" 2>/dev/null || echo "  注意：交换已启用，将在重启后激活"
 
   # Clean up temporary swapfile from optimize_memory_for_setup if it exists
   if [ -f "/swapfile" ] && [ "$SWAP_FILE" != "/swapfile" ]; then
-    echo "  Cleaning up temporary /swapfile..."
+    echo "  正在清理临时 /swapfile..."
     swapoff /swapfile 2>/dev/null || true
     rm -f /swapfile
-    echo "  ✓ Temporary swapfile removed"
+    echo "  ✓ 临时交换文件已移除"
   fi
 
 else
-  echo "  Swapfile already exists at $SWAP_FILE"
+  echo "  交换文件已存在于 $SWAP_FILE"
 
   # Ensure it's in fstab even if file exists
   if ! grep -q "$SWAP_FILE" /etc/fstab 2>/dev/null; then
-    echo "  Adding existing swap to /etc/fstab..."
+    echo "  正在将现有交换添加到 /etc/fstab..."
     echo "$SWAP_FILE none swap sw 0 0" >> /etc/fstab
     systemctl daemon-reload
-    echo "  ✓ Swap will be enabled automatically on boot"
+    echo "  ✓ 交换将在开机时自动启用"
   fi
 
   # Clean up temporary swapfile from optimize_memory_for_setup if it exists
   if [ -f "/swapfile" ] && [ "$SWAP_FILE" != "/swapfile" ]; then
-    echo "  Cleaning up temporary /swapfile..."
+    echo "  正在清理临时 /swapfile..."
     swapoff /swapfile 2>/dev/null || true
     rm -f /swapfile
-    echo "  ✓ Temporary swapfile removed"
+    echo "  ✓ 临时交换文件已移除"
   fi
 
   # Enable swap if not already active
   if ! swapon --show 2>/dev/null | grep -q "$SWAP_FILE"; then
-    echo "  Enabling swap..."
+    echo "  正在启用交换..."
     swapon "$SWAP_FILE" 2>/dev/null || true
   fi
 fi
@@ -1855,7 +1853,7 @@ fi
 # ===== Disable Raspberry Pi OS Swap Management (we manage our own swap) =====
 # These services expect /var/swap to be a FILE, but we use /var/swap/ as a DIRECTORY
 # containing fsck.swap. Mask them to prevent noisy errors in logs.
-echo "Disabling Raspberry Pi OS swap management services (we manage our own)..."
+echo "正在禁用 Raspberry Pi OS 交换管理服务（我们自行管理）..."
 RPI_SWAP_SERVICES=(
   "rpi-resize-swap-file.service"
   "rpi-setup-loop@var-swap.service"
@@ -1869,30 +1867,30 @@ for service in "${RPI_SWAP_SERVICES[@]}"; do
     systemctl mask "$service" 2>/dev/null || true
   fi
 done
-echo "  ✓ Raspberry Pi OS swap services disabled (using our own swap at $SWAP_FILE)"
+echo "  ✓ Raspberry Pi OS 交换服务已禁用（使用我们自己的交换 $SWAP_FILE）"
 
 # ===== Disable Unnecessary Desktop Services (Save ~30MB RAM) =====
 echo
-echo "Disabling unnecessary desktop services to save memory..."
+echo "正在禁用不必要的桌面服务以节省内存..."
 
 # Stop and mask audio/color management services (not needed for headless USB gadget)
 DESKTOP_SERVICES=("pipewire" "wireplumber" "pipewire-pulse" "colord")
 for service in "${DESKTOP_SERVICES[@]}"; do
   if systemctl is-active "$service" >/dev/null 2>&1 || systemctl is-enabled "$service" >/dev/null 2>&1; then
-    echo "  Stopping and masking $service..."
+    echo "  正在停止并屏蔽 $service..."
     systemctl stop "$service" 2>/dev/null || true
     systemctl mask "$service" 2>/dev/null || true
   fi
 done
 
-echo "  ✓ Desktop services disabled (saves ~30MB RAM)"
+echo "  ✓ 桌面服务已禁用（节省约 30MB 内存）"
 
 # Detach any stale loop devices before folder seeding
 losetup -D 2>/dev/null || true
 
 # ===== Create TeslaCam folder on TeslaCam drive =====
 echo
-echo "Setting up TeslaCam folder on TeslaCam drive..."
+echo "正在 TeslaCam 驱动器上设置 TeslaCam 文件夹..."
 TEMP_MOUNT="/tmp/teslacam_setup_$$"
 mkdir -p "$TEMP_MOUNT"
 
@@ -1904,10 +1902,10 @@ mount "$LOOP_SETUP" "$TEMP_MOUNT"
 
 # Create TeslaCam directory if it doesn't exist
 if [ ! -d "$TEMP_MOUNT/TeslaCam" ]; then
-  echo "  Creating TeslaCam folder..."
+  echo "  正在创建 TeslaCam 文件夹..."
   mkdir -p "$TEMP_MOUNT/TeslaCam"
 else
-  echo "  TeslaCam folder already exists"
+  echo "  TeslaCam 文件夹已存在"
 fi
 
 # Sync and unmount
@@ -1915,11 +1913,11 @@ sync
 umount "$TEMP_MOUNT"
 losetup -d "$LOOP_SETUP"
 rmdir "$TEMP_MOUNT"
-echo "TeslaCam folder setup complete."
+echo "TeslaCam 文件夹设置完成。"
 
 # ===== Create Chimes folder on Lightshow drive =====
 echo
-echo "Setting up Chimes folder on Lightshow drive..."
+echo "正在 Lightshow 驱动器上设置 Chimes 文件夹..."
 TEMP_MOUNT="/tmp/lightshow_setup_$$"
 mkdir -p "$TEMP_MOUNT"
 
@@ -1933,14 +1931,14 @@ mkdir -p "$TEMP_MOUNT/Chimes"
 mkdir -p "$TEMP_MOUNT/LightShow"  # Also ensure LightShow folder exists
 
 # Migrate any existing WAV files (except LockChime.wav) to Chimes folder
-echo "Migrating existing WAV files to Chimes folder..."
+echo "正在迁移现有 WAV 文件到 Chimes 文件夹..."
 MIGRATED_COUNT=0
 for wavfile in "$TEMP_MOUNT"/*.wav "$TEMP_MOUNT"/*.WAV; do
   if [ -f "$wavfile" ]; then
     filename=$(basename "$wavfile")
     # Skip LockChime.wav (case-insensitive)
     if [[ "${filename,,}" != "lockchime.wav" ]]; then
-      echo "  Moving $filename to Chimes/"
+      echo "  正在移动 $filename 到 Chimes/"
       mv "$wavfile" "$TEMP_MOUNT/Chimes/"
       MIGRATED_COUNT=$((MIGRATED_COUNT + 1))
     fi
@@ -1948,9 +1946,9 @@ for wavfile in "$TEMP_MOUNT"/*.wav "$TEMP_MOUNT"/*.WAV; do
 done
 
 if [ $MIGRATED_COUNT -gt 0 ]; then
-  echo "  Migrated $MIGRATED_COUNT WAV file(s) to Chimes folder"
+  echo "  已迁移 $MIGRATED_COUNT 个 WAV 文件到 Chimes 文件夹"
 else
-  echo "  No WAV files found to migrate"
+  echo "  未找到需要迁移的 WAV 文件"
 fi
 
 # Sync and unmount
@@ -1958,28 +1956,28 @@ sync
 umount "$TEMP_MOUNT"
 losetup -d "$LOOP_SETUP"
 rmdir "$TEMP_MOUNT"
-echo "Chimes folder setup complete."
+echo "Chimes 文件夹设置完成。"
 
 # ===== Create Music folder on Music drive =====
 if [ $MUSIC_REQUIRED -eq 1 ] && [ -f "$IMG_MUSIC_PATH" ]; then
   echo
-  echo "Setting up Music folder on Music drive..."
+  echo "正在 Music 驱动器上设置 Music 文件夹..."
   TEMP_MOUNT="/tmp/music_setup_$$"
   mkdir -p "$TEMP_MOUNT"
 
   # Mount music drive temporarily
   LOOP_SETUP=$(losetup --find --show "$IMG_MUSIC_PATH")
-  echo "  Using loop device: $LOOP_SETUP"
+  echo "  正在使用循环设备: $LOOP_SETUP"
 
   # Let kernel auto-detect filesystem type (avoids blkid misidentification on large FAT32)
   mount "$LOOP_SETUP" "$TEMP_MOUNT"
 
   # Create Music directory if it doesn't exist
   if [ ! -d "$TEMP_MOUNT/Music" ]; then
-    echo "  Creating Music folder..."
+    echo "  正在创建 Music 文件夹..."
     mkdir -p "$TEMP_MOUNT/Music"
   else
-    echo "  Music folder already exists"
+    echo "  Music 文件夹已存在"
   fi
 
   # Sync and unmount
@@ -1987,39 +1985,39 @@ if [ $MUSIC_REQUIRED -eq 1 ] && [ -f "$IMG_MUSIC_PATH" ]; then
   umount "$TEMP_MOUNT"
   losetup -d "$LOOP_SETUP"
   rmdir "$TEMP_MOUNT"
-  echo "Music folder setup complete."
+  echo "Music 文件夹设置完成。"
 fi
 
 echo
-echo "Installation complete."
-echo " - present script: $GADGET_DIR/scripts/present_usb.sh"
-echo " - edit script:    $GADGET_DIR/scripts/edit_usb.sh"
-echo " - web UI:         http://<pi_ip>/  (service: gadget_web.service)"
-echo " - gadget auto-present on boot: present_usb_on_boot.service (with optional cleanup)"
-echo "Samba shares: use user '$TARGET_USER' and the password set in SAMBA_PASS"
+echo "安装完成。"
+echo " - 呈现脚本:     $GADGET_DIR/scripts/present_usb.sh"
+echo " - 编辑脚本:     $GADGET_DIR/scripts/edit_usb.sh"
+echo " - Web 界面:     http://<pi_ip>/  (服务: gadget_web.service)"
+echo " - 开机自动呈现 USB: present_usb_on_boot.service (带可选清理功能)"
+echo "Samba 共享：使用用户 '$TARGET_USER' 和在 SAMBA_PASS 中设置的密码"
 echo
-echo "System Reliability Features Enabled:"
-echo " - Hardware watchdog: Auto-reboot on system hang (watchdog.service)"
-echo " - Service auto-restart: All services restart on failure"
-echo " - Memory limits: Services limited to prevent OOM crashes"
-echo " - Kernel panic auto-reboot: 10 second timeout"
-echo " - WiFi auto-reconnect: Active monitoring (wifi-monitor.service)"
-echo " - WiFi power-save disabled: Prevents sleep-related disconnects"
+echo "已启用的系统可靠性功能："
+echo " - 硬件看门狗：系统挂起时自动重启 (watchdog.service)"
+echo " - 服务自动重启：所有服务在失败时自动重启"
+echo " - 内存限制：服务受限以防止 OOM 崩溃"
+echo " - 内核恐慌自动重启：10 秒超时"
+echo " - WiFi 自动重连：主动监控 (wifi-monitor.service)"
+echo " - WiFi 省电已禁用：防止休眠相关断连"
 echo
 
 # Load required kernel modules before presenting USB gadget
-echo "Loading USB gadget kernel modules..."
+echo "正在加载 USB gadget 内核模块..."
 modprobe configfs 2>/dev/null || true
 modprobe libcomposite 2>/dev/null || true
 
 # Try to load dwc2 - this might fail on first install if config.txt was just updated
 if ! modprobe dwc2 2>/dev/null; then
-    echo "Warning: dwc2 module not available yet"
+    echo "警告：dwc2 模块尚不可用"
 fi
 
 # Ensure configfs is mounted
 if ! mountpoint -q /sys/kernel/config 2>/dev/null; then
-    echo "Mounting configfs..."
+    echo "正在挂载 configfs..."
     mount -t configfs none /sys/kernel/config 2>/dev/null || true
 fi
 
@@ -2027,27 +2025,26 @@ fi
 if [ ! -d /sys/class/udc ] || [ -z "$(ls -A /sys/class/udc 2>/dev/null)" ]; then
     echo ""
     echo "============================================"
-    echo "⚠️  REBOOT REQUIRED"
+    echo "⚠️  需要重启"
     echo "============================================"
-    echo "The USB gadget hardware (dwc2) is not available yet."
+    echo "USB gadget 硬件 (dwc2) 尚不可用。"
     echo ""
     if [ "$CONFIG_CHANGED" = "1" ]; then
-        echo "Reason: config.txt was just modified with USB gadget settings."
+        echo "原因：config.txt 刚刚被修改了 USB gadget 设置。"
         echo ""
     fi
-    echo "Next steps:"
-    echo "  1. Reboot the Raspberry Pi:  sudo reboot"
-    echo "  2. After reboot, the USB gadget will be automatically enabled"
-    echo "  3. Hardware watchdog will activate for system protection"
-    echo "  4. Access the web interface at: http://$(hostname -I | awk '{print $1}'):$WEB_PORT/"
+    echo "后续步骤："
+    echo "  1. 重启 Raspberry Pi：sudo reboot"
+    echo "  2. 重启后，USB gadget 将自动启用"
+    echo "  3. 硬件看门狗将激活以保护系统"
+    echo "  4. 访问 Web 界面：http://$(hostname -I | awk '{print $1}'):$WEB_PORT/"
     echo ""
-    echo "The system is configured and ready, but requires a reboot to activate"
-    echo "the USB gadget hardware support and hardware watchdog."
+    echo "系统已配置就绪，但需要重启以激活 USB gadget 硬件支持和硬件看门狗。"
     echo "============================================"
     exit 0
 fi
 
-echo "USB gadget hardware detected. Switching to present mode..."
+echo "检测到 USB gadget 硬件。正在切换到呈现模式..."
 "$GADGET_DIR/scripts/present_usb.sh"
 echo
-echo "Setup complete! The Pi is now in present mode."
+echo "设置完成！Pi 现在处于呈现模式。"
