@@ -3826,7 +3826,11 @@ async function loadVideoList(append) {
 
         if (!append) list.innerHTML = '';
         if (!data.events || data.events.length === 0) {
-            if (!append) list.innerHTML = '<div class="vp-empty">' + _t('mapping.no_videos_folder') + '</div>';
+            if (!append) {
+                var emptyMsg = _t('mapping.no_videos_folder');
+                if (data.error) emptyMsg += '<br><small>' + escapeHTML(data.error) + '</small>';
+                list.innerHTML = '<div class="vp-empty">' + emptyMsg + '</div>';
+            }
             return;
         }
 
@@ -3886,7 +3890,11 @@ async function loadVideoList(append) {
         }
     } catch(e) {
         console.error('Failed to load videos:', e);
-        if (!append) list.innerHTML = '<div class="vp-empty">' + _t('mapping.load_videos_fail') + '</div>';
+        if (!append) {
+            var msg = _t('mapping.load_videos_fail');
+            if (e && e.message) msg += ' (' + e.message + ')';
+            list.innerHTML = '<div class="vp-empty">' + msg + '</div>';
+        }
     }
 }
 

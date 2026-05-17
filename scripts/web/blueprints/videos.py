@@ -45,8 +45,20 @@ def _check_archive_fallback(filename: str, folder_hint: str = None):
     return None
 
 
+# Routes that MUST have the USB cam image available (write / delete ops).
+# Read-only routes (listing, streaming, download) degrade gracefully
+# when the mount is absent — they return empty data / 404 instead of 503.
+_WRITE_ROUTES = frozenset([
+    'videos.delete_event',
+])
+
+
 @videos_bp.before_request
 def _require_cam_image():
+    # Read-only routes need no guard — get_teslacam_path() returns None
+    # when the mount is absent, and the route returns empty data / 404.
+    if request.endpoint and request.endpoint not in _WRITE_ROUTES:
+        return
     if not os.path.isfile(IMG_CAM_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable"}), 503
@@ -69,7 +81,12 @@ def file_browser():
     teslacam_path = get_teslacam_path()
 
     if not teslacam_path:
-        return jsonify({'events': [], 'has_next': False, 'folder_structure': 'events'})
+        return jsonify({
+            'events': [],
+            'has_next': False,
+            'folder_structure': 'events',
+            'error': 'TeslaCam mount not accessible. Check that the USB gadget is bound and the Tesla has formatted the drive.',
+        })
 
     folders = get_teslacam_folders()
     current_folder = request.args.get('folder', folders[0]['name'] if folders else None)
