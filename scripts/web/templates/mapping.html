@@ -4044,26 +4044,31 @@ async function openVideoFromPanel(folder, eventName) {
             return;
         }
 
-        // Look up waypoints for this clip directly from the DB
-        const firstPath = frontClips[0];
-        let waypoints = [];
+        // Build waypoint-like entries for ALL front clips so the overlay
+        // can populate overlayClips for prev/next navigation. Each entry
+        // only needs video_path; telemetry is lazy-fetched per clip.
+        const allWaypoints = frontClips.map(function(p) {
+            return { video_path: p, frame_offset: 0 };
+        });
+
+        // Look up DB waypoints for the first clip (for immediate telemetry)
+        let dbWaypoints = [];
         try {
-            const wpResp = await fetch(`/api/waypoints-for-clip?path=${encodeURIComponent(firstPath)}`);
+            const wpResp = await fetch(`/api/waypoints-for-clip?path=${encodeURIComponent(frontClips[0])}`);
             const wpData = await wpResp.json();
-            waypoints = wpData.waypoints || [];
+            dbWaypoints = wpData.waypoints || [];
         } catch(e) {
             console.warn('Waypoint lookup failed:', e);
         }
 
-        // Open overlay with the first front clip
-        const wp = waypoints.length > 0
-            ? (waypoints.find(w => w.video_path && firstPath.includes(getBasePath(w.video_path))) || waypoints[0])
-            : { video_path: firstPath, frame_offset: 0 };
-        // Ensure video_path points to the actual clip
-        wp.video_path = firstPath;
+        // Merge DB waypoints into allWaypoints for the first clip
+        if (dbWaypoints.length > 0) {
+            var base0 = getBasePath(frontClips[0]);
+            dbWaypoints.forEach(function(w) { if (w.video_path) allWaypoints.push(w); });
+        }
 
         const clickPoint = { x: window.innerWidth / 3, y: window.innerHeight / 4 };
-        openVideoOverlay(wp, clickPoint, waypoints);
+        openVideoOverlay(allWaypoints[0], clickPoint, allWaypoints);
 
         // Store folder/event for download/delete
         const overlay = document.getElementById('videoOverlay');
