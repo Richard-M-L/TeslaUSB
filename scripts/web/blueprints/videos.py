@@ -649,8 +649,9 @@ def event_player(folder, event_name):
                                mode_token=current_mode(),
                                **ctx)
     except Exception:
+        tb = traceback.format_exc()
         logger.error(
             "event_player crash: folder=%s event=%s\n%s",
-            folder, event_name, traceback.format_exc(),
+            folder, event_name, tb,
         )
-        return "Internal Server Error — check gadget_web logs", 500
+        return f"<pre>Internal Server Error\n\n{tb}</pre>", 500
