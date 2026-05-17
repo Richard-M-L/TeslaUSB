@@ -614,7 +614,7 @@ def event_player(folder, event_name):
             encrypted_videos = {}
             total_size = 0
             for v in session_videos:
-                cam = v.get('camera', 'unknown')
+                cam = v.get('camera') or 'unknown'
                 if cam not in camera_videos:
                     camera_videos[cam] = v['name']
                 vpath = os.path.join(folder_path, v['name'])
@@ -646,12 +646,10 @@ def event_player(folder, event_name):
                                folder=folder,
                                folder_structure=folder_structure,
                                event=event,
-                               mode_token=current_mode(),
                                **ctx)
     except Exception:
-        tb = traceback.format_exc()
         logger.error(
             "event_player crash: folder=%s event=%s\n%s",
-            folder, event_name, tb,
+            folder, event_name, traceback.format_exc(),
         )
-        return f"<pre>Internal Server Error\n\n{tb}</pre>", 500
+        return "Internal Server Error", 500
