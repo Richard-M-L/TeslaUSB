@@ -99,6 +99,28 @@ def set_locale():
     g.lang = detect_locale(request)
 
 
+@app.route('/api/i18n/<locale>.js')
+def i18n_js(locale):
+    """Serve translation table as a cacheable JS file.
+
+    Previously the full translation dict was embedded inline on every HTML
+    page (~15 KB for zh).  Serving it as an external script lets browsers
+    cache it (24 h) so it only travels once per locale.
+    """
+    import json as _json
+    from flask import make_response
+    if locale not in supported_locales():
+        locale = _default_locale
+    payload = _json.dumps(
+        get_all_translations(locale), separators=(',', ':'), ensure_ascii=False,
+    )
+    resp = make_response(f"window._translations={payload};", 200)
+    resp.mimetype = 'application/javascript'
+    resp.cache_control.max_age = 86400
+    resp.cache_control.public = True
+    return resp
+
+
 @app.context_processor
 def inject_i18n():
     """Inject translation helper and locale info into all Jinja templates."""
@@ -141,6 +163,98 @@ def handle_os_error(e):
         flash(msg, "error")
         return redirect(request.referrer or '/')
     raise e  # Re-raise non-space errors
+
+
+# ---------------------------------------------------------------------------
+# Map tile proxy — lets devices on the Pi's WiFi see the map even when
+# they cannot reach tile servers directly (e.g. mainland China without
+# VPN).  Tiles are cached to SD card; each unique tile is fetched only
+# once from the upstream source.
+#
+# Default upstream: Gaode (高德) street tiles, accessible inside China
+# without a proxy.  NOTE — Gaode uses the GCJ-02 datum, which shifts
+# WGS-84 GPS coordinates by ~300 m.  If your Pi has VPN access, set
+# ``map.tile_upstream_url`` in config.yaml to the OSM URL below for
+# native WGS-84 tiles:
+#
+#     mapping:
+#       tile_upstream_url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+# ---------------------------------------------------------------------------
+import urllib.request
+import urllib.error
+
+_TILE_CACHE_DIR = os.path.join(GADGET_DIR, 'tile_cache')
+_TILE_FETCH_TIMEOUT = 10  # seconds
+_EMPTY_PNG = (
+    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
+    b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x09pHYs\x00\x00\x0b\x13'
+    b'\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x07tIME\x07\xe2\x05'
+    b'\x0e\r*\x2f;G$\x00\x00\x00\x1dIDAT\x08\xd7c\xf8\xff\xff\x7f\x00\x05'
+    b'\xfe\x02\xfe\x02\x02\x30\x00\xc5\x00\x05?\xb4t\xd7\x00\x00\x00\x00'
+    b' IEND\xaeB`\x82'
+)
+
+# Default upstream: Gaode (Amap) street tiles — accessible without VPN in China.
+_DEFAULT_TILE_UPSTREAM = (
+    'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1'
+    '&style=8&x={x}&y={y}&z={z}'
+)
+
+
+def _tile_upstream_url():
+    """Return the configured tile upstream URL (with {x},{y},{z} placeholders)."""
+    try:
+        _mapping_cfg = config.get('mapping', {}) if isinstance(config.get('mapping'), dict) else {}
+        url = _mapping_cfg.get('tile_upstream_url', '')
+        if url and isinstance(url, str) and '{x}' in url:
+            return url
+    except Exception:  # noqa: BLE001
+        pass
+    return _DEFAULT_TILE_UPSTREAM
+
+
+@app.route('/tiles/<int:z>/<int:x>/<int:y>.png')
+def tile_proxy(z, x, y):
+    """Proxy a map tile — serve from cache, or fetch + cache once."""
+    cache_path = os.path.join(_TILE_CACHE_DIR, str(z), str(x))
+    cache_file = os.path.join(cache_path, f'{y}.png')
+
+    # Cache hit — serve directly (tiles never change)
+    if os.path.isfile(cache_file):
+        from flask import send_file
+        resp = send_file(cache_file, mimetype='image/png')
+        resp.cache_control.max_age = 86400
+        resp.cache_control.public = True
+        return resp
+
+    # Cache miss — fetch from upstream via the Pi's internet connection
+    upstream = _tile_upstream_url()
+    try:
+        os.makedirs(cache_path, exist_ok=True)
+        req = urllib.request.Request(
+            upstream.format(z=z, x=x, y=y),
+            headers={'User-Agent': 'TeslaUSB/1.0 (tile proxy)'},
+        )
+        with urllib.request.urlopen(req, timeout=_TILE_FETCH_TIMEOUT) as resp_up:
+            data = resp_up.read()
+        # Write atomically: temp file → rename
+        tmp = cache_file + '.tmp'
+        with open(tmp, 'wb') as f:
+            f.write(data)
+        os.replace(tmp, cache_file)
+        from flask import send_file
+        resp = send_file(cache_file, mimetype='image/png')
+        resp.cache_control.max_age = 86400
+        resp.cache_control.public = True
+        return resp
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        logging.getLogger('teslausb.tile_proxy').warning(
+            "Tile fetch failed %d/%d/%d: %s", z, x, y, e,
+        )
+        from flask import Response
+        return Response(
+            _EMPTY_PNG, mimetype='image/png', status=502,
+        )
 
 
 # Serve tile cache service worker from root scope (SW scope must match serving path)

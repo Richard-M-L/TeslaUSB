@@ -23,31 +23,32 @@
     <script>
         // i18n bridge — exposes translations to JavaScript as window._t(key)
         (function() {
-            const locale = '{{ current_locale() }}';
-            // Embedded translation table (populated at template render time)
-            const _translations = {{ _translations_js|default({})|tojson }};
+            var locale = '{{ current_locale() }}';
+            // Embedded translation table (small; inlined to avoid a
+            // render-blocking HTTP request on the Pi Zero's slow WiFi).
+            var data = {{ _translations_js|default({})|tojson }};
             // Recursive helper for dot-separated nested-key traversal.
             // Compound keys like "index.system_health_subsystems" already
             // contain dots, so we find the longest prefix that exists as a
             // key in the current object and recurse with the suffix.
-            function _t_nested(data, key) {
-                if (data[key] !== undefined && typeof data[key] === 'string')
-                    return data[key];
-                if (typeof data[key] === 'object') return undefined; // ambiguous
+            function _t_nested(obj, key) {
+                if (obj[key] !== undefined && typeof obj[key] === 'string')
+                    return obj[key];
+                if (typeof obj[key] === 'object') return undefined; // ambiguous
                 var parts = key.split('.');
                 for (var i = parts.length - 1; i > 0; i--) {
                     var prefix = parts.slice(0, i).join('.');
                     var suffix = parts.slice(i).join('.');
-                    if (data[prefix] && typeof data[prefix] === 'object') {
-                        var result = _t_nested(data[prefix], suffix);
+                    if (obj[prefix] && typeof obj[prefix] === 'object') {
+                        var result = _t_nested(obj[prefix], suffix);
                         if (result !== undefined) return result;
                     }
                 }
                 return undefined;
             }
             window._t = function(key) {
-                if (_translations[key]) return _translations[key];
-                var result = _t_nested(_translations, key);
+                if (data[key]) return data[key];
+                var result = _t_nested(data, key);
                 return result !== undefined ? result : key;
             };
             window._locale = locale;
@@ -93,44 +94,9 @@
             </button>
             {% set other_locale = 'en' if current_locale() == 'zh' else 'zh' %}
             <a href="/lang/{{ other_locale }}" class="lang-switch-btn" title="{{ _('base.lang_switch_title') }}">
-            {% if other_locale == 'zh' %}
-                {# Chinese flag — red field, large yellow star + 4 small stars #}
-                <svg viewBox="0 0 24 24" class="lang-flag-icon" aria-label="中文">
-                    <defs><clipPath id="flag-clip-zh"><circle cx="12" cy="12" r="10.5"/></clipPath></defs>
-                    <g clip-path="url(#flag-clip-zh)">
-                        <rect width="24" height="24" fill="#DE2910"/>
-                        <polygon points="7,5.5 8.5,8.8 12.2,9 9.4,11.5 10.1,15 7,12.8 3.9,15 4.6,11.5 1.8,9 5.5,8.8" fill="#FFDE00"/>
-                        <circle cx="13" cy="5" r="1.2" fill="#FFDE00"/>
-                        <circle cx="15.5" cy="7.5" r="1.2" fill="#FFDE00"/>
-                        <circle cx="15" cy="11.5" r="1.2" fill="#FFDE00"/>
-                        <circle cx="12.5" cy="13.5" r="1.2" fill="#FFDE00"/>
-                    </g>
-                    <circle cx="12" cy="12" r="10.5" fill="none" stroke="var(--ds-border)" stroke-width="0.5"/>
-                </svg>
-            {% else %}
-                {# US flag — stripes + blue canton with stars #}
-                <svg viewBox="0 0 24 24" class="lang-flag-icon" aria-label="English">
-                    <defs><clipPath id="flag-clip-en"><circle cx="12" cy="12" r="10.5"/></clipPath></defs>
-                    <g clip-path="url(#flag-clip-en)">
-                        <rect width="24" height="24" fill="#FFFFFF"/>
-                        <rect y="0"  width="24" height="3.43" fill="#B22234"/>
-                        <rect y="6.86" width="24" height="3.43" fill="#B22234"/>
-                        <rect y="13.71" width="24" height="3.43" fill="#B22234"/>
-                        <rect y="20.57" width="24" height="3.43" fill="#B22234"/>
-                        <rect width="10" height="10" fill="#3C3B6E"/>
-                        <circle cx="2.5" cy="2.5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="5" cy="2.5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="7.5" cy="2.5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="3.75" cy="5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="6.25" cy="5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="8.75" cy="5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="2.5" cy="7.5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="5" cy="7.5" r="0.85" fill="#FFFFFF"/>
-                        <circle cx="7.5" cy="7.5" r="0.85" fill="#FFFFFF"/>
-                    </g>
-                    <circle cx="12" cy="12" r="10.5" fill="none" stroke="var(--ds-border)" stroke-width="0.5"/>
-                </svg>
-            {% endif %}
+                <img src="{{ url_for('static', filename='icons/flag-' + other_locale + '.svg') }}"
+                     class="lang-flag-icon" alt="{{ '中文' if other_locale == 'zh' else 'English' }}"
+                     width="24" height="24">
             </a>
         </div>
     </header>

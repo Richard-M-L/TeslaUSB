@@ -43,15 +43,20 @@ def format_file_size(size_bytes):
     return f"{size_bytes:.2f} TB"
 
 
+# Compiled regex for Tesla video filename parsing.
+# Format: YYYY-MM-DD_HH-MM-SS-camera.ext
+_TESLA_FILENAME_RE = re.compile(
+    r'^(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-(.+)\.\w+$'
+)
+
+
 def parse_session_from_filename(filename):
     """
     Parse Tesla video filename to extract session and camera info.
     Format: 2025-10-29_10-39-36-right_pillar.mp4
     Returns: {'session': '2025-10-29_10-39-36', 'camera': 'right_pillar'}
     """
-    # Match pattern: YYYY-MM-DD_HH-MM-SS-camera.ext
-    pattern = r'^(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})-(.+)\.\w+$'
-    match = re.match(pattern, filename)
+    match = _TESLA_FILENAME_RE.match(filename)
     if match:
         return {
             'session': match.group(1),

@@ -52,13 +52,25 @@
         queue.forEach((item, idx) => {
             const row = document.createElement('div');
             row.className = 'music-file-row';
-            row.innerHTML = `
-                <div>
-                    <div>${item.file.name}</div>
-                    <div class="meta">${formatBytes(item.file.size)} → /${item.targetPath || currentPath || ''}</div>
-                </div>
-                <button class="action-btn danger" data-remove="${idx}">Remove</button>
-            `;
+
+            const infoDiv = document.createElement('div');
+
+            const nameDiv = document.createElement('div');
+            nameDiv.textContent = item.file.name;
+            infoDiv.appendChild(nameDiv);
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meta';
+            metaDiv.textContent = formatBytes(item.file.size) + ' → /' + (item.targetPath || currentPath || '');
+            infoDiv.appendChild(metaDiv);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'action-btn danger';
+            removeBtn.setAttribute('data-remove', String(idx));
+            removeBtn.textContent = 'Remove';
+
+            row.appendChild(infoDiv);
+            row.appendChild(removeBtn);
             const progress = document.createElement('div');
             progress.className = 'music-progress-bar';
             const bar = document.createElement('span');

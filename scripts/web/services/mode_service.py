@@ -14,6 +14,7 @@ import socket
 import subprocess
 import glob
 import logging
+import time
 
 # Import configuration
 from config import (
@@ -27,8 +28,22 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
+_configfs_last_check: float = 0.0
+_configfs_last_result: bool = False
+_CONFIGFS_CACHE_TTL = 2.0  # seconds — mode detection is low-frequency
+
+
 def _configfs_gadget_present():
-    """Check if the configfs mass_storage gadget is active (present mode)."""
+    """Check if the configfs mass_storage gadget is active (present mode).
+
+    Result is cached for ``_CONFIGFS_CACHE_TTL`` seconds to avoid repeated
+    glob(3) + open(2) calls on every mode-display refresh.
+    """
+    global _configfs_last_check, _configfs_last_result
+    now = time.monotonic()
+    if now - _configfs_last_check < _CONFIGFS_CACHE_TTL:
+        return _configfs_last_result
+    _configfs_last_check = now
     try:
         # Look for any mass_storage.usb0 LUN0 file path and confirm it is set
         for lun_file in glob.glob('/sys/kernel/config/usb_gadget/*/functions/mass_storage.usb0/lun.0/file'):
@@ -36,11 +51,13 @@ def _configfs_gadget_present():
                 with open(lun_file, 'r', encoding='utf-8') as fh:
                     backing = fh.read().strip()
                 if backing:
+                    _configfs_last_result = True
                     return True
             except OSError:
                 continue
     except Exception:
         pass
+    _configfs_last_result = False
     return False
 
 

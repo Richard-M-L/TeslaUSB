@@ -40,7 +40,10 @@ def load_translations(translations_dir: str) -> None:
             _translations[locale] = {}
 
 
-def _nested_get(data: dict, key: str):
+_SENTINEL = object()  # distinct from any valid translation value (incl. "", 0, False)
+
+
+def _nested_get(data: dict, key: str, _depth: int = 0):
     """Resolve a dot-separated key against a nested dict.
 
     Keys like ``index.system_labels`` are compound (contain dots), while
@@ -49,7 +52,13 @@ def _nested_get(data: dict, key: str):
     match the actual structure ``data['index.system_labels']['hostname']``.
     Instead we try the full flat key first, then progressively find the
     longest dot-joined prefix that exists as a key in *data* and recurse.
+
+    Returns ``_SENTINEL`` when no match is found so callers can distinguish
+    "not found" from a valid translation whose value is ``None``, ``""``,
+    ``0``, or ``False``.
     """
+    if _depth > 10:
+        return _SENTINEL
     if key in data:
         return data[key]
     parts = key.split('.')
@@ -57,10 +66,10 @@ def _nested_get(data: dict, key: str):
         prefix = '.'.join(parts[:i])
         suffix = '.'.join(parts[i:])
         if prefix in data and isinstance(data[prefix], dict):
-            result = _nested_get(data[prefix], suffix)
-            if result is not None:
+            result = _nested_get(data[prefix], suffix, _depth + 1)
+            if result is not _SENTINEL:
                 return result
-    return None
+    return _SENTINEL
 
 
 def get_text(key: str, locale: str = None) -> str:
@@ -73,11 +82,11 @@ def get_text(key: str, locale: str = None) -> str:
         locale = _default_locale
     locale_data = _translations.get(locale, {})
     value = _nested_get(locale_data, key)
-    if value is not None:
+    if value is not _SENTINEL:
         return value
     en_data = _translations.get('en', {})
     value = _nested_get(en_data, key)
-    if value is not None:
+    if value is not _SENTINEL:
         return value
     logger.debug("Missing translation key: %s (locale=%s)", key, locale)
     return key

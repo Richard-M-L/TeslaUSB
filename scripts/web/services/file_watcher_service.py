@@ -751,28 +751,30 @@ def _watcher_loop(my_generation: int):
                         len(new_event_jsons))
             _notify_event_json_callbacks(new_event_jsons, my_generation)
 
-        # Polling-mode delete detection: any file we knew about that no
-        # longer exists is a deletion. Cheap once known_files is bounded.
-        deletions = [p for p in known_files if not os.path.isfile(p)]
-        if deletions:
-            logger.info("Polling detected %d file deletion(s)", len(deletions))
-            for p in deletions:
-                known_files.discard(p)
-            _notify_delete_callbacks(deletions, my_generation)
-
         _status["last_scan"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Periodically prune known_files to prevent unbounded memory growth.
-        # The delete loop above already drops missing files; this catches
-        # the case where the set grows too fast for the prune interval.
+        # Periodically prune known_files to prevent unbounded memory growth
+        # and detect deleted files. Full O(n) scan is amortised over N
+        # cycles (~hourly) rather than every poll (5 min) to avoid
+        # thousands of stat(2) calls on the Pi Zero 2 W SD card.
         scan_count += 1
         if scan_count >= _PRUNE_EVERY_N_SCANS or len(known_files) > _MAX_KNOWN_FILES:
             before = len(known_files)
-            known_files = {f for f in known_files if os.path.isfile(f)}
+            deletions: List[str] = []
+            surviving: Set[str] = set()
+            for p in known_files:
+                if os.path.isfile(p):
+                    surviving.add(p)
+                else:
+                    deletions.append(p)
+            known_files = surviving
             pruned = before - len(known_files)
             if pruned > 0:
                 logger.info("Pruned %d stale entries from known_files (now %d)",
                             pruned, len(known_files))
+            if deletions:
+                logger.info("Polling detected %d file deletion(s)", len(deletions))
+                _notify_delete_callbacks(deletions, my_generation)
             # Also prune the event.json set
             known_event_json = {
                 f for f in known_event_json if os.path.isfile(f)

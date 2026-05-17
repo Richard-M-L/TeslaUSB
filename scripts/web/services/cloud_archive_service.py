@@ -2158,11 +2158,12 @@ def _discover_events(
             total_size = 0
             has_video = False
             try:
-                for f in os.listdir(event_dir):
-                    fpath = os.path.join(event_dir, f)
-                    if os.path.isfile(fpath):
-                        total_size += os.path.getsize(fpath)
-                        if f.lower().endswith(('.mp4', '.ts')):
+                with os.scandir(event_dir) as dir_it:
+                    for entry in dir_it:
+                        if not entry.is_file(follow_symlinks=False):
+                            continue
+                        total_size += entry.stat().st_size
+                        if not has_video and entry.name.lower().endswith(('.mp4', '.ts')):
                             has_video = True
             except OSError:
                 continue
@@ -2177,16 +2178,17 @@ def _discover_events(
         from config import ARCHIVE_DIR, ARCHIVE_ENABLED
         if ARCHIVE_ENABLED and os.path.isdir(ARCHIVE_DIR):
             try:
-                for f in sorted(os.listdir(ARCHIVE_DIR)):
-                    fpath = os.path.join(ARCHIVE_DIR, f)
-                    if os.path.isfile(fpath) and f.lower().endswith(('.mp4', '.ts')):
-                        rel_path = canonical_cloud_path(f"ArchivedClips/{f}")
+                with os.scandir(ARCHIVE_DIR) as dir_it:
+                    for entry in sorted(dir_it, key=lambda e: e.name):
+                        if not entry.is_file(follow_symlinks=False):
+                            continue
+                        if not entry.name.lower().endswith(('.mp4', '.ts')):
+                            continue
+                        fpath = entry.path
+                        rel_path = canonical_cloud_path(f"ArchivedClips/{entry.name}")
                         if _is_path_skipped(conn, rel_path):
                             continue
-                        fsize = os.path.getsize(fpath)
-                        # Use the individual file path (not ARCHIVE_DIR)
-                        # so rclone copyto can handle file-to-file copy
-                        events.append((fpath, rel_path, fsize))
+                        events.append((fpath, rel_path, entry.stat().st_size))
             except OSError:
                 pass
     except ImportError:

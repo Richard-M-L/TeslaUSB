@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-label="English">
+  <defs><clipPath id="fc-en"><circle cx="12" cy="12" r="10.5"/></clipPath></defs>
+  <g clip-path="url(#fc-en)">
+    <rect width="24" height="24" fill="#FFF"/>
+    <rect y="0"      width="24" height="3.43" fill="#B22234"/>
+    <rect y="6.86"   width="24" height="3.43" fill="#B22234"/>
+    <rect y="13.71"  width="24" height="3.43" fill="#B22234"/>
+    <rect y="20.57"  width="24" height="3.43" fill="#B22234"/>
+    <rect width="10" height="10" fill="#3C3B6E"/>
+    <circle cx="2.5"  cy="2.5" r="0.85" fill="#FFF"/><circle cx="5"   cy="2.5" r="0.85" fill="#FFF"/><circle cx="7.5" cy="2.5" r="0.85" fill="#FFF"/>
+    <circle cx="3.75" cy="5"   r="0.85" fill="#FFF"/><circle cx="6.25" cy="5"   r="0.85" fill="#FFF"/><circle cx="8.75" cy="5" r="0.85" fill="#FFF"/>
+    <circle cx="2.5"  cy="7.5" r="0.85" fill="#FFF"/><circle cx="5"   cy="7.5" r="0.85" fill="#FFF"/><circle cx="7.5" cy="7.5" r="0.85" fill="#FFF"/>
+  </g>
+  <circle cx="12" cy="12" r="10.5" fill="none" stroke="#999" stroke-width="0.5"/>
+</svg>

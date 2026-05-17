@@ -70,7 +70,20 @@ function showToast(message, type) {
 
     var toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
-    toast.innerHTML = '<span>' + message + '</span><button class="toast-close" onclick="dismissToast(this.parentElement)" aria-label="Dismiss">&times;</button>';
+
+    var msgSpan = document.createElement('span');
+    msgSpan.textContent = message;
+    toast.appendChild(msgSpan);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.setAttribute('aria-label', 'Dismiss');
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', function () {
+        dismissToast(toast);
+    });
+    toast.appendChild(closeBtn);
+
     container.appendChild(toast);
 
     // Trigger reflow then add .show for transition

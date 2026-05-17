@@ -59,7 +59,29 @@ SECRET_KEY = config['web']['secret_key']
 # Auto-generate a secret key on first run if still using default
 if SECRET_KEY == _DEFAULT_SECRET:
     SECRET_KEY = secrets.token_hex(32)
-    print(f"Generated new SECRET_KEY. Consider saving it to config.yaml for persistence.")
+    try:
+        # Persist the generated key so sessions survive restarts.
+        # Use an atomic write (temp + rename) to avoid corrupting
+        # config.yaml on power-loss mid-write.
+        import tempfile
+        _tmp_fd, _tmp_path = tempfile.mkstemp(
+            dir=os.path.dirname(CONFIG_YAML),
+            prefix='.config.yaml.',
+            text=True,
+        )
+        try:
+            with os.fdopen(_tmp_fd, 'w', encoding='utf-8') as _fh:
+                yaml.safe_dump(config, _fh, default_flow_style=False,
+                               allow_unicode=True, sort_keys=False)
+            os.replace(_tmp_path, CONFIG_YAML)
+        except Exception:
+            os.unlink(_tmp_path)
+            raise
+    except Exception as _e:
+        print(
+            "Warning: Could not persist generated SECRET_KEY to "
+            f"config.yaml ({_e}). Sessions will not survive restarts.",
+        )
 
 # Lock Chime Configuration
 LOCK_CHIME_FILENAME = config['web']['lock_chime_filename']

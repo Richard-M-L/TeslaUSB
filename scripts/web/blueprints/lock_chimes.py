@@ -406,7 +406,7 @@ def upload_bulk_chimes():
             try:
                 os.remove(temp_path)
                 os.rmdir(temp_dir)
-            except:
+            except OSError:
                 pass
 
         except Exception as e:
@@ -419,7 +419,7 @@ def upload_bulk_chimes():
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
                 os.rmdir(temp_dir)
-            except:
+            except OSError:
                 pass
 
     # Refresh Samba shares only if in edit mode and files were uploaded

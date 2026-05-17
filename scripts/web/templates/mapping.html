@@ -950,13 +950,17 @@
 <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
 <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.markercluster.js') }}"></script>
 <script>
-// Silence console in production — keeps the mobile dev-tools console
-// clean and avoids the iOS Safari console-access overhead. Set
-// localStorage.setItem('DEBUG','1') to re-enable for debugging.
+// Silence noisy console methods in production — keeps the mobile
+// dev-tools console clean. console.warn and console.error are
+// preserved so JS failures and network errors remain visible on
+// Safari (where remote debugging is painful). Set
+// localStorage.setItem('DEBUG','1') to re-enable all methods.
 (function(){
     if (!(window.localStorage && localStorage.getItem('DEBUG'))) {
         var noop = function(){};
-        console.log = console.warn = console.info = console.debug = noop;
+        console.log = console.info = console.debug = noop;
+        // console.warn and console.error are intentionally left
+        // untouched so errors surface in the iOS Safari console.
     }
 })();
 
@@ -1058,46 +1062,68 @@ function writeUrlState(state, options) {
 // disk corruption). Without this the page silently shows a blank
 // container because the ReferenceError kills the whole script block.
 var map, sharedCanvasRenderer, tripLayer, eventCluster, fsdLayer;
-try {
-    if (typeof L === 'undefined') throw new Error('Leaflet library failed to load');
+var _mapInitAttempts = 0;
+var _MAP_INIT_MAX_ATTEMPTS = 40;  // ~20 s at 500 ms intervals
 
-    // Fix Leaflet marker icon path for vendored setup
-    L.Icon.Default.imagePath = '{{ url_for("static", filename="vendor/leaflet/images/") }}';
+function _initMap() {
+    try {
+        if (typeof L === 'undefined') {
+            // Leaflet JS hasn't loaded yet — slow WiFi / busy Pi.
+            // Retry with back-off instead of failing permanently.
+            if (++_mapInitAttempts < _MAP_INIT_MAX_ATTEMPTS) {
+                setTimeout(_initMap, 500);
+                return;
+            }
+            throw new Error('Leaflet library failed to load after ' +
+                            _MAP_INIT_MAX_ATTEMPTS + ' attempts');
+        }
 
-    map = L.map('map').setView([37.7749, -122.4194], 10);
+        // Fix Leaflet marker icon path for vendored setup
+        L.Icon.Default.imagePath = '{{ url_for("static", filename="vendor/leaflet/images/") }}';
 
-    // OpenStreetMap tiles (loaded from OSM servers; cached by browser for offline)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+        map = L.map('map').setView([39.9087, 116.3975], 10);  // Beijing Tiananmen
 
-    // Layer groups — shared canvas renderer is dramatically faster
-    // than SVG for the speed-bucket polylines workload.
-    sharedCanvasRenderer = L.canvas({ padding: 0.2 });
-    tripLayer = L.layerGroup().addTo(map);
-    eventCluster = L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true }).addTo(map);
-    fsdLayer = L.layerGroup();
+        // Map tiles proxied through the Pi so every device on its WiFi
+        // can see the map, even without direct internet access.
+        // The Pi fetches from OSM once, caches to SD, and serves locally.
+        L.tileLayer('/tiles/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    // Expose map for dev-tools debugging
-    window.__map = map;
-} catch (e) {
-    // Show a visible error so the user knows something is wrong
-    // rather than staring at an empty grey container.
-    var el = document.getElementById('map');
-    if (el) {
-        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--msg-error-text,red);font-family:Inter,sans-serif;font-size:14px;text-align:center;padding:20px;">' +
-            '<div><strong>Map failed to load</strong><br><small>' +
-            escapeHTML(e.message || 'Unknown error') +
-            '</small></div></div>';
+        // Layer groups — shared canvas renderer is dramatically faster
+        // than SVG for the speed-bucket polylines workload.
+        sharedCanvasRenderer = L.canvas({ padding: 0.2 });
+        tripLayer = L.layerGroup().addTo(map);
+        eventCluster = L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true }).addTo(map);
+        fsdLayer = L.layerGroup();
+
+        // Expose map for dev-tools debugging
+        window.__map = map;
+
+        // Map is ready — kick off data loading
+        loadStats();
+        initFromUrl();
+    } catch (e) {
+        // Show a visible error so the user knows something is wrong
+        // rather than staring at an empty grey container.
+        var el = document.getElementById('map');
+        if (el) {
+            el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--msg-error-text,red);font-family:Inter,sans-serif;font-size:14px;text-align:center;padding:20px;">' +
+                '<div><strong>Map failed to load</strong><br><small>' +
+                escapeHTML(e.message || 'Unknown error') +
+                '</small></div></div>';
+        }
+        // Prevent follow-on errors from blocking the rest of the page
+        map = null;
+        sharedCanvasRenderer = null;
+        tripLayer = { clearLayers: function(){} };
+        eventCluster = { clearLayers: function(){} };
+        fsdLayer = { clearLayers: function(){} };
     }
-    // Prevent follow-on errors from blocking the rest of the page
-    map = null;
-    sharedCanvasRenderer = null;
-    tripLayer = { clearLayers: function(){} };
-    eventCluster = { clearLayers: function(){} };
-    fsdLayer = { clearLayers: function(){} };
 }
+
+_initMap();
 
 // Guard for functions that require the map to be initialised.
 function mapReady() { return map != null; }
@@ -4059,14 +4085,18 @@ document.getElementById('vpList').addEventListener('click', function(e) {
 });
 
 // --- Init ---
-loadStats();
+// Map initialisation and first data load are kicked off by _initMap()
+// above (called at the end of the map setup block). It retries with
+// back-off if Leaflet hasn't loaded yet, then calls loadStats() +
+// initFromUrl() once the map is ready.
 
 // Restore selected day / view-mode from the URL before the first
 // loadDays() call so the page lands on the correct view on refresh /
 // shared link / bookmark. loadDays() consults ``currentDate`` and
 // ``showingAllTime`` when deciding what to render and falls back to
 // the most-recent day if the URL-supplied date isn't in allDays.
-(function initFromUrl() {
+// Called from _initMap() after successful map creation.
+function initFromUrl() {
     const urlState = readUrlState();
     if (urlState && urlState.view === 'all-time') {
         showingAllTime = true;
@@ -4074,7 +4104,7 @@ loadStats();
         currentDate = urlState.date;
     }
     loadDays();
-})();
+}
 
 // Browser back/forward — re-derive state from the URL and dispatch
 // without writing back to history (skipHistory). Guards against

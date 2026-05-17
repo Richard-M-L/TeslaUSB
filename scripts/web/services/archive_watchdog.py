@@ -418,7 +418,8 @@ def _resolve_cloud_db_path() -> Optional[str]:
 
 
 def _is_synced_to_cloud(file_path: str, archive_root: str,
-                       cloud_db_path: str) -> bool:
+                       cloud_db_path: str,
+                       conn: Optional[sqlite3.Connection] = None) -> bool:
     """Return True iff ``file_path`` is recorded as 'synced' in the cloud DB.
 
     The ``cloud_synced_files`` table currently has rows in mixed
@@ -428,6 +429,10 @@ def _is_synced_to_cloud(file_path: str, archive_root: str,
 
     * ``file_path`` as-is (the absolute path the prune walker found)
     * ``file_path`` as relative to ``archive_root``
+
+    When *conn* is provided (retention prune passes one shared connection),
+    it is used directly and NOT closed — the caller owns its lifecycle.
+    Otherwise a short-lived connection is opened per call (back-compat).
 
     Returns True only when at least one row matches AND its status is
     'synced'. Returns False on any DB error (fail-safe — when in doubt,
@@ -452,19 +457,26 @@ def _is_synced_to_cloud(file_path: str, archive_root: str,
         f"WHERE file_path IN ({placeholders}) "
         f"AND status = 'synced' LIMIT 1"
     )
+    own_conn = None
     try:
-        conn = sqlite3.connect(cloud_db_path, timeout=5.0)
-        try:
+        if conn is not None:
             row = conn.execute(query, candidates).fetchone()
             return row is not None
-        finally:
-            conn.close()
+        own_conn = sqlite3.connect(cloud_db_path, timeout=5.0)
+        row = own_conn.execute(query, candidates).fetchone()
+        return row is not None
     except sqlite3.Error as e:
         logger.debug(
             "archive_retention: cloud-sync check failed for %s: %s",
             file_path, e,
         )
         return False
+    finally:
+        if own_conn is not None:
+            try:
+                own_conn.close()
+            except sqlite3.Error:
+                pass
 
 
 def _iso_now() -> str:
@@ -857,14 +869,30 @@ def _run_retention_prune(archive_root: str, db_path: str,
             summary['duration_seconds'] = round(time.time() - started, 3)
             return summary
 
+        # Open a single cloud-DB connection for the entire prune pass.
+        # _is_synced_to_cloud was ~1 connect+close per file; with a
+        # shared connection that cost drops to 1 connect for N files.
+        cloud_conn: Optional[sqlite3.Connection] = None
         try:
+            if enforce_cloud_check and cloud_db_path:
+                try:
+                    cloud_conn = sqlite3.connect(cloud_db_path, timeout=5.0)
+                except sqlite3.Error as e:
+                    logger.warning(
+                        "archive_retention: cannot open cloud DB %s: %s "
+                        "— will not enforce cloud-sync check this pass",
+                        cloud_db_path, e,
+                    )
+                    enforce_cloud_check = False
+
             for path, mtime, _size in _iter_archive_mp4_files(archive_root):
                 summary['scanned'] += 1
                 if mtime > cutoff:
                     continue
                 age_days = (time.time() - mtime) / 86400.0
-                if enforce_cloud_check:
-                    if not _is_synced_to_cloud(path, archive_root, cloud_db_path):
+                if enforce_cloud_check and cloud_conn:
+                    if not _is_synced_to_cloud(path, archive_root, cloud_db_path,
+                                               conn=cloud_conn):
                         summary['kept_unsynced_count'] += 1
                         logger.warning(
                             "archive_retention: KEPT %s past retention "
@@ -882,6 +910,12 @@ def _run_retention_prune(archive_root: str, db_path: str,
                         path, age_days, freed,
                     )
         finally:
+            # Close the shared cloud-DB connection (one open for N files).
+            if cloud_conn is not None:
+                try:
+                    cloud_conn.close()
+                except sqlite3.Error:
+                    pass
             # Release BEFORE any further sleep / outside callers.
             task_coordinator.release_task(_RETENTION_COORDINATOR_TASK)
             summary['duration_seconds'] = round(time.time() - started, 3)
