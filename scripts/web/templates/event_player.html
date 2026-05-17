@@ -722,7 +722,7 @@
 
         {% if event.reason or event.size_mb %}
         <div class="event-meta-right">
-            {% if event.reason %}<div>{{ event.reason.replace('_', ' ').title() }}</div>{% endif %}
+            {% if event.reason %}<div id="eventReason">{{ event.reason }}</div>{% endif %}
             {% if event.size_mb %}<div>{{ event.size_mb }} MB</div>{% endif %}
         </div>
         {% endif %}
@@ -905,6 +905,28 @@
 <script src="{{ url_for('static', filename='js/protobuf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashcam-mp4.js') }}"></script>
 <script>
+    // Translate Tesla firmware event reason strings to human-readable text
+    function _translateReason(raw) {
+        if (!raw) return '';
+        var map = {
+            'user_interaction_honk': 'mapping.reason_honk',
+            'user_interaction_dashcam_launcher_action_tapped': 'mapping.reason_tapped',
+            'sentry_aware_object_detection': 'mapping.reason_sentry_object',
+            'sentry_aware_accel_trigger': 'mapping.reason_sentry_accel',
+            'sentry_aware_state_update': 'mapping.reason_sentry_state',
+            'forward_collision_warning': 'mapping.reason_forward_collision',
+        };
+        var tKey = map[raw];
+        if (tKey) return _t ? _t(tKey) : raw;
+        return raw.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+
+    // Translate reason on load
+    (function() {
+        var el = document.getElementById('eventReason');
+        if (el) el.textContent = _translateReason(el.textContent);
+    })();
+
     const folder = "{{ folder }}";
     const eventName = "{{ event.name }}";
     const folderStructure = "{{ folder_structure }}";
