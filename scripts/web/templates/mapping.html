@@ -2666,6 +2666,12 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     // Set waypoints AFTER close clears them
     overlayWaypoints = routeWps || [];
 
+    // Update HUD status in the info bar
+    var hudSt = document.getElementById('olHudStatus');
+    if (hudSt) {
+        hudSt.textContent = overlayWaypoints.length > 0 ? '' : '(无遥测数据)';
+    }
+
     // Issue #184 Wave 3 — Phase D. The map polyline endpoints
     // (/api/trip/<id>/route, /api/day/<date>/routes) only return
     // hot columns (lat/lon/speed/heading/autopilot_state) so the
@@ -2764,10 +2770,12 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
         </div>
         <div class="video-overlay-info" id="overlayInfo">
             <span id="olCoords">${_iconSvg('icon-map-pin', 14)} —</span>
+            <span id="olHudStatus" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
             <div style="margin-left:auto; display:flex; gap:4px;">
+                <button class="nav-btn" id="overlayHudBtn" title="遥测 HUD 开关" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
+                <button class="nav-btn" id="overlayPlayerBtn" title="全屏播放页" style="color:#60a5fa">${_iconSvg('icon-play', 16)}</button>
                 <button class="nav-btn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
                 <button class="nav-btn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
-                <button class="nav-btn" id="overlayPlayerBtn" title="全屏播放页" style="color:#60a5fa">${_iconSvg('icon-play', 16)}</button>
                 <button class="nav-btn" onclick="overlayDownload()" title="${_t('mapping.download_zip')}">${_iconSvg('icon-download', 16)}</button>
                 {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="${_t('mapping.archive_to_cloud')}" style="color:#32ADE6">${_iconSvg('icon-cloud-upload', 16)}</button>{% endif %}
                 <button class="nav-btn" onclick="overlayFullscreen()" title="${_t('player.fullscreen')}" aria-label="${_t('player.fullscreen')}"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize"></use></svg></button>
@@ -2788,6 +2796,20 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             var event = overlay.dataset.event || '';
             if (folder && event) {
                 window.open('/videos/player/' + encodeURIComponent(folder) + '/' + encodeURIComponent(event), '_blank');
+            }
+        };
+    }
+    // Wire up HUD toggle button — show/hide the telemetry overlay on the video
+    var hudBtn = document.getElementById('overlayHudBtn');
+    var hudEl = document.getElementById('overlayHud');
+    if (hudBtn && hudEl) {
+        hudBtn.onclick = function() {
+            if (hudEl.style.display === 'none') {
+                hudEl.style.display = '';
+                hudBtn.style.opacity = '1';
+            } else {
+                hudEl.style.display = 'none';
+                hudBtn.style.opacity = '0.5';
             }
         };
     }
@@ -2822,10 +2844,17 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     // Live telemetry on timeupdate
     video.addEventListener('timeupdate', onOverlayTimeUpdate);
 
-    // Show/hide HUD based on telemetry availability
-    const hud = document.getElementById('overlayHud');
-    if (hud) {
-        hud.style.display = overlayWaypoints.length > 0 ? '' : 'none';
+    // HUD is always visible by default; shows neutral values when
+    // no telemetry data is available. The eye button toggles it.
+    var hudEl2 = document.getElementById('overlayHud');
+    var hudStatusEl = document.getElementById('olHudStatus');
+    if (hudEl2) {
+        hudEl2.style.display = '';
+    }
+    if (hudStatusEl) {
+        if (overlayWaypoints.length === 0) {
+            hudStatusEl.textContent = '(无遥测数据)';
+        }
     }
 
     // Initial telemetry
