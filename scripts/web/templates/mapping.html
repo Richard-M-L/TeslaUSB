@@ -4044,29 +4044,44 @@ async function openVideoFromPanel(folder, eventName) {
             return;
         }
 
-        // Look up DB waypoints for the first clip (for telemetry).
-        // The API matches by filename stem across all indexed paths,
-        // so SavedClips USB paths resolve to ArchivedClips DB rows.
-        let allWaypoints = [];
+        // Build clip entries with correct relative paths (for video
+        // streaming) and optional DB telemetry. frontClips has paths
+        // like "SavedClips/2026-05-17_12-31-35/...-front.mp4".
+        const allClips = frontClips.map(function(p) {
+            return { video_path: p, frame_offset: 0 };
+        });
+
+        // Look up DB waypoints to attach telemetry. The API matches by
+        // filename stem across ArchivedClips paths, but we remap
+        // video_path back to the relative path so streaming works.
         try {
             const wpResp = await fetch(`/api/waypoints-for-clip?path=${encodeURIComponent(frontClips[0])}`);
             const wpData = await wpResp.json();
-            allWaypoints = wpData.waypoints || [];
+            const dbWps = wpData.waypoints || [];
+            if (dbWps.length > 0) {
+                // Map DB ArchivedClips paths → relative paths by filename
+                const nameToRel = {};
+                frontClips.forEach(function(p) {
+                    nameToRel[p.split('/').pop()] = p;
+                });
+                // Merge telemetry from DB waypoints into allClips
+                dbWps.forEach(function(w) {
+                    if (!w.video_path) return;
+                    var fname = w.video_path.split('/').pop();
+                    var rel = nameToRel[fname];
+                    if (rel) {
+                        // Add a waypoint entry with telemetry + correct path
+                        var wp = Object.assign({}, w, { video_path: rel });
+                        allClips.push(wp);
+                    }
+                });
+            }
         } catch(e) {
             console.warn('Waypoint lookup failed:', e);
         }
 
-        // If DB has waypoints (video was indexed), use them — they have
-        // full telemetry. Otherwise fall back to bare clip paths so the
-        // user can at least watch the video without HUD data.
-        if (allWaypoints.length === 0) {
-            allWaypoints = frontClips.map(function(p) {
-                return { video_path: p, frame_offset: 0 };
-            });
-        }
-
         const clickPoint = { x: window.innerWidth / 3, y: window.innerHeight / 4 };
-        openVideoOverlay(allWaypoints[0], clickPoint, allWaypoints);
+        openVideoOverlay(allClips[0], clickPoint, allClips);
 
         // Store folder/event for download/delete
         const overlay = document.getElementById('videoOverlay');
