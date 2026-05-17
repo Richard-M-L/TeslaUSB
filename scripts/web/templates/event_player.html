@@ -756,7 +756,7 @@
 
         {% if event.camera_videos.front %}
             {% if event.encrypted_videos and event.encrypted_videos.front %}
-        <div class="camera-option encrypted" data-camera="front" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="front" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-up camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_front') }}</div>
         </div>
@@ -775,7 +775,7 @@
 
         {% if event.camera_videos.back %}
             {% if event.encrypted_videos and event.encrypted_videos.back %}
-        <div class="camera-option encrypted" data-camera="rear" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="rear" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-down camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_rear') }}</div>
         </div>
@@ -794,7 +794,7 @@
 
         {% if event.camera_videos.left_repeater %}
             {% if event.encrypted_videos and event.encrypted_videos.left_repeater %}
-        <div class="camera-option encrypted" data-camera="left" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="left" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-left camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_left') }}</div>
         </div>
@@ -813,7 +813,7 @@
 
         {% if event.camera_videos.right_repeater %}
             {% if event.encrypted_videos and event.encrypted_videos.right_repeater %}
-        <div class="camera-option encrypted" data-camera="right" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="right" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-right camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_right') }}</div>
         </div>
@@ -832,7 +832,7 @@
 
         {% if event.camera_videos.left_pillar %}
             {% if event.encrypted_videos and event.encrypted_videos.left_pillar %}
-        <div class="camera-option encrypted" data-camera="left-pillar" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="left-pillar" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-bar-left camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_left_pillar') }}</div>
         </div>
@@ -851,7 +851,7 @@
 
         {% if event.camera_videos.right_pillar %}
             {% if event.encrypted_videos and event.encrypted_videos.right_pillar %}
-        <div class="camera-option encrypted" data-camera="right-pillar" title="Video file cannot be played">
+        <div class="camera-option encrypted" data-camera="right-pillar" title="{{ _('player.encrypted_title') }}">
             <i class="bi bi-arrow-bar-right camera-icon"></i>
             <div class="camera-label">{{ _('player.camera_right_pillar') }}</div>
         </div>

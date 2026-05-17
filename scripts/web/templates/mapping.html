@@ -2624,11 +2624,17 @@ async function renderAllTime() {
 // --- Video Player Overlay ---
 
 const CAMERA_ANGLES = ['front', 'back', 'left_repeater', 'right_repeater', 'left_pillar', 'right_pillar'];
-const CAMERA_LABELS = {
-    'front': 'Front', 'back': 'Back',
-    'left_repeater': 'Left', 'right_repeater': 'Right',
-    'left_pillar': 'L Pillar', 'right_pillar': 'R Pillar'
-};
+const CAMERA_LABELS = (function() {
+    var t = _t || function(k) { return k; };
+    var labels = {};
+    labels.front = t('player.camera_front');
+    labels.back = t('player.camera_rear');
+    labels.left_repeater = t('player.camera_left');
+    labels.right_repeater = t('player.camera_right');
+    labels.left_pillar = t('player.camera_left_pillar');
+    labels.right_pillar = t('player.camera_right_pillar');
+    return labels;
+})();
 // Directional Lucide icons matching each camera's view direction (top-down
 // car perspective). Front faces forward (up), pillar cameras face the rear
 // quarter (diagonal arrows). Keeps the switcher visually scannable.
@@ -2759,13 +2765,13 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
         <div class="video-overlay-info" id="overlayInfo">
             <span id="olCoords">${_iconSvg('icon-map-pin', 14)} —</span>
             <div style="margin-left:auto; display:flex; gap:4px;">
-                <button class="nav-btn" onclick="navigateClip(-1)" title="Previous clip">${_iconSvg('icon-chevron-left', 16)}</button>
-                <button class="nav-btn" onclick="navigateClip(1)" title="Next clip">${_iconSvg('icon-chevron-right', 16)}</button>
-                <button class="nav-btn" onclick="overlayDownload()" title="Download ZIP">${_iconSvg('icon-download', 16)}</button>
-                {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="Archive to Cloud" style="color:#32ADE6">${_iconSvg('icon-cloud-upload', 16)}</button>{% endif %}
-                <button class="nav-btn" onclick="overlayFullscreen()" title="Fullscreen video" aria-label="Fullscreen video"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize"></use></svg></button>
-                <button class="nav-btn" id="overlayMaximizeBtn" onclick="toggleOverlayMaximize()" title="Maximize" aria-label="Maximize video overlay"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize-2"></use></svg></button>
-                <button class="nav-btn" onclick="overlayDelete()" title="Delete" style="color:#dc3545">${_iconSvg('icon-trash-2', 16)}</button>
+                <button class="nav-btn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
+                <button class="nav-btn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
+                <button class="nav-btn" onclick="overlayDownload()" title="${_t('mapping.download_zip')}">${_iconSvg('icon-download', 16)}</button>
+                {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="${_t('mapping.archive_to_cloud')}" style="color:#32ADE6">${_iconSvg('icon-cloud-upload', 16)}</button>{% endif %}
+                <button class="nav-btn" onclick="overlayFullscreen()" title="${_t('player.fullscreen')}" aria-label="${_t('player.fullscreen')}"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize"></use></svg></button>
+                <button class="nav-btn" id="overlayMaximizeBtn" onclick="toggleOverlayMaximize()" title="${_t('player.maximize')}" aria-label="${_t('player.maximize')}"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize-2"></use></svg></button>
+                <button class="nav-btn" onclick="overlayDelete()" title="${_t('mapping.delete_clip')}" style="color:#dc3545">${_iconSvg('icon-trash-2', 16)}</button>
             </div>
         </div>
     `;

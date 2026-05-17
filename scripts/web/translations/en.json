@@ -1103,6 +1103,7 @@
     "player.deleting": "Deleting...",
     "player.deleted": "Deleted!",
     "player.archived": "Archived!",
+    "player.encrypted_title": "Video file cannot be played",
 
     "index.device_disconnected": "Tesla USB disconnected — files accessible via network.",
     "index.network_shares": "Network Shares:",
