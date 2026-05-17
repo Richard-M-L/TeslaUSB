@@ -584,6 +584,7 @@ def event_player(folder, event_name):
     teslacam_path = get_teslacam_path()
 
     folder = os.path.basename(folder)
+    event_name = os.path.basename(event_name)
     try:
         if folder == 'ArchivedClips':
             try:
@@ -606,7 +607,6 @@ def event_player(folder, event_name):
         if not os.path.isdir(folder_path):
             return "Folder not found", 404
 
-        event_name = os.path.basename(event_name)
         if folder_structure == 'flat':
             from services.video_service import get_session_videos, is_valid_mp4
             session_videos = get_session_videos(folder_path, event_name)

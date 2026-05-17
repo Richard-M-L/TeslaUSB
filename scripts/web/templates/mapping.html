@@ -2846,10 +2846,10 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
 
     // HUD is always visible by default; shows neutral values when
     // no telemetry data is available. The eye button toggles it.
-    var hudEl2 = document.getElementById('overlayHud');
+    var hudEl = document.getElementById('overlayHud');
     var hudStatusEl = document.getElementById('olHudStatus');
-    if (hudEl2) {
-        hudEl2.style.display = '';
+    if (hudEl) {
+        hudEl.style.display = '';
     }
     if (hudStatusEl) {
         if (overlayWaypoints.length === 0) {
