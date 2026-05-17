@@ -2714,7 +2714,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     // Update HUD status in the info bar
     var hudSt = document.getElementById('olHudStatus');
     if (hudSt) {
-        hudSt.textContent = overlayWaypoints.length > 0 ? '' : '(无遥测数据)';
+        hudSt.textContent = overlayWaypoints.length > 0 ? '' : _t('player.no_telemetry');
     }
 
     // Issue #184 Wave 3 — Phase D. The map polyline endpoints
@@ -2820,7 +2820,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             <span id="olCoords">${_iconSvg('icon-map-pin', 14)} —</span>
             <span id="olHudStatus" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
             <div class="overlay-actions">
-                <button class="nav-btn" id="overlayHudBtn" title="遥测 HUD 开关" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
+                <button class="nav-btn" id="overlayHudBtn" title="${_t('player.hud_toggle')}" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
                 <button class="nav-btn" id="overlayPrevBtn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
                 <button class="nav-btn" id="overlayNextBtn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
                 <button class="nav-btn" onclick="overlayDownload()" title="${_t('mapping.download_zip')}">${_iconSvg('icon-download', 16)}</button>
@@ -2897,7 +2897,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     }
     if (hudStatusEl) {
         if (overlayWaypoints.length === 0) {
-            hudStatusEl.textContent = '(无遥测数据)';
+            hudStatusEl.textContent = _t('player.no_telemetry');
         }
     }
 

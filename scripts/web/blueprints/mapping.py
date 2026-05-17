@@ -180,6 +180,7 @@ def api_waypoints_for_clip():
     if not video_path:
         return jsonify({'waypoints': []})
 
+    conn = None
     try:
         conn = get_db_connection(MAPPING_DB_PATH)
         # First try exact match on the video_path
@@ -190,24 +191,17 @@ def api_waypoints_for_clip():
         ).fetchall()
 
         if rows:
-            # Found — also get all waypoints from the same trip for full HUD.
-            # Sort by timestamp (id as tiebreaker): id-only ordering breaks
-            # when late-indexed videos or merged trips give waypoints non-
-            # monotonic ids relative to their timestamps. See
-            # mapping_queries.query_day_routes docstring for the full story.
             trip_id = rows[0]['trip_id']
             all_wps = conn.execute(
                 """SELECT * FROM waypoints WHERE trip_id = ?
                    ORDER BY timestamp ASC, id ASC""",
                 (trip_id,)
             ).fetchall()
-            conn.close()
             return jsonify({'waypoints': [dict(r) for r in all_wps], 'trip_id': trip_id})
 
         # No exact match — try matching by filename stem, ignoring the
         # directory prefix (USB mount path vs ArchivedClips SD path differ).
         _fname = os.path.basename(video_path)
-        # Strip camera suffix to get session stem: e.g. "2026-05-17_12-31-04"
         _stem = _fname.rsplit('-', 1)[0] if '-' in _fname else _fname
         rows = conn.execute(
             """SELECT DISTINCT trip_id FROM waypoints
@@ -222,14 +216,18 @@ def api_waypoints_for_clip():
                    ORDER BY timestamp ASC, id ASC""",
                 (trip_id,)
             ).fetchall()
-            conn.close()
             return jsonify({'waypoints': [dict(r) for r in all_wps], 'trip_id': trip_id})
 
-        conn.close()
         return jsonify({'waypoints': []})
     except Exception as e:
         logger.error("Failed to look up waypoints for clip: %s", e)
         return jsonify({'waypoints': []})
+    finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 # ---------------------------------------------------------------------------

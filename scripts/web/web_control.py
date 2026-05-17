@@ -110,7 +110,7 @@ def i18n_js(locale):
     import json as _json
     from flask import make_response
     if locale not in supported_locales():
-        locale = _default_locale
+        locale = 'zh'
     payload = _json.dumps(
         get_all_translations(locale), separators=(',', ':'), ensure_ascii=False,
     )
