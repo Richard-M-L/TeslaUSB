@@ -204,12 +204,15 @@ def api_waypoints_for_clip():
             conn.close()
             return jsonify({'waypoints': [dict(r) for r in all_wps], 'trip_id': trip_id})
 
-        # No exact match — try matching by base path (without -front.mp4 suffix)
-        base = video_path.replace('-front.mp4', '').replace('-back.mp4', '')
+        # No exact match — try matching by filename stem, ignoring the
+        # directory prefix (USB mount path vs ArchivedClips SD path differ).
+        _fname = os.path.basename(video_path)
+        # Strip camera suffix to get session stem: e.g. "2026-05-17_12-31-04"
+        _stem = _fname.rsplit('-', 1)[0] if '-' in _fname else _fname
         rows = conn.execute(
             """SELECT DISTINCT trip_id FROM waypoints
                WHERE video_path LIKE ? LIMIT 1""",
-            (f'%{base}%',)
+            (f'%{_stem}%',)
         ).fetchall()
 
         if rows:

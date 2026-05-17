@@ -4044,27 +4044,25 @@ async function openVideoFromPanel(folder, eventName) {
             return;
         }
 
-        // Build waypoint-like entries for ALL front clips so the overlay
-        // can populate overlayClips for prev/next navigation. Each entry
-        // only needs video_path; telemetry is lazy-fetched per clip.
-        const allWaypoints = frontClips.map(function(p) {
-            return { video_path: p, frame_offset: 0 };
-        });
-
-        // Look up DB waypoints for the first clip (for immediate telemetry)
-        let dbWaypoints = [];
+        // Look up DB waypoints for the first clip (for telemetry).
+        // The API matches by filename stem across all indexed paths,
+        // so SavedClips USB paths resolve to ArchivedClips DB rows.
+        let allWaypoints = [];
         try {
             const wpResp = await fetch(`/api/waypoints-for-clip?path=${encodeURIComponent(frontClips[0])}`);
             const wpData = await wpResp.json();
-            dbWaypoints = wpData.waypoints || [];
+            allWaypoints = wpData.waypoints || [];
         } catch(e) {
             console.warn('Waypoint lookup failed:', e);
         }
 
-        // Merge DB waypoints into allWaypoints for the first clip
-        if (dbWaypoints.length > 0) {
-            var base0 = getBasePath(frontClips[0]);
-            dbWaypoints.forEach(function(w) { if (w.video_path) allWaypoints.push(w); });
+        // If DB has waypoints (video was indexed), use them — they have
+        // full telemetry. Otherwise fall back to bare clip paths so the
+        // user can at least watch the video without HUD data.
+        if (allWaypoints.length === 0) {
+            allWaypoints = frontClips.map(function(p) {
+                return { video_path: p, frame_offset: 0 };
+            });
         }
 
         const clickPoint = { x: window.innerWidth / 3, y: window.innerHeight / 4 };
