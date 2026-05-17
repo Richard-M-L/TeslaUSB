@@ -2757,15 +2757,15 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             </div>
         </div>
         <div class="video-overlay-info" id="overlayInfo">
-            <span id="olCoords">📍 —</span>
+            <span id="olCoords">${_iconSvg('icon-map-pin', 14)} —</span>
             <div style="margin-left:auto; display:flex; gap:4px;">
-                <button class="nav-btn" onclick="navigateClip(-1)" title="Previous clip">' + _iconSvg('icon-chevron-left', 16) + '</button>
-                <button class="nav-btn" onclick="navigateClip(1)" title="Next clip">' + _iconSvg('icon-chevron-right', 16) + '</button>
-                <button class="nav-btn" onclick="overlayDownload()" title="Download ZIP">' + _iconSvg('icon-download', 16) + '</button>
-                {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="Archive to Cloud" style="color:#32ADE6">' + _iconSvg('icon-cloud-upload', 16) + '</button>{% endif %}
+                <button class="nav-btn" onclick="navigateClip(-1)" title="Previous clip">${_iconSvg('icon-chevron-left', 16)}</button>
+                <button class="nav-btn" onclick="navigateClip(1)" title="Next clip">${_iconSvg('icon-chevron-right', 16)}</button>
+                <button class="nav-btn" onclick="overlayDownload()" title="Download ZIP">${_iconSvg('icon-download', 16)}</button>
+                {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="Archive to Cloud" style="color:#32ADE6">${_iconSvg('icon-cloud-upload', 16)}</button>{% endif %}
                 <button class="nav-btn" onclick="overlayFullscreen()" title="Fullscreen video" aria-label="Fullscreen video"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize"></use></svg></button>
                 <button class="nav-btn" id="overlayMaximizeBtn" onclick="toggleOverlayMaximize()" title="Maximize" aria-label="Maximize video overlay"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize-2"></use></svg></button>
-                <button class="nav-btn" onclick="overlayDelete()" title="Delete" style="color:#dc3545">' + _iconSvg('icon-trash-2', 16) + '</button>
+                <button class="nav-btn" onclick="overlayDelete()" title="Delete" style="color:#dc3545">${_iconSvg('icon-trash-2', 16)}</button>
             </div>
         </div>
     `;
@@ -3062,7 +3062,7 @@ function onOverlayTimeUpdate() {
 
 function updateOverlayTelemetry(wp) {
     const coords = document.getElementById('olCoords');
-    if (coords) coords.textContent = `📍 ${(wp.lat || 0).toFixed(4)}, ${(wp.lon || 0).toFixed(4)}`;
+    if (coords) coords.innerHTML = _iconSvg('icon-map-pin', 14) + ' ' + (wp.lat || 0).toFixed(4) + ', ' + (wp.lon || 0).toFixed(4);
 
     // Speed
     const speedVal = document.getElementById('olSpeedVal');
