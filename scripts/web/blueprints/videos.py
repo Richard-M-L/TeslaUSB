@@ -611,26 +611,39 @@ def event_player(folder, event_name):
     # Get event details
     event_name = os.path.basename(event_name)
     if folder_structure == 'flat':
-        from services.video_service import get_session_videos
+        from services.video_service import get_session_videos, is_valid_mp4
         session_videos = get_session_videos(folder_path, event_name)
         camera_videos = {}
+        encrypted_videos = {}
+        total_size = 0
         for v in session_videos:
             cam = v.get('camera', 'unknown')
             if cam not in camera_videos:
                 camera_videos[cam] = v['name']
+                vpath = os.path.join(folder_path, v['name'])
+                encrypted_videos[cam] = not is_valid_mp4(vpath)
+            total_size += v.get('size', 0)
         event = {
             'name': event_name,
             'datetime': event_name.replace('_', ' ')[:16] if '_' in event_name else event_name,
-            'size_mb': round(sum(v.get('size', 0) for v in session_videos) / (1024 * 1024), 2),
+            'size_mb': round(total_size / (1024 * 1024), 2),
             'camera_videos': camera_videos,
-            'encrypted_videos': {},
+            'encrypted_videos': encrypted_videos,
+            'clips': [],           # flat structure has no multi-clip navigation
+            'starting_clip_index': 0,
             'reason': '',
+            'city': '',
         }
     else:
         event_data = get_event_details(folder_path, event_name)
         if not event_data:
             return "Event not found", 404
         event = event_data
+        # Ensure clips / starting_clip_index exist for the template
+        if 'clips' not in event:
+            event['clips'] = []
+        if 'starting_clip_index' not in event:
+            event['starting_clip_index'] = 0
 
     return render_template('event_player.html',
                            page='videos',
