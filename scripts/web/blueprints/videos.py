@@ -4,7 +4,7 @@ import os
 import logging
 import tempfile
 import zipfile
-from flask import Blueprint, request, redirect, url_for, flash, send_file, jsonify, Response, after_this_request
+from flask import Blueprint, request, redirect, url_for, flash, send_file, jsonify, Response, after_this_request, render_template
 
 from config import IMG_CAM_PATH
 from utils import get_base_context
@@ -570,3 +570,72 @@ def delete_event(folder, event_name):
         'deleted_files': deleted_files,
         'error_count': error_count
     })
+
+
+@videos_bp.route("/player/<folder>/<event_name>")
+def event_player(folder, event_name):
+    """Full-screen video player with telemetry HUD and camera switching.
+
+    Folder can be SavedClips, SentryClips, RecentClips, or ArchivedClips.
+    """
+    from utils import get_base_context
+    from services.video_service import get_event_details, get_teslacam_folders, get_teslacam_path
+    from services.mode_service import current_mode
+
+    ctx = get_base_context()
+    teslacam_path = get_teslacam_path()
+
+    # Determine folder path and structure
+    folder = os.path.basename(folder)
+    if folder == 'ArchivedClips':
+        try:
+            from config import ARCHIVE_DIR, ARCHIVE_ENABLED
+            if ARCHIVE_ENABLED:
+                folder_path = ARCHIVE_DIR
+            else:
+                return "Archive not enabled", 404
+        except ImportError:
+            return "Archive not configured", 404
+        folder_structure = 'flat'
+    elif teslacam_path:
+        folder_path = os.path.join(teslacam_path, folder)
+        folders = get_teslacam_folders()
+        folder_info = next((f for f in folders if f['name'] == folder), None)
+        folder_structure = folder_info['structure'] if folder_info else 'events'
+    else:
+        return "TeslaCam not accessible", 404
+
+    if not os.path.isdir(folder_path):
+        return "Folder not found", 404
+
+    # Get event details
+    event_name = os.path.basename(event_name)
+    if folder_structure == 'flat':
+        from services.video_service import get_session_videos
+        session_videos = get_session_videos(folder_path, event_name)
+        camera_videos = {}
+        for v in session_videos:
+            cam = v.get('camera', 'unknown')
+            if cam not in camera_videos:
+                camera_videos[cam] = v['name']
+        event = {
+            'name': event_name,
+            'datetime': event_name.replace('_', ' ')[:16] if '_' in event_name else event_name,
+            'size_mb': round(sum(v.get('size', 0) for v in session_videos) / (1024 * 1024), 2),
+            'camera_videos': camera_videos,
+            'encrypted_videos': {},
+            'reason': '',
+        }
+    else:
+        event_data = get_event_details(folder_path, event_name)
+        if not event_data:
+            return "Event not found", 404
+        event = event_data
+
+    return render_template('event_player.html',
+                           page='videos',
+                           folder=folder,
+                           folder_structure=folder_structure,
+                           event=event,
+                           mode_token=current_mode(),
+                           **ctx)
