@@ -47,7 +47,8 @@
                 return undefined;
             }
             window._t = function(key, params) {
-                var text = data[key] || _t_nested(data, key);
+                var text = data[key];
+                if (text === undefined) text = _t_nested(data, key);
                 if (text === undefined) text = key;
                 if (params) {
                     Object.keys(params).forEach(function(k) {

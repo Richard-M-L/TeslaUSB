@@ -1090,6 +1090,7 @@
     "player.cannot_undo": "此操作无法撤销。",
     "player.deleting": "删除中...",
     "player.deleted": "已删除！",
+    "player.archived": "已存档！",
 
     "index.device_disconnected": "Tesla USB 已断开 — 可通过网络访问文件。",
     "index.network_shares": "网络共享：",

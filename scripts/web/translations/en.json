@@ -1090,6 +1090,7 @@
     "player.cannot_undo": "This cannot be undone.",
     "player.deleting": "Deleting...",
     "player.deleted": "Deleted!",
+    "player.archived": "Archived!",
 
     "index.device_disconnected": "Tesla USB disconnected — files accessible via network.",
     "index.network_shares": "Network Shares:",

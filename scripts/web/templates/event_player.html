@@ -645,7 +645,7 @@
 {% block content %}
 <div class="event-player-container">
     <!-- Back button overlay -->
-    <a href="{{ url_for('videos.file_browser', folder=folder) }}" class="back-link">
+    <a href="{{ url_for('mapping.map_view') }}" class="back-link">
         <i class="bi bi-x-lg"></i>
     </a>
 
@@ -985,6 +985,7 @@
         // Reset SEI state for new clip
         seiLoading = false;
         currentVideoSrc = null;
+        seiFrames = [];  // Clear old clip's telemetry frames so HUD shows nothing until new data arrives
 
         // Reset HUD to default values while new video loads
         resetHUDToDefaults();
@@ -1040,6 +1041,10 @@
             'right-pillar': 'right_pillar'
         };
 
+        // Reverse map: clipCamera → button data-camera value
+        const reverseMap = {};
+        for (var k in cameraMap) reverseMap[cameraMap[k]] = k;
+
         document.querySelectorAll('.camera-option[data-camera]').forEach(btn => {
             const btnCamera = btn.dataset.camera;
             const clipCamera = cameraMap[btnCamera];
@@ -1052,6 +1057,14 @@
             } else {
                 btn.classList.add('unavailable');
                 btn.onclick = null;
+            }
+
+            // Highlight the button matching currentCameraAngle
+            var expectedDataCam = reverseMap[currentCameraAngle];
+            if (btnCamera === expectedDataCam && !btn.classList.contains('encrypted') && !btn.classList.contains('unavailable')) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
             }
         });
     }
@@ -1649,6 +1662,7 @@
         // Reset SEI loading state to allow new SEI data to load
         seiLoading = false;
         currentVideoSrc = null;
+        seiFrames = [];  // Clear old camera's telemetry frames for the new camera
 
         // Abort any background caching
         if (backgroundPrefetchController) {
@@ -1760,9 +1774,9 @@
                 icon.className = 'bi bi-check-circle camera-icon';
                 label.textContent = _t ? _t('player.deleted') : 'Deleted!';
 
-                // Redirect back to video list after a brief delay
+                // Redirect back to map page after a brief delay
                 setTimeout(() => {
-                    window.location.href = `/videos/?folder=${encodeURIComponent(folder)}`;
+                    window.location.href = '{{ url_for("mapping.map_view") }}';
                 }, 1000);
             } else {
                 throw new Error(data.error || 'Delete failed');
@@ -1843,12 +1857,12 @@
                 if (status.completed) {
                     _stopArchivePoll();
                     icon.className = 'bi bi-cloud-check camera-icon';
-                    label.textContent = 'Archived!';
+                    label.textContent = _t ? _t('player.archived') : 'Archived!';
                     setTimeout(() => _resetArchiveButton(), 4000);
                 } else if (status.error) {
                     _stopArchivePoll();
                     icon.className = 'bi bi-exclamation-triangle camera-icon';
-                    label.textContent = 'Failed';
+                    label.textContent = _t ? _t('common.error') : 'Error';
                     console.error('Archive error:', status.error);
                     setTimeout(() => _resetArchiveButton(), 4000);
                 } else if (status.running) {
@@ -1881,7 +1895,7 @@
         const label = document.getElementById('archiveLabel');
         if (button) { button.style.pointerEvents = ''; button.style.opacity = ''; }
         if (icon) icon.className = 'bi bi-cloud-arrow-up camera-icon';
-        if (label) label.textContent = 'Archive';
+        if (label) label.textContent = _t ? _t('player.archive') : 'Archive';
         archiveInProgress = false;
     }
 
@@ -1898,7 +1912,7 @@
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                video.currentTime = Math.min(video.duration, video.currentTime + 5);
+                if (isFinite(video.duration)) video.currentTime = Math.min(video.duration, video.currentTime + 5);
                 break;
             case 'f':
                 e.preventDefault();
