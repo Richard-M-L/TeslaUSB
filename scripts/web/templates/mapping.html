@@ -2812,7 +2812,6 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             <span id="olHudStatus" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
             <div class="overlay-actions">
                 <button class="nav-btn" id="overlayHudBtn" title="遥测 HUD 开关" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
-                <button class="nav-btn" id="overlayPlayerBtn" title="全屏播放页" style="color:#60a5fa">${_iconSvg('icon-play', 16)}</button>
                 <button class="nav-btn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
                 <button class="nav-btn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
                 <button class="nav-btn" onclick="overlayDownload()" title="${_t('mapping.download_zip')}">${_iconSvg('icon-download', 16)}</button>
@@ -2827,17 +2826,6 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     document.body.appendChild(overlay);
     document.getElementById('overlayTitle').textContent = filename;
 
-    // Wire up the full-screen player button
-    var playerBtn = document.getElementById('overlayPlayerBtn');
-    if (playerBtn) {
-        playerBtn.onclick = function() {
-            var folder = overlay.dataset.folder || '';
-            var event = overlay.dataset.event || '';
-            if (folder && event) {
-                window.open('/videos/player/' + encodeURIComponent(folder) + '/' + encodeURIComponent(event), '_blank');
-            }
-        };
-    }
     // Wire up HUD toggle button — show/hide the telemetry overlay on the video
     var hudBtn = document.getElementById('overlayHudBtn');
     var hudEl = document.getElementById('overlayHud');
