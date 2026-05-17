@@ -81,160 +81,123 @@ def _build_tunables() -> List[Dict[str, Any]]:
         {
             'key': 'archive_queue.inter_file_sleep_seconds',
             'form_name': 'archive_inter_file_sleep_seconds',
-            'label': 'Archive: inter-file sleep',
-            'description': (
-                'Pause between successful archive copies. Higher values '
-                'reduce SDIO bus contention with WiFi but slow catch-up.'
-            ),
+            'label_key': 'settings.advanced_archive_inter_file_sleep',
+            'description_key': 'settings.advanced_archive_inter_file_sleep_desc',
             'current': float(config.ARCHIVE_QUEUE_INTER_FILE_SLEEP_SECONDS),
             'default': 1.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 0.0, 'max': 30.0, 'step': 0.1,
             'cast': _bounded_float(0.0, 30.0),
         },
         {
             'key': 'archive_queue.load_pause_threshold',
             'form_name': 'archive_load_pause_threshold',
-            'label': 'Archive: load-pause threshold',
-            'description': (
-                '1-min loadavg above which the archive worker pauses. '
-                'Default 3.5 keeps the Pi Zero 2 W from starving the '
-                'watchdog daemon under SDIO load.'
-            ),
+            'label_key': 'settings.advanced_archive_load_pause_threshold',
+            'description_key': 'settings.advanced_archive_load_pause_threshold_desc',
             'current': float(config.ARCHIVE_QUEUE_LOAD_PAUSE_THRESHOLD),
             'default': 3.5,
-            'unit': 'load',
+            'unit_key': 'settings.unit_load',
             'min': 0.5, 'max': 10.0, 'step': 0.1,
             'cast': _bounded_float(0.5, 10.0),
         },
         {
             'key': 'archive_queue.load_pause_seconds',
             'form_name': 'archive_load_pause_seconds',
-            'label': 'Archive: load-pause duration',
-            'description': (
-                'How long the archive worker sleeps when load is above '
-                'the threshold above.'
-            ),
+            'label_key': 'settings.advanced_archive_load_pause_duration',
+            'description_key': 'settings.advanced_archive_load_pause_duration_desc',
             'current': float(config.ARCHIVE_QUEUE_LOAD_PAUSE_SECONDS),
             'default': 30.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 1.0, 'max': 300.0, 'step': 1.0,
             'cast': _bounded_float(1.0, 300.0),
         },
         {
             'key': 'archive_queue.chunk_pause_seconds',
             'form_name': 'archive_chunk_pause_seconds',
-            'label': 'Archive: per-chunk pause',
-            'description': (
-                'Mid-copy sleep when load is above the threshold. '
-                'Issue #104 mitigation A — keeps a single 50 MB clip '
-                'from holding the SDIO bus for several minutes.'
-            ),
+            'label_key': 'settings.advanced_archive_chunk_pause',
+            'description_key': 'settings.advanced_archive_chunk_pause_desc',
             'current': float(config.ARCHIVE_QUEUE_CHUNK_PAUSE_SECONDS),
             'default': 0.25,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 0.0, 'max': 5.0, 'step': 0.05,
             'cast': _bounded_float(0.0, 5.0),
         },
         {
             'key': 'archive_queue.per_file_time_budget_seconds',
             'form_name': 'archive_per_file_time_budget_seconds',
-            'label': 'Archive: per-file time budget',
-            'description': (
-                'Abort + requeue any single copy taking longer than '
-                'this. Issue #104 mitigation B — bounded blast radius '
-                'for a pathologically slow clip.'
-            ),
+            'label_key': 'settings.advanced_archive_per_file_budget',
+            'description_key': 'settings.advanced_archive_per_file_budget_desc',
             'current': float(config.ARCHIVE_QUEUE_PER_FILE_TIME_BUDGET_SECONDS),
             'default': 60.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 10.0, 'max': 600.0, 'step': 5.0,
             'cast': _bounded_float(10.0, 600.0),
         },
         {
             'key': 'archive_queue.stable_write_age_seconds',
             'form_name': 'archive_stable_write_age_seconds',
-            'label': 'Archive: stable-write age',
-            'description': (
-                'Re-queue clips whose mtime is fresher than this. '
-                'Avoids copying a file Tesla is still writing.'
-            ),
+            'label_key': 'settings.advanced_archive_stable_write_age',
+            'description_key': 'settings.advanced_archive_stable_write_age_desc',
             'current': float(config.ARCHIVE_QUEUE_STABLE_WRITE_AGE_SECONDS),
             'default': 5.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 0.0, 'max': 60.0, 'step': 0.5,
             'cast': _bounded_float(0.0, 60.0),
         },
         {
             'key': 'archive_queue.stale_claim_max_age_seconds',
             'form_name': 'archive_stale_claim_max_age_seconds',
-            'label': 'Archive: stale-claim max age',
-            'description': (
-                'Reset claimed rows older than this back to pending '
-                'on worker startup. Recovers from crashed/OOMed claims.'
-            ),
+            'label_key': 'settings.advanced_archive_stale_claim_max_age',
+            'description_key': 'settings.advanced_archive_stale_claim_max_age_desc',
             'current': float(config.ARCHIVE_QUEUE_STALE_CLAIM_MAX_AGE_SECONDS),
             'default': 600.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 60.0, 'max': 3600.0, 'step': 30.0,
             'cast': _bounded_float(60.0, 3600.0),
         },
         {
             'key': 'mapping.index_too_new_seconds',
             'form_name': 'mapping_index_too_new_seconds',
-            'label': 'Indexer: too-new threshold',
-            'description': (
-                'Skip indexing for clips whose mtime is fresher than '
-                'this. Tesla writes the moov atom at the end of each '
-                'clip, so very-fresh files may be truncated.'
-            ),
+            'label_key': 'settings.advanced_indexer_too_new',
+            'description_key': 'settings.advanced_indexer_too_new_desc',
             'current': float(config.MAPPING_INDEX_TOO_NEW_SECONDS),
             'default': 120.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 30.0, 'max': 600.0, 'step': 5.0,
             'cast': _bounded_float(30.0, 600.0),
         },
         {
             'key': 'mapping.event_detection.speed_limit_mps',
             'form_name': 'mapping_speed_limit_mps',
-            'label': 'Trip-merge speed limit (m/s)',
-            'description': (
-                'Speed alert + trip-merge threshold in m/s '
-                '(35.76 ≈ 129 km/h). Set 0 to disable speed events.'
-            ),
+            'label_key': 'settings.advanced_trip_merge_speed',
+            'description_key': 'settings.advanced_trip_merge_speed_desc',
             'current': float(
                 config.MAPPING_EVENT_THRESHOLDS.get('speed_limit_mps', 35.76)
             ),
             'default': 35.76,
-            'unit': 'm/s',
+            'unit_key': 'settings.unit_mps',
             'min': 0.0, 'max': 100.0, 'step': 0.01,
             'cast': _bounded_float(0.0, 100.0),
         },
         {
             'key': 'archive_queue.watchdog_check_interval_seconds',
             'form_name': 'archive_watchdog_check_interval_seconds',
-            'label': 'Retention scan interval',
-            'description': (
-                'Cadence of the archive-health watchdog tick. The '
-                'worker that prunes old clips when free space drops.'
-            ),
+            'label_key': 'settings.advanced_retention_scan_interval',
+            'description_key': 'settings.advanced_retention_scan_interval_desc',
             'current': float(config.ARCHIVE_QUEUE_WATCHDOG_CHECK_INTERVAL_SECONDS),
             'default': 60.0,
-            'unit': 'seconds',
+            'unit_key': 'settings.unit_seconds',
             'min': 10.0, 'max': 3600.0, 'step': 10.0,
             'cast': _bounded_float(10.0, 3600.0),
         },
         {
             'key': 'archive_queue.copy_chunk_bytes',
             'form_name': 'archive_copy_chunk_bytes',
-            'label': 'Archive: copy chunk size',
-            'description': (
-                'Bytes per write in the temp+fsync+rename copy loop. '
-                'Smaller = lower per-chunk pause cost but more syscalls.'
-            ),
+            'label_key': 'settings.advanced_archive_copy_chunk_size',
+            'description_key': 'settings.advanced_archive_copy_chunk_size_desc',
             'current': int(config.ARCHIVE_QUEUE_COPY_CHUNK_BYTES),
             'default': 1048576,
-            'unit': 'bytes',
+            'unit_key': 'settings.unit_bytes',
             'min': 65536, 'max': 16777216, 'step': 65536,
             'cast': _bounded_int(65536, 16777216),
         },
@@ -323,8 +286,8 @@ def reset():
         return redirect(url_for('settings_advanced.index'))
 
     flash(
-        f"Reset '{tunable['label']}' to default ({tunable['default']} "
-        f"{tunable['unit']}). Restart gadget_web.service to apply.",
+        f"Reset to default ({tunable['default']} "
+        f"{tunable.get('unit_key', tunable.get('unit', ''))}). Restart gadget_web.service to apply.",
         "success",
     )
     return redirect(url_for('settings_advanced.index'))

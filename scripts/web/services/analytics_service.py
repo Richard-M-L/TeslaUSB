@@ -24,10 +24,18 @@ from services.partition_service import iter_all_partitions
 # Friendly name mapping for partitions
 _PARTITION_NAMES = {'part1': 'TeslaCam', 'part2': 'LightShow', 'part3': 'Music'}
 
+# i18n key mapping for partition display names (used in recommendations/alerts)
+_PARTITION_KEY = {'part1': 'analytics.teslacam_drive', 'part2': 'analytics.lightshow_drive', 'part3': 'analytics.music_drive'}
+
 
 def _friendly_name(partition):
     """Return a human-readable name for a partition identifier."""
     return _PARTITION_NAMES.get(partition, partition)
+
+
+def _partition_key(partition):
+    """Return the i18n key for a partition's display name."""
+    return _PARTITION_KEY.get(partition, partition)
 
 
 def get_partition_usage():
@@ -188,21 +196,25 @@ def get_storage_health():
             if last_check['age_hours'] > 720:  # 30 days
                 if health['status'] == 'healthy':
                     health['status'] = 'warning'
-                health['alerts'].append(
-                    f"{friendly_name}: Filesystem not checked in {int(last_check['age_hours'] / 24)} days"
-                )
-                health['recommendations'].append(
-                    f"Run filesystem check on {friendly_name} drive (Settings page)"
-                )
+                health['alerts'].append({
+                    'key': 'analytics.alert_fsck_overdue',
+                    'drive_key': _partition_key(partition_name),
+                    'days': int(last_check['age_hours'] / 24),
+                })
+                health['recommendations'].append({
+                    'key': 'analytics.recommend_fsck_overdue',
+                    'drive_key': _partition_key(partition_name),
+                })
         else:
             health['fsck_status'][partition_name] = {
                 'result': 'never_checked',
                 'age_hours': None
             }
             # Don't alert on first boot, but note it's available
-            health['recommendations'].append(
-                f"Consider running initial filesystem check on {friendly_name} drive (Settings page)"
-            )
+            health['recommendations'].append({
+                'key': 'analytics.recommend_fsck_initial',
+                'drive_key': _partition_key(partition_name),
+            })
 
     # Check each partition for storage space
     for partition_name, stats in usage.items():
@@ -210,7 +222,11 @@ def get_storage_health():
 
         if 'error' in stats:
             health['status'] = 'critical'
-            health['alerts'].append(f"{friendly_name}: Not accessible - {stats['error']}")
+            health['alerts'].append({
+                'key': 'analytics.alert_not_accessible',
+                'drive_key': _partition_key(partition_name),
+                'error': stats['error'],
+            })
             continue
 
         percent = stats['percent_used']
@@ -265,7 +281,8 @@ def estimate_recording_time():
         # No videos yet, use rough estimate
         # Tesla records ~400 MB/hour (4 cameras @ 1080p)
         estimate['teslacam_hours'] = free_gb / 0.4
-        estimate['method'] = 'theoretical (400 MB/hour)'
+        estimate['method_key'] = 'analytics.estimate_theoretical'
+        estimate['method_params'] = {}
         estimate['confidence'] = 'low'
     else:
         # Use actual average
@@ -278,7 +295,8 @@ def estimate_recording_time():
         hours_remaining = minutes_remaining / 60
 
         estimate['teslacam_hours'] = hours_remaining
-        estimate['method'] = f'based on {total_videos} existing videos'
+        estimate['method_key'] = 'analytics.estimate_based_on_videos'
+        estimate['method_params'] = {'count': total_videos}
         estimate['confidence'] = 'high' if total_videos > 100 else 'medium'
 
     return estimate

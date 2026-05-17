@@ -2,12 +2,12 @@
 {% block content %}
 <div class="container">
     {% include 'media_hub_nav.html' %}
-    <h2>Light Shows</h2>
+    <h2>{{ _('media.shows_title') }}</h2>
     
     <!-- iOS Safari Warning -->
     <div id="iosWarning" class="ios-warning">
-        <p><strong>⚠️ iOS Browser Limitation:</strong> File uploading is only available through Safari when running on iOS. Please open this page in Safari to upload files.</p>
-        <p>Note: Desktop browsers (Windows/Mac/Linux) work normally regardless of browser choice.</p>
+        <p><strong>{{ _('media.ios_warning_title') }}:</strong> {{ _('media.ios_warning_body') }}</p>
+        <p>{{ _('media.ios_warning_desktop_note') }}</p>
     </div>
     
     <div class="folder-controls" id="showUploadControls">
@@ -18,7 +18,7 @@
                     <i class="bi bi-cloud-upload" style="font-size: 48px; color: var(--btn-purple-bg); display: block; margin-bottom: 15px;"></i>
                     <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">{{ _("media.shows_drop_hint") }}</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-                        Supports: .fseq, .mp3, .wav, .zip (can select multiple files)
+                        {{ _('media.shows_format_hint') }}
                     </p>
                 </div>
             </div>
@@ -27,7 +27,7 @@
             
             <!-- Selected Files Preview -->
             <div id="selectedFilesPreview" style="display: none; margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">Selected Files:</h4>
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">{{ _('media.shows_selected_files') }}</h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="button" class="action-btn" id="uploadSelectedBtn">{{ _("media.wraps_upload_all") }}</button>
@@ -38,25 +38,24 @@
         
         <!-- Mobile/Fallback Simple Upload Interface -->
         <form method="post" action="{{ url_for('light_shows.upload_light_show') }}" enctype="multipart/form-data" style="margin-bottom: 20px;" id="showUploadForm">
-            <label for="show_file" style="display: block; margin-bottom: 8px; font-weight: 600;">Upload Light Show File or ZIP:</label>
+            <label for="show_file" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ _('media.shows_upload') }}</label>
             <p style="margin: 0 0 10px 0; font-size: 13px; color: var(--text-secondary);">
-                Individual files: .fseq, .mp3, .wav<br>
-                ZIP files: Can contain multiple light show files in any folder structure
+                {{ _('media.shows_upload_format_hint') }}
             </p>
             <input type="file" name="show_file" id="show_file" accept=".fseq,.mp3,.wav,.zip" required 
                    style="display: block; margin-bottom: 10px; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; background: var(--form-input-bg); width: 100%; max-width: 400px; font-size: 14px; color: var(--text-primary);">
-            <button type="submit" class="action-btn" id="showUploadBtn">Upload</button>
+            <button type="submit" class="action-btn" id="showUploadBtn">{{ _('common.upload') }}</button>
         </form>
         <!-- Upload Progress Bar -->
         <div id="showUploadProgress" style="display: none; margin-bottom: 20px;">
             <div style="background: var(--upload-progress-bg); border-radius: 8px; padding: 15px; border: 2px solid var(--btn-purple-bg);">
-                <h4 style="margin: 0 0 10px 0; color: var(--btn-purple-bg);">Uploading Light Show...</h4>
+                <h4 style="margin: 0 0 10px 0; color: var(--btn-purple-bg);">{{ _('media.shows_uploading') }}</h4>
                 <div style="background: var(--upload-progress-bar-bg); border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px;">
                     <div id="showProgressBar" style="background: linear-gradient(90deg, #6f42c1, #5a32a3); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
                         0%
                     </div>
                 </div>
-                <p id="showUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Preparing upload...</p>
+                <p id="showUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">{{ _('media.shows_preparing_upload') }}</p>
             </div>
         </div>
     </div>
@@ -66,9 +65,9 @@
         <table class="video-table" style="table-layout: fixed;">
             <thead>
                 <tr>
-                    <th style="width: 25%;">Show Name</th>
-                    <th style="width: 45%;">Files</th>
-                    <th style="width: 30%;">Actions</th>
+                    <th style="width: 25%;">{{ _('media.shows_name_label') }}</th>
+                    <th style="width: 45%;">{{ _('media.shows_files_label') }}</th>
+                    <th style="width: 30%;">{{ _('common.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,12 +77,12 @@
                     <td style="word-wrap: break-word; overflow-wrap: break-word; font-size: 0.9em;">
                         {% if group.fseq_file %}
                         <div style="margin-bottom: 5px;">
-                            <strong>FSEQ:</strong> {{ group.fseq_file.filename }} ({{ group.fseq_file.size_str }})
+                            <strong>{{ _('media.shows_fseq_label') }}:</strong> {{ group.fseq_file.filename }} ({{ group.fseq_file.size_str }})
                         </div>
                         {% endif %}
                         {% if group.audio_file %}
                         <div>
-                            <strong>Audio:</strong> {{ group.audio_file.filename }} ({{ group.audio_file.size_str }})
+                            <strong>{{ _('media.shows_audio_label') }}:</strong> {{ group.audio_file.filename }} ({{ group.audio_file.size_str }})
                         </div>
                         {% endif %}
                     </td>
@@ -104,9 +103,9 @@
                                class="action-btn">
                                 {{ _("media.shows_download_zip") }}
                             </a>
-                            <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" style="display: inline-block; margin: 0;" 
-                                  onsubmit="return confirm('Are you sure you want to delete all files for {{ group.base_name }}?');">
-                                <button type="submit" class="action-btn danger">Delete</button>
+                            <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" style="display: inline-block; margin: 0;"
+                                  onsubmit="return confirm(_t('media.shows_confirm_delete'));">
+                                <button type="submit" class="action-btn danger">{{ _('common.delete') }}</button>
                             </form>
                         </div>
                     </td>
@@ -126,7 +125,7 @@
             <div class="mobile-card-info">
                 {% if group.fseq_file %}
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">FSEQ:</span>
+                    <span class="mobile-card-info-label">{{ _('media.shows_fseq_label') }}:</span>
                     <span class="mobile-card-info-value" style="font-size: 12px; word-break: break-word;">
                         {{ group.fseq_file.filename }}<br>
                         ({{ group.fseq_file.size_str }})
@@ -135,7 +134,7 @@
                 {% endif %}
                 {% if group.audio_file %}
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Audio:</span>
+                    <span class="mobile-card-info-label">{{ _('media.shows_audio_label') }}:</span>
                     <span class="mobile-card-info-value" style="font-size: 12px; word-break: break-word;">
                         {{ group.audio_file.filename }}<br>
                         ({{ group.audio_file.size_str }})
@@ -155,14 +154,14 @@
             </div>
             {% endif %}
             <div class="mobile-card-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch;">
-                <a href="{{ url_for('light_shows.download_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
+                <a href="{{ url_for('light_shows.download_light_show', partition=group.partition_key, base_name=group.base_name) }}"
                    class="action-btn" style="flex: 1;">
-                    Download
+                    {{ _('common.download') }}
                 </a>
-                <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}" 
-                      onsubmit="return confirm('Are you sure you want to delete all files for {{ group.base_name }}?');"
+                <form method="post" action="{{ url_for('light_shows.delete_light_show', partition=group.partition_key, base_name=group.base_name) }}"
+                      onsubmit="return confirm(_t('media.shows_confirm_delete'));"
                       style="flex: 1; margin: 0;">
-                    <button type="submit" class="action-btn danger" style="width: 100%; height: 100%;">Delete</button>
+                    <button type="submit" class="action-btn danger" style="width: 100%; height: 100%;">{{ _('common.delete') }}</button>
                 </form>
             </div>
         </div>
@@ -170,7 +169,7 @@
     </div>
     {% else %}
     <div class="info-box">
-        <p>No light show files found in the LightShow folders.</p>
+        <p>{{ _('media.shows_no_shows') }}</p>
     </div>
     {% endif %}
 </div>
@@ -303,7 +302,7 @@ function handleFiles(files) {
     });
     
     if (validFiles.length === 0) {
-        alert('Please select valid light show files (.fseq, .mp3, .wav, .zip)');
+        alert(_t('media.shows_invalid_format'));
         return;
     }
     
@@ -364,7 +363,7 @@ function escapeHtml(text) {
 
 async function uploadMultipleFiles() {
     if (selectedFiles.length === 0) {
-        alert('Please select files to upload');
+        alert(_t('media.shows_no_file_selected'));
         return;
     }
     
@@ -383,7 +382,7 @@ async function uploadMultipleFiles() {
         progressDiv.style.display = 'block';
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        statusText.textContent = 'Preparing upload...';
+        statusText.textContent = _t('media.shows_preparing_upload');
     }
     
     const formData = new FormData();
@@ -403,7 +402,7 @@ async function uploadMultipleFiles() {
                 
                 const loadedMB = (e.loaded / 1024 / 1024).toFixed(2);
                 const totalMB = (e.total / 1024 / 1024).toFixed(2);
-                statusText.textContent = `Uploading ${selectedFiles.length} file(s)... (${loadedMB} MB / ${totalMB} MB)`;
+                statusText.textContent = _t('media.shows_uploading_progress', { count: selectedFiles.length, loaded_mb: loadedMB, total_mb: totalMB });
             }
         });
         
@@ -418,7 +417,7 @@ async function uploadMultipleFiles() {
                     progressBar.style.background = '#28a745';
                     
                     if (response.success) {
-                        statusText.textContent = response.summary || 'Upload complete!';
+                        statusText.textContent = response.summary || _t('media.shows_upload_complete');
                         statusText.style.color = '#28a745';
                         
                         // Show detailed results
@@ -430,7 +429,7 @@ async function uploadMultipleFiles() {
                             window.location.reload();
                         }, 2000);
                     } else {
-                        statusText.textContent = 'Upload completed with errors';
+                        statusText.textContent = _t('media.shows_upload_errors');
                         statusText.style.color = '#ffc107';
                         showUploadResults(response.results);
                         
@@ -440,7 +439,7 @@ async function uploadMultipleFiles() {
                     }
                 } catch (e) {
                     progressBar.style.background = '#dc3545';
-                    statusText.textContent = 'Upload complete! Redirecting...';
+                    statusText.textContent = _t('media.shows_upload_complete_reload');
                     statusText.style.color = '#28a745';
                     setTimeout(function() {
                         window.location.reload();
@@ -448,7 +447,7 @@ async function uploadMultipleFiles() {
                 }
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = _t('media.shows_upload_failed') + ': ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 if (uploadBtn) uploadBtn.disabled = false;
                 if (clearBtn) clearBtn.disabled = false;
@@ -458,20 +457,20 @@ async function uploadMultipleFiles() {
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = _t('media.shows_upload_network_error');
             statusText.style.color = '#dc3545';
             if (uploadBtn) uploadBtn.disabled = false;
             if (clearBtn) clearBtn.disabled = false;
         });
-        
+
         // Send request
         xhr.open('POST', '{{ url_for("light_shows.upload_multiple_light_shows") }}');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.send(formData);
-        
+
     } catch (error) {
         console.error('Upload error:', error);
-        alert('Upload failed: ' + error.message);
+        alert(_t('media.shows_upload_failed') + ': ' + error.message);
         if (uploadBtn) uploadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
     }
@@ -480,7 +479,7 @@ async function uploadMultipleFiles() {
 function showUploadResults(results) {
     if (!results || results.length === 0) return;
     
-    let html = '<div style="margin-top: 15px; padding: 10px; background: var(--form-input-bg); border-radius: 4px;"><strong>Upload Results:</strong><ul style="margin: 10px 0 0 20px; padding: 0;">';
+    let html = '<div style="margin-top: 15px; padding: 10px; background: var(--form-input-bg); border-radius: 4px;"><strong>' + _t('media.shows_upload_results') + '</strong><ul style="margin: 10px 0 0 20px; padding: 0;">';
     
     results.forEach(result => {
         const icon = result.success ? '✓' : '✗';
@@ -513,7 +512,7 @@ function initializeSimpleUpload() {
         const statusText = document.getElementById('showUploadStatus');
         
         if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please select a file to upload');
+            alert(_t('media.shows_no_file_selected'));
             return;
         }
         
@@ -522,7 +521,7 @@ function initializeSimpleUpload() {
         
         // Disable upload button and show progress
         uploadBtn.disabled = true;
-        uploadBtn.textContent = '⏳ Uploading...';
+        uploadBtn.textContent = _t('media.shows_uploading');
         progressDiv.style.display = 'block';
         
         // Create AJAX request with progress tracking
@@ -542,9 +541,9 @@ function initializeSimpleUpload() {
                 const totalMB = (e.total / 1024 / 1024).toFixed(2);
                 
                 if (e.total > 1024 * 1024) {
-                    statusText.textContent = `Uploading ${file.name}... (${loadedMB} MB / ${totalMB} MB)`;
+                    statusText.textContent = _t('media.shows_uploading_file_mb', { name: file.name, loaded_mb: loadedMB, total_mb: totalMB });
                 } else {
-                    statusText.textContent = `Uploading ${file.name}... (${loadedKB} KB / ${totalKB} KB)`;
+                    statusText.textContent = _t('media.shows_uploading_file_kb', { name: file.name, loaded_kb: loadedKB, total_kb: totalKB });
                 }
             }
         });
@@ -555,16 +554,16 @@ function initializeSimpleUpload() {
                 progressBar.style.width = '100%';
                 progressBar.textContent = '100%';
                 progressBar.style.background = '#28a745';
-                statusText.textContent = 'Upload complete! Redirecting...';
+                statusText.textContent = _t('media.shows_upload_complete_reload');
                 statusText.style.color = '#28a745';
-                
+
                 // Redirect after short delay
                 setTimeout(function() {
                     window.location.reload();
                 }, 1000);
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = _t('media.shows_upload_failed') + ': ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = '📤 Upload';
@@ -574,10 +573,10 @@ function initializeSimpleUpload() {
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = _t('media.shows_upload_network_error');
             statusText.style.color = '#dc3545';
             uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Upload';
+            uploadBtn.textContent = _t('common.upload');
         });
         
         // Send the request

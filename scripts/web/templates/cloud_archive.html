@@ -207,11 +207,11 @@
                 <div id="folderBrowser" style="display: none; border: 1px solid var(--border-primary); border-radius: var(--radius-md); background: var(--bg-secondary); overflow: hidden; max-width: 500px;">
                     {# Breadcrumb bar #}
                     <div id="folderBreadcrumbs" style="padding: 8px 12px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-primary); font-size: 13px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; min-height: 36px;">
-                        <span style="color: var(--text-tertiary);">Loading&hellip;</span>
+                        <span style="color: var(--text-tertiary);">{{ _("common.loading") }}</span>
                     </div>
                     {# Folder list #}
                     <div id="folderList" style="max-height: 280px; overflow-y: auto; min-height: 60px;">
-                        <div style="padding: 20px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">Loading&hellip;</div>
+                        <div style="padding: 20px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">{{ _("common.loading") }}</div>
                     </div>
                     {# Action bar #}
                     <div style="padding: 8px 12px; border-top: 1px solid var(--border-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -235,7 +235,7 @@
             </p>
 
             <div style="margin-bottom: var(--space-3);">
-                <label for="providerSelect" style="display: block; margin-bottom: var(--space-2); font-weight: 500; color: var(--text-primary);">Provider:</label>
+                <label for="providerSelect" style="display: block; margin-bottom: var(--space-2); font-weight: 500; color: var(--text-primary);">{{ _("cloud.provider") }}:</label>
                 <select id="providerSelect" onchange="onProviderChange()"
                         style="width: 100%; max-width: 360px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-input); font-size: 15px; background-color: var(--form-input-bg); color: var(--text-primary);">
                     <option value="">{{ _("cloud.select_provider") }}</option>
@@ -345,8 +345,7 @@
                     <li><strong>{{ _("cloud.sync_manual") }}</strong></li>
                 </ul>
                 <p style="margin: 8px 0 0;">
-                    All camera angles for each event are uploaded together.
-                    You can continue browsing the web interface during sync.
+                    {{ _("cloud.sync_all_angles") }}
                 </p>
             </div>
 
@@ -381,10 +380,10 @@
                             <span style="min-width: 20px; color: var(--text-muted); font-weight: 600;">{{ loop.index }}.</span>
                             <span style="flex: 1;">{{ folder }}</span>
                             <button type="button" onclick="movePriorityUp(this)" aria-label="Move up"
-                                    style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 14px; min-width: 32px; min-height: 32px;"
+                                    style="padding: 4px 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 14px; min-width: 32px; min-height: 32px;"
                                     {% if loop.first %}disabled{% endif %}>&#9650;</button>
                             <button type="button" onclick="movePriorityDown(this)" aria-label="Move down"
-                                    style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 14px; min-width: 32px; min-height: 32px;"
+                                    style="padding: 4px 8px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 14px; min-width: 32px; min-height: 32px;"
                                     {% if loop.last %}disabled{% endif %}>&#9660;</button>
                         </li>
                         {% endfor %}
@@ -405,7 +404,7 @@
                                style="flex:1; max-width: 360px; cursor: pointer; accent-color: var(--btn-primary-bg);">
                         <button type="button" onclick="runBandwidthTest()" id="bwTestBtn"
                                 class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; white-space:nowrap;">
-                            Auto-Detect
+                            {{ _("cloud.auto_detect") }}
                         </button>
                     </div>
                     <div style="display: flex; justify-content: space-between; max-width: 360px; font-size: var(--text-xs); color: var(--text-muted);">
@@ -422,7 +421,7 @@
                         {{ _("cloud.cloud_storage_reserve") }}
                     </label>
                     <input type="number" name="cloud_reserve_gb" value="{{ cloud_reserve_gb }}" min="0" max="100" step="0.5"
-                           style="width:120px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-secondary);">
+                           style="width:120px; padding:6px 10px; border:1px solid var(--border-input); border-radius:6px; background:var(--bg-secondary);">
                     <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">{{ _("cloud.cloud_reserve_desc") }}</p>
                 </div>
 
@@ -438,10 +437,9 @@
                     <input type="number" id="cloudRetryMaxAttempts" name="cloud_retry_max_attempts"
                            min="1" max="20" step="1"
                            value="{{ cloud_retry_max_attempts }}"
-                           style="width:120px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-secondary); color:var(--text-primary);">
+                           style="width:120px; padding:6px 10px; border:1px solid var(--border-input); border-radius:6px; background:var(--bg-secondary); color:var(--text-primary);">
                     <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">
-                        How many times to retry a failed upload before marking it permanently failed.
-                        Failed uploads can still be retried manually from the Failed Jobs page.
+                        {{ _("cloud.retry_attempts_desc") }}
                     </p>
                 </div>
 
@@ -465,7 +463,7 @@
                    delete clips past their retention age until they have
                    been confirmed uploaded to the cloud — protecting
                    un-uploaded footage during long WiFi outages. #}
-                <div style="margin-bottom: var(--space-4); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary);">
+                <div style="margin-bottom: var(--space-4); padding: var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-md); background: var(--bg-secondary);">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px {% if not provider_connected %}opacity: 0.55; cursor: not-allowed{% endif %}">
                         <input type="checkbox" name="keep_clips_until_synced"
                                {% if keep_clips_until_synced %}checked{% endif %}
@@ -474,32 +472,32 @@
                     </label>
                     {% if not provider_connected %}
                         <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 4px 0 0;">
-                            <em>Cloud sync not configured</em> &mdash; this setting only takes effect once a provider is connected above.
+                            {{ _("cloud.keep_clips_desc") }}
                         </p>
                     {% elif keep_clips_until_synced %}
                         <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 4px 0 0;">
-                            Old clips that haven't finished uploading will not be deleted, even past the retention age.
+                            {{ _("cloud.keep_clips_enabled_desc") }}
                         </p>
                     {% else %}
                         <p style="font-size: var(--text-xs); color: var(--msg-warning-text); margin: 4px 0 0;">
                             <svg class="nav-icon" aria-hidden="true" style="width: 14px; height: 14px; vertical-align: -2px;"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use></svg>
-                            Clips will be deleted at the retention age even if they haven't been backed up yet &mdash; <em>risk of losing un-uploaded footage</em>.
+                            {{ _("cloud.keep_clips_disabled_desc") }}
                         </p>
                     {% endif %}
                     {% if kept_unsynced_count and kept_unsynced_count > 0 %}
                         <p style="font-size: var(--text-xs); color: var(--text-secondary); margin: 8px 0 0;">
-                            <strong>{{ kept_unsynced_count }}</strong> clip{{ '' if kept_unsynced_count == 1 else 's' }} currently kept past the retention age, awaiting upload.
+                            {{ _("cloud.clips_kept_awaiting", n=kept_unsynced_count) }}
                         </p>
                     {% endif %}
                 </div>
 
                 <div style="margin-bottom: var(--space-4);">
                     <label style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-primary);">
-                        Minimum cloud retention (days)
+                        {{ _("cloud.min_cloud_retention") }}
                     </label>
                     <input type="number" name="cloud_min_retention_days" value="{{ cloud_min_retention_days }}" min="1" max="365"
-                           style="width:120px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-secondary);">
-                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">Auto-cleanup won't delete videos newer than this.</p>
+                           style="width:120px; padding:6px 10px; border:1px solid var(--border-input); border-radius:6px; background:var(--bg-secondary);">
+                    <p style="font-size: var(--text-xs); color: var(--text-muted); margin:4px 0 0">{{ _("cloud.min_cloud_retention_desc") }}</p>
                 </div>
 
                 <button type="submit" class="edit-btn" style="padding: 8px 20px; font-size: 14px; margin-top: var(--space-3);">{{ _("cloud.save_settings") }}</button>
@@ -544,12 +542,12 @@
                 <table class="video-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Trigger</th>
-                            <th>Files</th>
-                            <th>Data</th>
-                            <th>Duration</th>
-                            <th>Status</th>
+                            <th>{{ _("cloud.history_date") }}</th>
+                            <th>{{ _("cloud.history_trigger") }}</th>
+                            <th>{{ _("cloud.history_files") }}</th>
+                            <th>{{ _("cloud.history_data") }}</th>
+                            <th>{{ _("cloud.history_duration") }}</th>
+                            <th>{{ _("common.status") }}</th>
                         </tr>
                     </thead>
                     <tbody id="historyTbody">
@@ -572,15 +570,15 @@
                             </td>
                             <td>
                                 {% if h.status == 'completed' %}
-                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-success-bg); color: var(--msg-success-text);">completed</span>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-success-bg); color: var(--msg-success-text);">{{ _("cloud.status_completed") }}</span>
                                 {% elif h.status == 'interrupted' %}
-                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-warning-bg); color: var(--msg-warning-text);">interrupted</span>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-warning-bg); color: var(--msg-warning-text);">{{ _("cloud.status_interrupted") }}</span>
                                 {% elif h.status == 'cancelled' %}
-                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">cancelled</span>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">{{ _("cloud.status_cancelled") }}</span>
                                 {% elif h.status == 'running' %}
-                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-info-bg); color: var(--msg-info-text); animation: pulse 1.5s infinite;">running</span>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-info-bg); color: var(--msg-info-text); animation: pulse 1.5s infinite;">{{ _("cloud.status_running") }}</span>
                                 {% elif h.status == 'failed' %}
-                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-error-bg); color: var(--msg-error-text);">failed</span>
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-error-bg); color: var(--msg-error-text);">{{ _("cloud.status_failed") }}</span>
                                 {% else %}
                                     <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">{{ h.status }}</span>
                                 {% endif %}
@@ -598,22 +596,22 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
                         <span class="history-date" data-ts="{{ h.started_at }}" style="font-weight: 600; color: var(--text-primary);">{{ h.started_at }}</span>
                         {% if h.status == 'completed' %}
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-success-bg); color: var(--msg-success-text);">completed</span>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-success-bg); color: var(--msg-success-text);">{{ _("cloud.status_completed") }}</span>
                         {% elif h.status == 'interrupted' %}
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-warning-bg); color: var(--msg-warning-text);">interrupted</span>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-warning-bg); color: var(--msg-warning-text);">{{ _("cloud.status_interrupted") }}</span>
                         {% elif h.status == 'cancelled' %}
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">cancelled</span>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">{{ _("cloud.status_cancelled") }}</span>
                         {% elif h.status == 'running' %}
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-info-bg); color: var(--msg-info-text); animation: pulse 1.5s infinite;">running</span>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-info-bg); color: var(--msg-info-text); animation: pulse 1.5s infinite;">{{ _("cloud.status_running") }}</span>
                         {% elif h.status == 'failed' %}
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-error-bg); color: var(--msg-error-text);">failed</span>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--msg-error-bg); color: var(--msg-error-text);">{{ _("cloud.status_failed") }}</span>
                         {% else %}
                             <span style="display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; background: var(--bg-info); color: var(--text-secondary);">{{ h.status }}</span>
                         {% endif %}
                     </div>
                     <div style="display: flex; gap: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary); flex-wrap: wrap;">
                         <span>{{ h.trigger|default('auto')|capitalize }}</span>
-                        <span>{{ h.files_synced|default(0) }} files</span>
+                        <span>{{ h.files_synced|default(0) }} {{ _("cloud.history_files") }}</span>
                         <span>{% if h.bytes_transferred %}{{ h.bytes_transferred|filesizeformat }}{% else %}&mdash;{% endif %}</span>
                     </div>
                 </div>
@@ -636,7 +634,7 @@
 <div id="cloudBusyOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
     <div style="text-align: center; color: white; padding: 24px;">
         <div style="border: 6px solid rgba(255,255,255,0.2); border-top: 6px solid #fff; border-radius: 50%; width: 48px; height: 48px; animation: cloud-spin 1s linear infinite; margin: 0 auto 16px;"></div>
-        <div id="cloudBusyMsg" style="font-size: 16px; font-weight: 500;">Working&hellip;</div>
+        <div id="cloudBusyMsg" style="font-size: 16px; font-weight: 500;">{{ _("cloud.working") }}</div>
     </div>
 </div>
 
@@ -674,7 +672,7 @@
     function _showBusy(msg) {
         var overlay = document.getElementById('cloudBusyOverlay');
         var msgEl = document.getElementById('cloudBusyMsg');
-        if (msgEl) msgEl.textContent = msg || 'Working\u2026';
+        if (msgEl) msgEl.textContent = msg || _t('cloud.working');
         if (overlay) overlay.style.display = 'flex';
     }
 
@@ -797,7 +795,7 @@
             if (status.eta_seconds != null && status.eta_seconds > 0) {
                 var m = Math.floor(status.eta_seconds / 60);
                 var s = status.eta_seconds % 60;
-                etaText = m > 0 ? m + 'm ' + s + 's remaining' : s + 's remaining';
+                etaText = m > 0 ? _t('cloud.eta_remaining_m_s', {m: m, s: s}) : _t('cloud.eta_remaining_s', {s: s});
             }
 
             var throughputText = '';
@@ -810,7 +808,7 @@
                 '<div class="device-status-header">' +
                     '<span class="status-dot status-edit" style="animation:pulse 1.5s ease-in-out infinite;"></span>' +
                     '<div class="device-status-info">' +
-                        '<strong>Syncing to {{ provider or "Cloud" }}</strong>' +
+                        '<strong>' + _t('cloud.syncing_to', {provider: '{{ provider or "Cloud" }}'}) + '</strong>' +
                         '<p>' + (status.files_done || 0) + ' of ' + (status.files_total || '?') + ' events' +
                             (status.bytes_transferred ? ' \u2014 ' + formatBytes(status.bytes_transferred) : '') +
                             (status.total_bytes ? ' / ' + formatBytes(status.total_bytes) : '') +
@@ -830,7 +828,7 @@
                     '<span style="font-size:var(--text-sm);color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">' +
                         escapeHtml(status.current_file || '') +
                     '</span>' +
-                    '<button type="button" class="present-btn" onclick="cancelSync()" style="padding:8px 16px;font-size:14px;">Cancel</button>' +
+                    '<button type="button" class="present-btn" onclick="cancelSync()" style="padding:8px 16px;font-size:14px;">' + _t('cloud.cancel_sync') + '</button>' +
                 '</div>';
             isSyncing = true;
         } else if (status.error) {
@@ -839,23 +837,23 @@
                 '<div class="device-status-header">' +
                     '<span class="status-dot status-unknown"></span>' +
                     '<div class="device-status-info">' +
-                        '<strong>Sync Error</strong>' +
+                        '<strong>' + _t('cloud.sync_error') + '</strong>' +
                         '<p style="color:var(--error-text);">' + escapeHtml(status.error) + '</p>' +
                     '</div>' +
                 '</div>' +
                 '<div style="margin-top:8px;">' +
-                    '<button type="button" class="edit-btn" onclick="syncNow()" style="padding:8px 16px;font-size:14px;">Retry</button>' +
+                    '<button type="button" class="edit-btn" onclick="syncNow()" style="padding:8px 16px;font-size:14px;">' + _t('common.retry') + '</button>' +
                 '</div>';
             isSyncing = false;
         } else {
             card.className = 'device-status-card device-status-present';
-            var lastRun = status.last_run ? 'Last sync: ' + timeAgo(status.last_run) : 'No syncs yet';
+            var lastRun = status.last_run ? _t('cloud.last_sync') + ': ' + timeAgo(status.last_run) : _t('cloud.no_syncs_yet');
             var pending = (stats.total_pending) ? ' \u2014 ' + stats.total_pending + ' event' + (stats.total_pending !== 1 ? 's' : '') + ' pending' : '';
             card.innerHTML =
                 '<div class="device-status-header">' +
                     '<span class="status-dot status-present"></span>' +
                     '<div class="device-status-info">' +
-                        '<strong>Cloud Sync</strong>' +
+                        '<strong>' + _t('cloud.cloud_sync') + '</strong>' +
                         '<p>' + lastRun + pending + '</p>' +
                     '</div>' +
                 '</div>' +
@@ -895,7 +893,7 @@
 
     window.syncNow = async function() {
         var btn = document.getElementById('syncNowBtn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Starting\u2026'; }
+        if (btn) { btn.disabled = true; btn.textContent = _t('cloud.starting_sync'); }
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_sync_now") }}', {
                 method: 'POST',
@@ -907,16 +905,16 @@
                 startPolling();
             } else {
                 showToast(data.message || _t('cloud.failed_to_start_sync'), 'error');
-                if (btn) { btn.disabled = false; btn.textContent = 'Sync Now'; }
+                if (btn) { btn.disabled = false; btn.textContent = _t('cloud.sync_now'); }
             }
         } catch (e) {
             showToast(_t('cloud.network_error'), 'error');
-            if (btn) { btn.disabled = false; btn.textContent = 'Sync Now'; }
+            if (btn) { btn.disabled = false; btn.textContent = _t('cloud.sync_now'); }
         }
     };
 
     window.syncStop = async function(graceful) {
-        _showBusy(graceful ? 'Finishing current file\u2026' : 'Stopping sync\u2026');
+        _showBusy(graceful ? _t('cloud.finishing_current_file') : _t('cloud.stopping_sync'));
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_sync_stop") }}', {
                 method: 'POST',
@@ -943,18 +941,18 @@
         dialog.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;justify-content:center;align-items:center;';
         dialog.innerHTML =
             '<div style="background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:var(--radius-lg);padding:24px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
-                '<h3 style="margin:0 0 12px;color:var(--text-primary);font-size:16px;">Cancel Sync</h3>' +
-                '<p style="margin:0 0 20px;color:var(--text-secondary);font-size:var(--text-sm);line-height:1.5;">How would you like to stop the sync?</p>' +
+                '<h3 style="margin:0 0 12px;color:var(--text-primary);font-size:16px;">' + _t('cloud.cancel_sync') + '</h3>' +
+                '<p style="margin:0 0 20px;color:var(--text-secondary);font-size:var(--text-sm);line-height:1.5;">' + _t('cloud.cancel_sync_prompt') + '</p>' +
                 '<div style="display:flex;flex-direction:column;gap:10px;">' +
                     '<button onclick="document.getElementById(\'cancelSyncDialog\').remove(); syncStop(true);" class="action-btn" style="padding:12px;font-size:14px;text-align:left;">' +
-                        '<strong>Finish current file</strong><br>' +
-                        '<span style="font-size:12px;color:var(--text-tertiary);">Completes the file being uploaded, then stops. No partial files.</span>' +
+                        '<strong>' + _t('cloud.finish_current_file') + '</strong><br>' +
+                        '<span style="font-size:12px;color:var(--text-tertiary);">' + _t('cloud.finish_current_file_desc') + '</span>' +
                     '</button>' +
                     '<button onclick="document.getElementById(\'cancelSyncDialog\').remove(); syncStop(false);" class="action-btn danger" style="padding:12px;font-size:14px;text-align:left;">' +
-                        '<strong>Stop immediately</strong><br>' +
-                        '<span style="font-size:12px;color:var(--text-tertiary);">Kills the upload now. The current file may be incomplete in the cloud.</span>' +
+                        '<strong>' + _t('cloud.stop_immediately') + '</strong><br>' +
+                        '<span style="font-size:12px;color:var(--text-tertiary);">' + _t('cloud.stop_immediately_desc') + '</span>' +
                     '</button>' +
-                    '<button onclick="document.getElementById(\'cancelSyncDialog\').remove();" class="action-btn" style="padding:10px;font-size:13px;">Never mind</button>' +
+                    '<button onclick="document.getElementById(\'cancelSyncDialog\').remove();" class="action-btn" style="padding:10px;font-size:13px;">' + _t('cloud.never_mind') + '</button>' +
                 '</div>' +
             '</div>';
         document.body.appendChild(dialog);
@@ -970,9 +968,9 @@
     window.testConnection = async function() {
         var btn = document.getElementById('testConnBtn') || document.getElementById('testConnBtnSetup');
         var result = document.getElementById('testConnResult') || document.getElementById('testConnResultSetup');
-        if (btn) { btn.disabled = true; btn.textContent = 'Testing\u2026'; }
+        if (btn) { btn.disabled = true; btn.textContent = _t('cloud.testing'); }
         if (result) { result.textContent = ''; result.style.color = 'var(--text-secondary)'; }
-        _showBusy('Testing cloud connection\u2026');
+        _showBusy(_t('cloud.testing_connection'));
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_test_connection") }}', {
                 method: 'POST',
@@ -980,7 +978,7 @@
             });
             var data = await resp.json();
             if (result) {
-                result.textContent = data.message || (data.success ? 'Connected!' : 'Failed');
+                result.textContent = data.message || (data.success ? _t('cloud.connected_excl') : _t('cloud.failed_excl'));
                 result.style.color = data.success ? 'var(--success-text)' : 'var(--error-text)';
             }
             if (data.auth_error) {
@@ -989,11 +987,11 @@
                 showToast(data.message || (data.success ? _t('cloud.connection_successful') : _t('cloud.connection_failed')), data.success ? 'success' : 'error');
             }
         } catch (e) {
-            if (result) { result.textContent = 'Network error'; result.style.color = 'var(--error-text)'; }
-            showToast('Network error.', 'error');
+            if (result) { result.textContent = _t('cloud.network_error'); result.style.color = 'var(--error-text)'; }
+            showToast(_t('cloud.network_error'), 'error');
         } finally {
             _hideBusy();
-            if (btn) { btn.disabled = false; btn.textContent = 'Test Connection'; }
+            if (btn) { btn.disabled = false; btn.textContent = _t('cloud.test_connection'); }
         }
     };
 
@@ -1083,9 +1081,9 @@
 
         var btn = document.getElementById('rcloneSubmitBtn');
         var resultEl = document.getElementById('rcloneResult');
-        if (btn) { btn.disabled = true; btn.textContent = 'Connecting\u2026'; }
+        if (btn) { btn.disabled = true; btn.textContent = _t('cloud.connecting'); }
         if (resultEl) resultEl.textContent = '';
-        _showBusy('Connecting to cloud provider\u2026');
+        _showBusy(_t('cloud.connecting'));
 
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_connect_provider") }}', {
@@ -1099,21 +1097,21 @@
             var data = await resp.json();
             if (data.success) {
                 _hideBusy();
-                showToast('Connected! Reloading\u2026', 'success');
+                showToast(_t('cloud.connected_success'), 'success');
                 setTimeout(function() { window.location.reload(); }, 1500);
             } else {
                 _hideBusy();
                 showToast(data.message || _t('cloud.connect_failed'), 'error');
                 if (resultEl) {
-                    resultEl.textContent = data.message || 'Failed';
+                    resultEl.textContent = data.message || _t('cloud.failed_excl');
                     resultEl.style.color = 'var(--error-text)';
                 }
-                if (btn) { btn.disabled = false; btn.textContent = 'Connect'; }
+                if (btn) { btn.disabled = false; btn.textContent = _t('cloud.connect'); }
             }
         } catch (e) {
             _hideBusy();
-            showToast('Network error.', 'error');
-            if (btn) { btn.disabled = false; btn.textContent = 'Connect'; }
+            showToast(_t('cloud.network_error'), 'error');
+            if (btn) { btn.disabled = false; btn.textContent = _t('cloud.connect'); }
         }
     };
 
@@ -1146,19 +1144,19 @@
             });
             var data = await resp.json();
             if (data.success) {
-                showToast('Provider saved. Reloading\u2026', 'success');
+                showToast(_t('cloud.provider_saved'), 'success');
                 setTimeout(function() { window.location.reload(); }, 1000);
             } else {
                 showToast(data.message || _t('cloud.failed_to_save_provider'), 'error');
             }
         } catch (e) {
-            showToast('Network error.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
         }
     };
 
     window.disconnectProvider = async function() {
         if (!confirm(_t('cloud.disconnect_confirm'))) return;
-        _showBusy('Disconnecting\u2026');
+        _showBusy(_t('cloud.disconnecting'));
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_disconnect_provider") }}', {
                 method: 'POST',
@@ -1177,7 +1175,7 @@
             }
         } catch (e) {
             _hideBusy();
-            showToast('Network error.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
         }
     };
 
@@ -1208,7 +1206,7 @@
         var parts = path ? path.split('/').filter(Boolean) : [];
         var html = '<a href="#" onclick="_navigateFolder(\'\'); return false;" style="color: var(--link-color); text-decoration: none; font-weight: 500;">';
         html += '<svg style="width:14px;height:14px;vertical-align:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
-        html += ' Root</a>';
+        html += ' ' + _t('cloud.root_folder') + '</a>';
 
         var cumulative = '';
         for (var i = 0; i < parts.length; i++) {
@@ -1228,7 +1226,7 @@
         if (!el) return;
 
         if (folders.length === 0 && !path) {
-            el.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">No folders found. Click &ldquo;New Folder&rdquo; to create one.</div>';
+            el.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">' + _t('cloud.no_folders_found') + '</div>';
             return;
         }
 
@@ -1244,7 +1242,7 @@
         }
 
         if (folders.length === 0 && path) {
-            html += '<div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">Empty folder</div>';
+            html += '<div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">' + _t('cloud.empty_folder') + '</div>';
         }
 
         for (var i = 0; i < folders.length; i++) {
@@ -1264,13 +1262,13 @@
         _renderBreadcrumbs(path);
 
         var listEl = document.getElementById('folderList');
-        if (listEl) listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">Loading&hellip;</div>';
+        if (listEl) listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">' + _t('common.loading') + '</div>';
 
         await _loadFolders(path);
     };
 
     async function _loadFolders(path) {
-        _showBusy('Loading folders\u2026');
+        _showBusy(_t('cloud.loading_folders'));
         try {
             var url = '{{ url_for("cloud_archive.api_browse_folders") }}?path=' + encodeURIComponent(path);
             var resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
@@ -1283,21 +1281,21 @@
             } else {
                 var listEl = document.getElementById('folderList');
                 if (data.auth_error) {
-                    if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; font-size: var(--text-sm);"><div style="color: var(--error-text); margin-bottom: 8px;">' + _escapeHtml(data.message) + '</div><button onclick="closeFolderBrowser(); disconnectProvider();" class="action-btn danger" style="font-size:13px;padding:6px 14px;">Disconnect &amp; Reconnect</button></div>';
+                    if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; font-size: var(--text-sm);"><div style="color: var(--error-text); margin-bottom: 8px;">' + _escapeHtml(data.message) + '</div><button onclick="closeFolderBrowser(); disconnectProvider();" class="action-btn danger" style="font-size:13px;padding:6px 14px;">' + _t('cloud.disconnect_and_reconnect') + '</button></div>';
                 } else {
-                    if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--error-text); font-size: var(--text-sm);">' + _escapeHtml(data.message || 'Failed to load folders.') + '</div>';
+                    if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--error-text); font-size: var(--text-sm);">' + _escapeHtml(data.message || _t('cloud.failed_to_load_folders')) + '</div>';
                 }
             }
         } catch (e) {
             var listEl = document.getElementById('folderList');
-            if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--error-text); font-size: var(--text-sm);">Network error loading folders.</div>';
+            if (listEl) listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--error-text); font-size: var(--text-sm);">' + _t('cloud.network_error_loading_folders') + '</div>';
         } finally {
             _hideBusy();
         }
     }
 
     window.createNewFolder = async function() {
-        var name = prompt('Enter new folder name:');
+        var name = prompt(_t('cloud.new_folder_prompt'));
         if (!name || !name.trim()) return;
         name = name.trim().replace(/[\/\\]/g, '');
         if (!name) { showToast(_t('cloud.invalid_folder_name'), 'warning'); return; }
@@ -1327,7 +1325,7 @@
 
     window.selectCurrentFolder = async function() {
         var path = _currentBrowsePath || '';
-        _showBusy('Saving destination\u2026');
+        _showBusy(_t('cloud.saving_destination'));
 
         try {
             var resp = await fetch('{{ url_for("cloud_archive.api_set_remote_path") }}', {
@@ -1347,7 +1345,7 @@
             }
         } catch (e) {
             _hideBusy();
-            showToast('Network error.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
         }
     };
 
@@ -1371,8 +1369,8 @@
             if (data.success) {
                 var label = document.getElementById('syncEnabledLabel');
                 if (label) label.textContent = enabled
-                    ? 'Enabled \u2014 syncs automatically when WiFi connects'
-                    : 'Disabled \u2014 provider stays connected, no auto-sync';
+                    ? _t('cloud.enabled_syncs_auto')
+                    : _t('cloud.disabled_no_auto_sync');
                 showToast(enabled ? _t('cloud.auto_sync_enabled') : _t('cloud.auto_sync_disabled'), 'success');
             } else {
                 showToast(data.message || _t('cloud.failed_to_update'), 'error');
@@ -1381,7 +1379,7 @@
                 if (cb) cb.checked = !enabled;
             }
         } catch (e) {
-            showToast('Network error.', 'error');
+            showToast(_t('cloud.network_error'), 'error');
             var cb = document.getElementById('syncEnabledToggle');
             if (cb) cb.checked = !enabled;
         }
@@ -1391,10 +1389,10 @@
         var field = document.getElementById('credSecret');
         if (field.type === 'password') {
             field.type = 'text';
-            btn.textContent = 'Hide';
+            btn.textContent = _t('common.hide');
         } else {
             field.type = 'password';
-            btn.textContent = 'Show';
+            btn.textContent = _t('common.show');
         }
     };
 
@@ -1466,7 +1464,7 @@
                     if (bar) bar.style.width = pct + '%';
 
                     var title = document.getElementById('archiveTitle');
-                    if (title) title.textContent = 'Archiving ' + (st.event_name || '') + '...';
+                    if (title) title.textContent = _t('cloud.archiving', {name: st.event_name || ''});
 
                     var sub = document.getElementById('archiveSubtitle');
                     if (sub) sub.textContent = (st.files_done || 0) + ' of ' + st.file_count + ' files \u2014 ' + formatBytes(st.bytes_transferred || 0) + ' / ' + formatBytes(st.total_size || 0) + (st.current_file ? ' \u2014 ' + st.current_file : '');
@@ -1475,7 +1473,7 @@
                     if (st.eta_seconds != null && st.eta_seconds > 0) {
                         var m = Math.floor(st.eta_seconds / 60);
                         var s = st.eta_seconds % 60;
-                        etaText = m > 0 ? m + 'm ' + s + 's remaining' : s + 's remaining';
+                        etaText = m > 0 ? _t('cloud.eta_remaining_m_s', {m: m, s: s}) : _t('cloud.eta_remaining_s', {s: s});
                     }
                     var detail = document.getElementById('archiveDetail');
                     if (detail) detail.textContent = pct + '%' + (etaText ? ' \u2014 ' + etaText : '');
@@ -1483,20 +1481,20 @@
                     if (card) card.style.display = 'block';
                     if (inner) inner.className = 'device-status-card device-status-present';
                     var title = document.getElementById('archiveTitle');
-                    if (title) title.textContent = '\u2713 Archived ' + (st.event_name || '');
+                    if (title) title.textContent = _t('cloud.archive_complete', {name: st.event_name || ''});
                     var sub = document.getElementById('archiveSubtitle');
                     if (sub) sub.textContent = st.file_count + ' files \u2014 ' + formatBytes(st.total_size || 0);
                     var bar = document.getElementById('archiveProgressBar');
                     if (bar) bar.style.width = '100%';
                     var detail = document.getElementById('archiveDetail');
-                    if (detail) detail.textContent = 'Complete';
+                    if (detail) detail.textContent = _t('cloud.complete');
                     stopArchivePoll();
                     setTimeout(function() { if (card) card.style.display = 'none'; }, 10000);
                 } else if (st.error) {
                     if (card) card.style.display = 'block';
                     if (inner) inner.className = 'device-status-card device-status-unknown';
                     var title = document.getElementById('archiveTitle');
-                    if (title) title.textContent = 'Archive Failed';
+                    if (title) title.textContent = _t('cloud.archive_failed');
                     var sub = document.getElementById('archiveSubtitle');
                     if (sub) { sub.textContent = st.error; sub.style.color = 'var(--error-text)'; }
                     var bar = document.getElementById('archiveProgressBar');
@@ -1541,9 +1539,9 @@
                 var text = document.getElementById('storageUsageText');
                 if (row && text) {
                     var used = formatBytes(data.used || 0);
-                    var total = data.total ? formatBytes(data.total) : 'unlimited';
+                    var total = data.total ? formatBytes(data.total) : _t('cloud.unlimited');
                     var free = data.free ? formatBytes(data.free) : '';
-                    text.textContent = used + ' used' + (data.total ? ' of ' + total : '') + (free ? ' (' + free + ' free)' : '');
+                    text.textContent = _t('cloud.used_storage', {used: used}) + (data.total ? ' ' + _t('cloud.of') + ' ' + total : '') + (free ? ' (' + _t('cloud.free_storage', {free: free}) + ')' : '');
                     row.style.display = '';
                 }
 
@@ -1555,12 +1553,12 @@
                         warn.style.display = '';
                         warn.style.background = 'var(--msg-error-bg)';
                         warn.style.color = 'var(--msg-error-text)';
-                        warn.textContent = '\u26a0 Critical: Cloud storage is ' + pct + '% full. Uploads may fail.';
+                        warn.textContent = _t('cloud.storage_critical', {pct: pct});
                     } else if (pct >= 80) {
                         warn.style.display = '';
                         warn.style.background = 'var(--msg-warning-bg)';
                         warn.style.color = 'var(--msg-warning-text)';
-                        warn.textContent = '\u26a0 Warning: Cloud storage is ' + pct + '% full. Consider freeing space.';
+                        warn.textContent = _t('cloud.storage_warning', {pct: pct});
                     }
                 }
             }
@@ -1682,17 +1680,19 @@ async function runBandwidthTest() {
     var btn = document.getElementById('bwTestBtn');
     var results = document.getElementById('bwTestResults');
     btn.disabled = true;
-    btn.textContent = 'Testing…';
+    btn.textContent = _t('cloud.testing');
     results.style.display = 'block';
-    results.innerHTML = '<p>Starting bandwidth test — this takes 1-2 minutes…</p>';
+    results.innerHTML = '<p>' + _t('cloud.bandwidth_test_starting') + '</p>';
 
     try {
         var resp = await fetch('{{ url_for("cloud_archive.api_bandwidth_test") }}', {method: 'POST'});
         var data = await resp.json();
         if (!data.success) {
-            results.innerHTML = '<p style="color:var(--error-text);">' + _bwEscape(data.message) + '</p>';
+            var errMsg = data.message;
+            if (errMsg === 'No cloud provider credentials') errMsg = _t('cloud.no_credentials');
+            results.innerHTML = '<p style="color:var(--error-text);">' + _bwEscape(errMsg) + '</p>';
             btn.disabled = false;
-            btn.textContent = 'Auto-Detect';
+            btn.textContent = _t('cloud.auto_detect');
             return;
         }
         // Poll for results
@@ -1701,21 +1701,21 @@ async function runBandwidthTest() {
                 var r = await fetch('{{ url_for("cloud_archive.api_bandwidth_test_status") }}');
                 var s = await r.json();
                 if (s.running) {
-                    results.innerHTML = '<p>' + _bwEscape(s.progress || 'Testing…') + '</p>';
+                    results.innerHTML = '<p>' + _bwEscape(s.progress || _t('cloud.testing')) + '</p>';
                 } else {
                     clearInterval(pollTimer);
                     btn.disabled = false;
-                    btn.textContent = 'Auto-Detect';
+                    btn.textContent = _t('cloud.auto_detect');
                     if (s.error) {
-                        results.innerHTML = '<p style="color:var(--error-text);">Error: ' + _bwEscape(s.error) + '</p>';
+                        results.innerHTML = '<p style="color:var(--error-text);">' + _t('cloud.bw_test_error', {msg: s.error}) + '</p>';
                         return;
                     }
                     // Show results table
                     var html = '<table style="width:100%;font-size:0.8rem;border-collapse:collapse;">';
-                    html += '<tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:4px;">Speed</th><th>Actual</th><th>Latency</th><th>Memory</th><th>Load</th><th>Status</th></tr>';
+                    html += '<tr style="border-bottom:1px solid var(--border-input);"><th style="text-align:left;padding:4px;">Speed</th><th>Actual</th><th>Latency</th><th>Memory</th><th>Load</th><th>Status</th></tr>';
                     (s.results || []).forEach(function(r) {
                         var color = r.status === 'ok' ? 'var(--accent-success)' : 'var(--error-text)';
-                        html += '<tr style="border-bottom:1px solid var(--border);">';
+                        html += '<tr style="border-bottom:1px solid var(--border-input);">';
                         html += '<td style="padding:4px;">' + r.mbps + ' Mbps</td>';
                         html += '<td style="padding:4px;text-align:center;">' + (r.actual_mbps || '—') + '</td>';
                         html += '<td style="padding:4px;text-align:center;">' + (r.web_latency ? r.web_latency + 's' : '—') + '</td>';
@@ -1727,8 +1727,8 @@ async function runBandwidthTest() {
                     html += '</table>';
                     if (s.recommended_mbps) {
                         html += '<div style="margin-top:8px;display:flex;align-items:center;gap:8px;">';
-                        html += '<strong>Recommended: ' + s.recommended_mbps + ' Mbps</strong>';
-                        html += '<button type="button" onclick="applyBandwidth()" class="btn btn-primary" style="padding:4px 12px;font-size:0.8rem;">Apply</button>';
+                        html += '<strong>' + _t('cloud.bandwidth_recommended', {mbps: s.recommended_mbps}) + '</strong>';
+                        html += '<button type="button" onclick="applyBandwidth()" class="btn btn-primary" style="padding:4px 12px;font-size:0.8rem;">' + _t('cloud.bandwidth_apply') + '</button>';
                         html += '</div>';
                     }
                     results.innerHTML = html;
@@ -1736,9 +1736,9 @@ async function runBandwidthTest() {
             } catch(e) { /* keep polling */ }
         }, 3000);
     } catch(e) {
-        results.innerHTML = '<p style="color:var(--error-text);">Failed to start test</p>';
+        results.innerHTML = '<p style="color:var(--error-text);">' + _t('cloud.bandwidth_test_failed') + '</p>';
         btn.disabled = false;
-        btn.textContent = 'Auto-Detect';
+        btn.textContent = _t('cloud.auto_detect');
     }
 }
 

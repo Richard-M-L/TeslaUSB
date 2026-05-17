@@ -26,9 +26,29 @@
             const locale = '{{ current_locale() }}';
             // Embedded translation table (populated at template render time)
             const _translations = {{ _translations_js|default({})|tojson }};
+            // Recursive helper for dot-separated nested-key traversal.
+            // Compound keys like "index.system_health_subsystems" already
+            // contain dots, so we find the longest prefix that exists as a
+            // key in the current object and recurse with the suffix.
+            function _t_nested(data, key) {
+                if (data[key] !== undefined && typeof data[key] === 'string')
+                    return data[key];
+                if (typeof data[key] === 'object') return undefined; // ambiguous
+                var parts = key.split('.');
+                for (var i = parts.length - 1; i > 0; i--) {
+                    var prefix = parts.slice(0, i).join('.');
+                    var suffix = parts.slice(i).join('.');
+                    if (data[prefix] && typeof data[prefix] === 'object') {
+                        var result = _t_nested(data[prefix], suffix);
+                        if (result !== undefined) return result;
+                    }
+                }
+                return undefined;
+            }
             window._t = function(key) {
                 if (_translations[key]) return _translations[key];
-                return key; // fallback: return the key itself
+                var result = _t_nested(_translations, key);
+                return result !== undefined ? result : key;
             };
             window._locale = locale;
         })();

@@ -40,8 +40,31 @@ def load_translations(translations_dir: str) -> None:
             _translations[locale] = {}
 
 
+def _nested_get(data: dict, key: str):
+    """Resolve a dot-separated key against a nested dict.
+
+    Keys like ``index.system_labels`` are compound (contain dots), while
+    the suffix (``hostname``) is a leaf key.  Naive splitting on every dot
+    would produce ``['index','system_labels','hostname']`` which doesn't
+    match the actual structure ``data['index.system_labels']['hostname']``.
+    Instead we try the full flat key first, then progressively find the
+    longest dot-joined prefix that exists as a key in *data* and recurse.
+    """
+    if key in data:
+        return data[key]
+    parts = key.split('.')
+    for i in range(len(parts) - 1, 0, -1):
+        prefix = '.'.join(parts[:i])
+        suffix = '.'.join(parts[i:])
+        if prefix in data and isinstance(data[prefix], dict):
+            result = _nested_get(data[prefix], suffix)
+            if result is not None:
+                return result
+    return None
+
+
 def get_text(key: str, locale: str = None) -> str:
-    """Look up a translation key.
+    """Look up a translation key (supports dot-separated nested keys).
 
     Fallback chain: requested locale → English → return the key itself
     (so a missing translation is visible as the untranslated key).
@@ -49,11 +72,13 @@ def get_text(key: str, locale: str = None) -> str:
     if locale is None:
         locale = _default_locale
     locale_data = _translations.get(locale, {})
-    if key in locale_data:
-        return locale_data[key]
+    value = _nested_get(locale_data, key)
+    if value is not None:
+        return value
     en_data = _translations.get('en', {})
-    if key in en_data:
-        return en_data[key]
+    value = _nested_get(en_data, key)
+    if value is not None:
+        return value
     logger.debug("Missing translation key: %s (locale=%s)", key, locale)
     return key
 

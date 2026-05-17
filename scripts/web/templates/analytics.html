@@ -11,14 +11,14 @@
         <div class="alert alert-critical">
             <strong>{{ _('analytics.critical_storage_alert') }}</strong>
             {% for alert in health.alerts %}
-                <div>{{ alert }}</div>
+                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
             {% endfor %}
         </div>
     {% elif health.status == 'warning' %}
         <div class="alert alert-warning">
             <strong>{{ _('analytics.storage_warning') }}</strong>
             {% for alert in health.alerts %}
-                <div>{{ alert }}</div>
+                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
             {% endfor %}
         </div>
     {% else %}
@@ -81,8 +81,8 @@
                 {{ "%.0f"|format(estimate.teslacam_hours * 60) }} {{ _('analytics.minutes') }}
             {% endif %}
         </div>
-        <div class="estimate-method">{{ estimate.method }}</div>
-        <div class="estimate-confidence">{{ _('analytics.confidence') }}: {{ estimate.confidence }}</div>
+        <div class="estimate-method">{% if estimate.method_key %}{{ _(estimate.method_key, **estimate.get('method_params', {})) }}{% else %}{{ estimate.method }}{% endif %}</div>
+        <div class="estimate-confidence">{{ _('analytics.confidence') }}: {{ _('analytics.confidence_' + estimate.confidence) }}</div>
     </div>
     {% endif %}
 
@@ -192,7 +192,7 @@
         <h3>{{ _('analytics.recommendations') }}</h3>
         <ul class="recommendations-list">
             {% for recommendation in health.recommendations %}
-            <li>{{ recommendation }}</li>
+            <li>{% if recommendation is mapping %}{{ _(recommendation.key, drive=_(recommendation.drive_key)) }}{% else %}{{ recommendation }}{% endif %}</li>
             {% endfor %}
         </ul>
     </div>

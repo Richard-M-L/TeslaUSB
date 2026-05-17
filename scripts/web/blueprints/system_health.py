@@ -124,6 +124,8 @@ def _indexer_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Indexing disabled in config',
+            'message_key': 'health.indexer_disabled',
+            'message_params': {},
             'enabled': False,
             'queue_depth': 0,
             'worker_running': False,
@@ -135,6 +137,8 @@ def _indexer_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Status fetch failed',
+            'message_key': 'health.status_fetch_failed',
+            'message_params': {},
             'enabled': True,
             'queue_depth': 0,
             'worker_running': False,
@@ -148,6 +152,8 @@ def _indexer_block() -> Dict[str, Any]:
     if not running:
         sev = SEV_ERROR
         msg = 'Worker not running'
+        msg_key = 'health.worker_stalled'
+        msg_params = {}
     elif dead > 0:
         # Issue #180 — "13 dead-letter rows" is uninformative. Tell
         # the operator what to do. The card's overall row is already
@@ -155,17 +161,29 @@ def _indexer_block() -> Dict[str, Any]:
         sev = SEV_WARN
         msg = (f'{dead} job{"s" if dead != 1 else ""} need attention '
                '— open Failed Jobs')
+        msg_key = 'health.indexer_dead'
+        msg_params = {'dead': dead}
     elif queue_depth > 100:
         sev = SEV_WARN
         msg = f'{queue_depth} queued (catch-up)'
+        msg_key = 'health.indexer_queue'
+        msg_params = {'depth': queue_depth, 'suffix': ' (catch-up)'}
     else:
         sev = SEV_OK
-        msg = (f'{queue_depth} queued'
-               if queue_depth else 'Idle, queue empty')
+        if queue_depth:
+            msg = f'{queue_depth} queued'
+            msg_key = 'health.indexer_queue'
+            msg_params = {'depth': queue_depth, 'suffix': ''}
+        else:
+            msg = 'Idle, queue empty'
+            msg_key = 'health.indexer_idle'
+            msg_params = {}
 
     return {
         'severity': sev,
         'message': msg,
+        'message_key': msg_key,
+        'message_params': msg_params,
         'enabled': True,
         'worker_running': running,
         'queue_depth': queue_depth,
@@ -273,6 +291,8 @@ def _archive_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Status fetch failed',
+            'message_key': 'health.status_fetch_failed',
+            'message_params': {},
             'enabled': True,
             'paused': False,
             'queue_depth': 0,
@@ -348,9 +368,19 @@ def _archive_block() -> Dict[str, Any]:
     if not running:
         sev = SEV_ERROR
         msg = 'Worker not running' + queue_tail + dead_tail
+        msg_key = 'health.worker_stalled'
+        msg_params = {}
     elif wd_sev == SEV_ERROR:
         sev = SEV_ERROR
-        msg = (watchdog.get('message') or 'Watchdog error')[:160] + dead_tail
+        wd_txt = watchdog.get('message')
+        if wd_txt:
+            msg = wd_txt[:160] + dead_tail
+            msg_key = ''
+            msg_params = {}
+        else:
+            msg = 'Watchdog error' + dead_tail
+            msg_key = 'health.watchdog_error'
+            msg_params = {}
     elif lost_24h > 0:
         # Lost-files dominates dead-letters because lost footage is
         # unrecoverable, whereas a dead-letter row still has the source
@@ -358,12 +388,16 @@ def _archive_block() -> Dict[str, Any]:
         sev = SEV_WARN
         msg = (f'{lost_24h} clip{"s" if lost_24h != 1 else ""} '
                'lost in last 24h') + queue_tail + dead_tail
+        msg_key = 'health.archive_lost_clips'
+        msg_params = {'n': lost_24h}
     elif dead > 0:
         # Issue #180 — actionable wording instead of "N dead-letter
         # rows" jargon. The card's overall row links to /jobs.
         sev = SEV_WARN
         msg = (f'{dead} job{"s" if dead != 1 else ""} need attention '
                '— open Failed Jobs') + queue_tail
+        msg_key = 'health.indexer_dead'
+        msg_params = {'dead': dead}
     elif paused_effective:
         sev = SEV_WARN
         # Phase 4.5 — render the actual reason instead of an opaque
@@ -373,29 +407,53 @@ def _archive_block() -> Dict[str, Any]:
         # which we surface as the human-friendly fallback.
         if pause_reason == 'background':
             msg = 'Paused (background task)' + queue_tail
+            msg_key = 'health.archive_paused_background'
+            msg_params = {}
         else:
             msg = f'Paused: {pause_reason}' + queue_tail
+            msg_key = 'health.archive_paused_reason'
+            msg_params = {'reason': pause_reason}
     elif wd_sev == SEV_WARN:
         sev = SEV_WARN
-        msg = (watchdog.get('message') or 'Watchdog warn')[:160] + dead_tail
+        wd_txt = watchdog.get('message')
+        if wd_txt:
+            msg = wd_txt[:160] + dead_tail
+            msg_key = ''
+            msg_params = {}
+        else:
+            msg = 'Watchdog warn' + dead_tail
+            msg_key = 'health.watchdog_warn'
+            msg_params = {}
     elif pending > 200:
         sev = SEV_WARN
         if eta_human:
             msg = f'{pending} pending — est. {eta_human}'
+            msg_key = 'health.archive_pending_eta'
+            msg_params = {'n': pending, 'eta': eta_human}
         else:
             msg = f'{pending} pending (catch-up)'
+            msg_key = 'health.archive_pending_catchup'
+            msg_params = {'n': pending}
     else:
         sev = SEV_OK
         if pending and eta_human:
             msg = f'{pending} pending — est. {eta_human}'
+            msg_key = 'health.archive_pending_eta'
+            msg_params = {'n': pending, 'eta': eta_human}
         elif pending:
             msg = f'{pending} pending'
+            msg_key = 'health.archive_pending'
+            msg_params = {'n': pending}
         else:
             msg = 'Idle, queue empty'
+            msg_key = 'health.archive_idle'
+            msg_params = {}
 
     return {
         'severity': sev,
         'message': msg,
+        'message_key': msg_key,
+        'message_params': msg_params,
         'enabled': True,
         'worker_running': running,
         # Phase 4.5: ``paused`` reflects the operator-facing notion
@@ -423,6 +481,8 @@ def _cloud_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Cloud archive disabled',
+            'message_key': 'health.cloud_disabled',
+            'message_params': {},
             'enabled': False,
             'queue_depth': 0,
         }
@@ -436,6 +496,8 @@ def _cloud_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Status fetch failed',
+            'message_key': 'health.status_fetch_failed',
+            'message_params': {},
             'enabled': True,
             'queue_depth': 0,
             '_error': str(e)[:120],
@@ -452,20 +514,34 @@ def _cloud_block() -> Dict[str, Any]:
         sev = SEV_WARN
         msg = (f'{dead} job{"s" if dead != 1 else ""} need attention '
                '— open Failed Jobs')
+        msg_key = 'health.indexer_dead'
+        msg_params = {'dead': dead}
     elif running:
         sev = SEV_OK
-        msg = (f'Uploading ({pending} pending)'
-               if pending else 'Uploading')
+        if pending:
+            msg = f'Uploading ({pending} pending)'
+            msg_key = 'health.cloud_syncing'
+            msg_params = {'n': pending}
+        else:
+            msg = 'Uploading'
+            msg_key = 'health.cloud_syncing'
+            msg_params = {}
     elif pending > 0:
         sev = SEV_OK
         msg = f'{pending} queued for next WiFi'
+        msg_key = 'health.cloud_queued'
+        msg_params = {'n': pending}
     else:
         sev = SEV_OK
         msg = 'Idle, queue empty'
+        msg_key = 'health.cloud_idle'
+        msg_params = {}
 
     return {
         'severity': sev,
         'message': msg,
+        'message_key': msg_key,
+        'message_params': msg_params,
         'enabled': True,
         'running': running,
         'queue_depth': pending,
@@ -483,6 +559,8 @@ def _disk_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'Disk usage probe failed',
+            'message_key': 'health.disk_probe_failed',
+            'message_params': {},
             '_error': str(e)[:120],
         }
 
@@ -493,16 +571,24 @@ def _disk_block() -> Dict[str, Any]:
     if used_pct >= 95:
         sev = SEV_ERROR
         msg = f'Critical: {used_pct:.1f}% full'
+        msg_key = 'health.disk_critical'
+        msg_params = {'pct': f'{used_pct:.1f}'}
     elif used_pct >= 85:
         sev = SEV_WARN
         msg = f'{used_pct:.1f}% full'
+        msg_key = 'health.disk_warn'
+        msg_params = {'pct': f'{used_pct:.1f}'}
     else:
         sev = SEV_OK
         msg = f'{free_gb:.1f} GB free'
+        msg_key = 'health.disk_free'
+        msg_params = {'free': f'{free_gb:.1f}'}
 
     return {
         'severity': sev,
         'message': msg,
+        'message_key': msg_key,
+        'message_params': msg_params,
         'used_pct': round(used_pct, 1),
         'free_gb': round(free_gb, 2),
         'total_gb': round(total_gb, 2),
@@ -518,6 +604,8 @@ def _wifi_block() -> Dict[str, Any]:
         return {
             'severity': SEV_UNKNOWN,
             'message': 'WiFi probe failed',
+            'message_key': 'health.wifi_probe_failed',
+            'message_params': {},
             '_error': sta['_error'],
         }
 
@@ -535,20 +623,30 @@ def _wifi_block() -> Dict[str, Any]:
         if signal_pct is not None and signal_pct < 30:
             sev = SEV_WARN
             msg = f'{ssid} (weak: {signal_pct}%)'
+            msg_key = 'health.wifi_signal_weak'
+            msg_params = {'ssid': ssid, 'pct': signal_pct}
         else:
             sev = SEV_OK
             sig_text = f' {signal_pct}%' if signal_pct is not None else ''
             msg = f'{ssid}{sig_text}'
+            msg_key = 'health.wifi_signal'
+            msg_params = {'ssid': ssid, 'pct': signal_pct if signal_pct is not None else ''}
     elif ap_active:
         sev = SEV_WARN
         msg = 'STA offline — AP active'
+        msg_key = 'health.wifi_ap_active'
+        msg_params = {}
     else:
         sev = SEV_ERROR
         msg = 'No WiFi'
+        msg_key = 'health.wifi_disconnected'
+        msg_params = {}
 
     return {
         'severity': sev,
         'message': msg,
+        'message_key': msg_key,
+        'message_params': msg_params,
         'connected': connected,
         'ssid': ssid,
         'signal': signal_pct,
@@ -594,6 +692,8 @@ def _build_health() -> Dict[str, Any]:
             block = {
                 'severity': SEV_UNKNOWN,
                 'message': 'Block error',
+                'message_key': 'health.block_error',
+                'message_params': {},
                 '_error': str(e)[:120],
             }
         payload[name] = block
@@ -604,12 +704,23 @@ def _build_health() -> Dict[str, Any]:
             worst_msg = block.get('message', '')
             worst_subsystem = name
 
+    if worst == SEV_OK:
+        overall_msg = 'All systems normal'
+        overall_key = 'health.all_ok'
+        overall_params = {}
+    else:
+        overall_msg = (
+            f'{worst_subsystem}: {worst_msg}'
+            if worst_subsystem else 'All systems normal'
+        )
+        overall_key = 'health.attention_needed'
+        overall_params = {'subsystem': worst_subsystem or ''}
+
     payload['overall'] = {
         'severity': worst,
-        'message': (
-            f'{worst_subsystem}: {worst_msg}'
-            if worst != SEV_OK and worst_subsystem else 'All systems normal'
-        ),
+        'message': overall_msg,
+        'message_key': overall_key,
+        'message_params': overall_params,
         'subsystem': worst_subsystem,
     }
     payload['generated_at'] = int(time.time())

@@ -2,6 +2,11 @@
 {% block content %}
 <div class="container" style="max-width: 1100px;">
 
+    <a href="{{ url_for('mode_control.index') }}" class="btn btn-back" style="margin-bottom: 16px;">
+        <svg class="nav-icon" aria-hidden="true" style="width:16px;height:16px;"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-arrow-left"></use></svg>
+        {{ _('settings.back_to_settings') }}
+    </a>
+
     <header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
         <div>
             <h1 style="margin: 0 0 4px; font-size: 1.5rem;">{{ _('jobs.title') }}</h1>

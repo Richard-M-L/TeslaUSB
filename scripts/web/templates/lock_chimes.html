@@ -139,7 +139,7 @@
     <div id="trimEditorSection" class="trim-editor-section" style="display: none;">
         <div class="trim-editor-header">
             <span id="trimEditorTitle">{{ _('chimes.trim_adjust_audio') }}</span>
-            <span id="trimEditorBadge" class="trim-editor-badge" style="display: none;">Editing</span>
+            <span id="trimEditorBadge" class="trim-editor-badge" style="display: none;">{{ _('chimes.editing_badge') }}</span>
         </div>
         
         <!-- Loading State -->
@@ -181,7 +181,7 @@
                 <!-- Playback Speed - HIDDEN FOR NOW (pitch preservation needs improvement) -->
                 <div class="trim-control-group" style="display: none;">
                     <label class="trim-control-label">
-                        Playback Speed
+                        {{ _('chimes.playback_speed') }}
                         <span class="trim-control-sublabel" id="speedDisplay">1.00x</span>
                     </label>
                     <input type="range" id="speedSlider" class="speed-slider" min="0.5" max="2.0" value="1.0" step="0.05">
@@ -198,14 +198,14 @@
                             <input type="range" id="trimTargetLufs" class="speed-slider" min="0" max="3" value="1" step="1">
                         </div>
                         <div class="slider-labels" style="display: grid; grid-template-columns: repeat(4, 1fr); font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                            <span style="text-align: left;">Broadcast</span>
-                            <span style="text-align: center;">Streaming</span>
-                            <span style="text-align: center;">Loud</span>
-                            <span style="text-align: right;">Maximum</span>
+                            <span style="text-align: left;">{{ _('chimes.volume_broadcast') }}</span>
+                            <span style="text-align: center;">{{ _('chimes.volume_streaming') }}</span>
+                            <span style="text-align: center;">{{ _('chimes.volume_loud') }}</span>
+                            <span style="text-align: right;">{{ _('chimes.volume_maximum') }}</span>
                         </div>
                         <div style="margin-top: 10px; padding: 8px; background: var(--form-input-bg); border-radius: 4px; border: 1px solid var(--border-input);">
-                            <strong id="trimCurrentLevel" style="display: block; margin-bottom: 4px; font-size: 13px;">Streaming</strong>
-                            <small id="trimLevelDescription" style="color: var(--text-secondary); font-size: 11px;">Recommended for balanced playback</small>
+                            <strong id="trimCurrentLevel" style="display: block; margin-bottom: 4px; font-size: 13px;">{{ _('chimes.volume_streaming') }}</strong>
+                            <small id="trimLevelDescription" style="color: var(--text-secondary); font-size: 11px;">{{ _('chimes.volume_streaming_desc') }}</small>
                         </div>
                     </div>
                 </div>
@@ -228,7 +228,7 @@
                     </div>
                     <div class="trim-stat">
                         <span class="trim-stat-label">{{ _('chimes.status_label') }}</span>
-                        <span class="trim-stat-value success" id="statStatus">✓ Ready</span>
+                        <span class="trim-stat-value success" id="statStatus">{{ _('chimes.status_ready') }}</span>
                     </div>
                 </div>
             </div>
@@ -249,7 +249,7 @@
             
             <!-- Playback Controls -->
             <div class="playback-controls">
-                <button id="playBtn" class="play-btn" title="Play preview" aria-label="Play preview">
+                <button id="playBtn" class="play-btn" title="{{ _('chimes.play_preview') }}" aria-label="{{ _('chimes.play_preview') }}">
                     <i class="bi bi-play-fill"></i>
                 </button>
                 <button id="autoFitBtn" class="trim-btn trim-btn-purple">
@@ -362,7 +362,7 @@
                         <label style="display: block; margin-bottom: 8px; font-weight: 600;">{{ _('chimes.date_label') }}:</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <select id="month-select" name="month" style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="">Month</option>
+                                <option value="">{{ _('chimes.month_placeholder') }}</option>
                                 <option value="1">January</option>
                                 <option value="2">February</option>
                                 <option value="3">March</option>
@@ -377,7 +377,7 @@
                                 <option value="12">December</option>
                             </select>
                             <select id="day-select" name="day" style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="">Day</option>
+                                <option value="">{{ _('chimes.day_placeholder') }}</option>
                                 {% for d in range(1, 32) %}
                                 <option value="{{ d }}">{{ d }}</option>
                                 {% endfor %}
@@ -414,8 +414,8 @@
                                 {% endfor %}
                             </select>
                             <select id="ampm-select" name="am_pm" required style="padding: 8px; border: 2px solid var(--border-input); border-radius: 4px; font-size: 14px; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="AM" id="ampm-am-option" selected>AM</option>
-                                <option value="PM" id="ampm-pm-option">PM</option>
+                                <option value="AM" id="ampm-am-option" selected>{{ _('chimes.am') }}</option>
+                                <option value="PM" id="ampm-pm-option">{{ _('chimes.pm') }}</option>
                             </select>
                         </div>
                     </div>
@@ -1043,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const percentComplete = Math.round((e.loaded / e.total) * 100);
                 progressBar.style.width = percentComplete + '%';
                 progressBar.textContent = percentComplete + '%';
-                statusText.textContent = `Uploading ${file.name}... (${(e.loaded / 1024).toFixed(1)} KB / ${(e.total / 1024).toFixed(1)} KB)`;
+                statusText.textContent = _t('chimes.uploading') + ` ${file.name} (${(e.loaded / 1024).toFixed(1)} KB / ${(e.total / 1024).toFixed(1)} KB)`;
             }
         });
         
@@ -1356,10 +1356,10 @@ function setupTrimEditorUI() {
     
     // Volume normalization level definitions
     const volumeLevels = [
-        { name: 'Broadcast', lufs: -23, description: 'Broadcast standard (quieter, more headroom)' },
-        { name: 'Streaming', lufs: -16, description: 'Recommended for balanced playback' },
-        { name: 'Loud', lufs: -14, description: 'Louder output (less dynamic range)' },
-        { name: 'Maximum', lufs: -12, description: 'Maximum loudness (may clip on some systems)' }
+        { name: _t('chimes.volume_broadcast'), lufs: -23, description: _t('chimes.volume_broadcast_desc') },
+        { name: _t('chimes.volume_streaming'), lufs: -16, description: _t('chimes.volume_streaming_desc') },
+        { name: _t('chimes.volume_loud'), lufs: -14, description: _t('chimes.volume_loud_desc') },
+        { name: _t('chimes.volume_maximum'), lufs: -12, description: _t('chimes.volume_maximum_desc') }
     ];
     
     // Set canvas size based on container
@@ -1456,7 +1456,7 @@ function setupTrimEditorUI() {
         // Check for invalid characters
         const invalidChars = /[<>:"|?*\/\\]/;
         if (invalidChars.test(value)) {
-            filenameValidation.textContent = '❌ Filename contains invalid characters';
+            filenameValidation.textContent = _t('chimes.filename_invalid_chars_msg');
             filenameValidation.style.color = '#f44336';
             filenameValidation.style.display = 'block';
             return false;
@@ -1464,13 +1464,13 @@ function setupTrimEditorUI() {
         
         // Check if it already exists
         if (existingChimeFilenames.some(f => f.toLowerCase() === lowerFileName)) {
-            filenameValidation.textContent = '❌ This filename already exists';
+            filenameValidation.textContent = _t('chimes.filename_already_exists');
             filenameValidation.style.color = '#f44336';
             filenameValidation.style.display = 'block';
             return false;
         }
         
-        filenameValidation.textContent = '✅ Filename available';
+        filenameValidation.textContent = _t('chimes.filename_available');
         filenameValidation.style.color = '#4CAF50';
         filenameValidation.style.display = 'block';
         return true;
@@ -1715,13 +1715,6 @@ function loadAudioForTrimming(file) {
             const targetLufsSlider = document.getElementById('trimTargetLufs');
             if (normalizeCheckbox && normalizeCheckbox.checked && targetLufsSlider) {
                 const sliderIndex = parseInt(targetLufsSlider.value);
-                const volumeLevels = [
-                    { name: "Very Quiet", lufs: -23, description: "Barely audible" },
-                    { name: "Quiet", lufs: -18, description: "Soft and subtle" },
-                    { name: "Normal", lufs: -14, description: "Standard loudness" },
-                    { name: "Loud", lufs: -11, description: "Attention-grabbing" },
-                    { name: "Very Loud", lufs: -9, description: "Maximum volume" }
-                ];
                 audioTrimmer.setNormalization(true, volumeLevels[sliderIndex].lufs);
                 await audioTrimmer.calculateNormalizationGain();
             }
@@ -1791,13 +1784,6 @@ function editChime(filename) {
             const targetLufsSlider = document.getElementById('trimTargetLufs');
             if (normalizeCheckbox && normalizeCheckbox.checked && targetLufsSlider) {
                 const sliderIndex = parseInt(targetLufsSlider.value);
-                const volumeLevels = [
-                    { name: "Very Quiet", lufs: -23, description: "Barely audible" },
-                    { name: "Quiet", lufs: -18, description: "Soft and subtle" },
-                    { name: "Normal", lufs: -14, description: "Standard loudness" },
-                    { name: "Loud", lufs: -11, description: "Attention-grabbing" },
-                    { name: "Very Loud", lufs: -9, description: "Maximum volume" }
-                ];
                 audioTrimmer.setNormalization(true, volumeLevels[sliderIndex].lufs);
                 await audioTrimmer.calculateNormalizationGain();
             }
@@ -1871,15 +1857,15 @@ function updateTrimUI() {
     if (!withinLimit) {
         statusEl.classList.add('error');
         statusTextEl.classList.add('error');
-        statusTextEl.textContent = '✗ Too Large';
+        statusTextEl.textContent = _t('chimes.status_too_large');
     } else if (fileSize > {{ MAX_LOCK_CHIME_SIZE }} * 0.9) {
         statusEl.classList.add('warning');
         statusTextEl.classList.add('warning');
-        statusTextEl.textContent = '⚠ Close to Limit';
+        statusTextEl.textContent = _t('chimes.status_close_to_limit');
     } else {
         statusEl.classList.add('success');
         statusTextEl.classList.add('success');
-        statusTextEl.textContent = '✓ Ready';
+        statusTextEl.textContent = _t('chimes.status_ready');
     }
     
     // Recalculate actual size periodically to update UI (debounced)
@@ -1904,15 +1890,15 @@ function updateTrimUI() {
                 if (!withinActualLimit) {
                     statusEl.classList.add('error');
                     statusTextEl.classList.add('error');
-                    statusTextEl.textContent = '✗ Too Large';
+                    statusTextEl.textContent = _t('chimes.status_too_large');
                 } else if (actualFileSize > {{ MAX_LOCK_CHIME_SIZE }} * 0.9) {
                     statusEl.classList.add('warning');
                     statusTextEl.classList.add('warning');
-                    statusTextEl.textContent = '⚠ Close to Limit';
+                    statusTextEl.textContent = _t('chimes.status_close_to_limit');
                 } else {
                     statusEl.classList.add('success');
                     statusTextEl.classList.add('success');
-                    statusTextEl.textContent = '✓ Ready';
+                    statusTextEl.textContent = _t('chimes.status_ready');
                 }
             }
         } catch (error) {

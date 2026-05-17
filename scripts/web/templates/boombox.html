@@ -288,12 +288,11 @@
         </svg>
         <div class="nhtsa-body">
             <p>
-                <strong>Boombox sounds only play while the vehicle is in Park</strong>
-                (NHTSA safety restriction, Feb 2022).
+                <strong>{{ _("media.boombox_nhtsa_title") }}</strong>
+                {{ _("media.boombox_nhtsa_date") }}
             </p>
             <p>
-                Your vehicle must have an external pedestrian-warning speaker &mdash;
-                built September 2019 or later for Model 3, Y, S, or X, or any Cybertruck.
+                {{ _("media.boombox_nhtsa_desc") | safe }}
             </p>
         </div>
     </div>
@@ -341,8 +340,7 @@
                 {% endif %}
             </div>
             <div class="drop-hint">
-                MP3 or WAV &middot; up to {{ max_file_size_mb }} MB &middot;
-                {{ max_file_count - file_count }} slot{% if (max_file_count - file_count) != 1 %}s{% endif %} remaining
+                {{ _("media.boombox_format_hint", max_mb=max_file_size_mb, slots=max_file_count - file_count) }}
             </div>
             <input type="file" id="boomboxFileInput" name="boombox_files"
                    accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav"
@@ -358,7 +356,7 @@
                 <svg style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;" aria-hidden="true">
                     <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-upload"></use>
                 </svg>
-                Upload
+                {{ _("common.upload") }}
             </button>
         </div>
     </form>
@@ -395,19 +393,19 @@
                 {% set ext = file.filename.lower().rsplit('.', 1)[-1] %}
                 <source src="{{ url_for('boombox.play', filename=file.filename) }}"
                         type="{{ 'audio/mpeg' if ext == 'mp3' else 'audio/wav' }}">
-                Your browser does not support the audio element.
+                {{ _("media.audio_not_supported") }}
             </audio>
 
             <div class="boombox-file-actions">
                 <form method="post"
                       action="{{ url_for('boombox.delete', filename=file.filename) }}"
                       style="display: inline; margin: 0;"
-                      onsubmit="return confirm('Delete {{ file.filename|e }}?');">
-                    <button type="submit" class="action-btn danger" aria-label="Delete {{ file.filename|e }}">
+                      onsubmit="return confirm(_t('media.boombox_confirm_delete'));">
+                    <button type="submit" class="action-btn danger" aria-label="{{ _('common.delete') }}">
                         <svg style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;" aria-hidden="true">
                             <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-trash-2"></use>
                         </svg>
-                        Delete
+                        {{ _("common.delete") }}
                     </button>
                 </form>
             </div>
@@ -420,8 +418,7 @@
             <use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-megaphone"></use>
         </svg>
         <p>
-            <strong>Add your first Boombox sound</strong> &mdash; it&rsquo;ll play through your car&rsquo;s
-            external speaker when you unlock or park.
+            {{ _("media.boombox_no_sounds") }}
         </p>
     </div>
     {% endif %}
@@ -443,8 +440,9 @@
     function validateFiles(fileList) {
         const remaining = maxFileCount - currentCount;
         if (fileList.length > remaining) {
-            alert('Only ' + remaining + ' more file(s) can be added '
-                  + '(max ' + maxFileCount + ' total).');
+            alert(_t('media.boombox_too_many_files')
+                  .replace('{remaining}', remaining)
+                  .replace('{max}', maxFileCount));
             return false;
         }
         for (let i = 0; i < fileList.length; i++) {
@@ -452,11 +450,11 @@
             const lower = f.name.toLowerCase();
             const ext = '.' + (lower.split('.').pop() || '');
             if (allowedExts.indexOf(ext) === -1) {
-                alert(f.name + ': only MP3 and WAV files are allowed.');
+                alert(f.name + ': ' + _t('media.boombox_invalid_format'));
                 return false;
             }
             if (f.size > maxFileSize) {
-                alert(f.name + ': file is larger than 1 MB.');
+                alert(f.name + ': ' + _t('media.boombox_file_too_large'));
                 return false;
             }
         }

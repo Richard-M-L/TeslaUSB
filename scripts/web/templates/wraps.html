@@ -2,27 +2,26 @@
 {% block content %}
 <div class="container">
     {% include 'media_hub_nav.html' %}
-    <h2>Custom Wraps</h2>
+    <h2>{{ _("media.wraps_title") }}</h2>
 
     <!-- iOS Safari Warning -->
     <div id="iosWarning" class="ios-warning">
-        <p><strong>⚠️ iOS Browser Limitation:</strong> File uploading is only available through Safari when running on iOS. Please open this page in Safari to upload files.</p>
-        <p>Note: Desktop browsers (Windows/Mac/Linux) work normally regardless of browser choice.</p>
+        <p><strong>{{ _("media.ios_warning_title") }}:</strong> {{ _("media.ios_warning_body") }}</p>
+        <p>{{ _("media.ios_warning_desktop_note") }}</p>
     </div>
 
     <!-- Tesla Requirements Info -->
     <div class="info-box" style="margin-bottom: 20px;">
-        <p><strong>Tesla Wrap Requirements:</strong></p>
+        <p><strong>{{ _("media.wraps_requirements") }}</strong></p>
         <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 13px; color: var(--text-secondary);">
             <li><strong>{{ _("media.wraps_format_label") }}:</strong> {{ _("media.wraps_format_desc") }}</li>
-            <li><strong>Size:</strong> {{ (max_file_size / 1024 / 1024)|round(0)|int }} MB maximum</li>
-            <li><strong>Dimensions:</strong> {{ min_dimension }}x{{ min_dimension }} to {{ max_dimension }}x{{ max_dimension }} pixels</li>
-            <li><strong>Filename:</strong> {{ max_filename_length }} characters max (letters, numbers, underscores, dashes, spaces)</li>
-            <li><strong>Count:</strong> Up to {{ max_wrap_count }} wraps at a time (currently: {{ wrap_count }}/{{ max_wrap_count }})</li>
+            <li><strong>{{ _("media.wraps_size_label") }}:</strong> {{ _("media.wraps_size_value", max_mb=((max_file_size / 1024 / 1024)|round(0)|int)) }}</li>
+            <li><strong>{{ _("media.wraps_dimensions") }}:</strong> {{ _("media.wraps_dimensions_value", min=min_dimension, max=max_dimension) }}</li>
+            <li><strong>{{ _("media.wraps_filename_label") }}:</strong> {{ _("media.wraps_filename_value", max_len=max_filename_length) }}</li>
+            <li><strong>{{ _("media.wraps_count_label") }}:</strong> {{ _("media.wraps_count_current", max=max_wrap_count, current=wrap_count) }}</li>
         </ul>
         <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
-            <strong>Usage:</strong> Wraps appear in Toybox → Paint Shop → Wraps tab.
-            <a href="https://github.com/teslamotors/custom-wraps" target="_blank" style="color: var(--text-link);">Download templates from Tesla</a>
+            {{ _("media.wraps_usage") | safe }}
         </p>
     </div>
 
@@ -34,7 +33,7 @@
                     <i class="bi bi-image" style="font-size: 48px; color: var(--btn-purple-bg); display: block; margin-bottom: 15px;"></i>
                     <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">{{ _("media.wraps_drop_hint") }}</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-                        PNG files only • {{ min_dimension }}-{{ max_dimension }}px • Max 1 MB each
+                        {{ _("media.wraps_format_hint_line", min=min_dimension, max=max_dimension) }}
                     </p>
                 </div>
             </div>
@@ -43,7 +42,7 @@
 
             <!-- {{ _("media.wraps_selected_files") }} Preview -->
             <div id="selectedFilesPreview" style="display: none; margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">📋 Selected Files:</h4>
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary);">{{ _("media.wraps_selected_files") }}</h4>
                 <div id="filesList" style="background: var(--form-input-bg); border: 1px solid var(--border-input); border-radius: 4px; padding: 10px; max-height: 300px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="button" class="action-btn" id="uploadSelectedBtn">{{ _("media.wraps_upload_all") }}</button>
@@ -60,18 +59,18 @@
             </p>
             <input type="file" name="wrap_file" id="wrap_file" accept=".png,image/png" required
                    style="display: block; margin-bottom: 10px; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; background: var(--form-input-bg); width: 100%; max-width: 400px; font-size: 14px; color: var(--text-primary);">
-            <button type="submit" class="action-btn" id="wrapUploadBtn">Upload</button>
+            <button type="submit" class="action-btn" id="wrapUploadBtn">{{ _("common.upload") }}</button>
         </form>
         <!-- Upload Progress Bar -->
         <div id="wrapUploadProgress" style="display: none; margin-bottom: 20px;">
             <div style="background: var(--upload-progress-bg); border-radius: 8px; padding: 15px; border: 2px solid var(--btn-purple-bg);">
-                <h4 style="margin: 0 0 10px 0; color: var(--btn-purple-bg);">📤 Uploading Wrap...</h4>
+                <h4 style="margin: 0 0 10px 0; color: var(--btn-purple-bg);">{{ _("media.wraps_uploading") }}</h4>
                 <div style="background: var(--upload-progress-bar-bg); border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px;">
                     <div id="wrapProgressBar" style="background: linear-gradient(90deg, #6f42c1, #5a32a3); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
                         0%
                     </div>
                 </div>
-                <p id="wrapUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Preparing upload...</p>
+                <p id="wrapUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">{{ _("media.wraps_preparing_upload") }}</p>
             </div>
         </div>
     </div>
@@ -82,11 +81,11 @@
         <table class="video-table" style="table-layout: fixed;">
             <thead>
                 <tr>
-                    <th style="width: 18%;">Preview</th>
-                    <th style="width: 27%;">Filename</th>
-                    <th style="width: 15%;">Dimensions</th>
-                    <th style="width: 12%;">Size</th>
-                    <th style="width: 28%;">Actions</th>
+                    <th style="width: 18%;">{{ _("common.preview") }}</th>
+                    <th style="width: 27%;">{{ _("common.filename") }}</th>
+                    <th style="width: 15%;">{{ _("media.dimensions_label") }}</th>
+                    <th style="width: 12%;">{{ _("common.size") }}</th>
+                    <th style="width: 28%;">{{ _("common.actions") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -106,11 +105,11 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <a href="{{ url_for('wraps.download_wrap', partition=wrap.partition_key, filename=wrap.filename) }}"
                                class="action-btn">
-                                Download
+                                {{ _("common.download") }}
                             </a>
                             <form method="post" action="{{ url_for('wraps.delete_wrap', partition=wrap.partition_key, filename=wrap.filename) }}" style="display: inline; margin: 0;"
-                                  onsubmit="return confirm('Are you sure you want to delete {{ wrap.filename }}?');">
-                                <button type="submit" class="action-btn danger">Delete</button>
+                                  onsubmit="return confirm(_t('media.wraps_confirm_delete'));">
+                                <button type="submit" class="action-btn danger">{{ _("common.delete") }}</button>
                             </form>
                         </div>
                     </td>
@@ -136,23 +135,23 @@
             </div>
             <div class="mobile-card-info">
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Dimensions:</span>
+                    <span class="mobile-card-info-label">{{ _("media.dimensions_label") }}:</span>
                     <span class="mobile-card-info-value">{{ wrap.dimensions }}</span>
                 </div>
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Size:</span>
+                    <span class="mobile-card-info-label">{{ _("media.wraps_size_label") }}:</span>
                     <span class="mobile-card-info-value">{{ wrap.size_str }}</span>
                 </div>
             </div>
             <div class="mobile-card-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <a href="{{ url_for('wraps.download_wrap', partition=wrap.partition_key, filename=wrap.filename) }}"
                    class="action-btn" style="flex: 1;">
-                    Download
+                    {{ _("common.download") }}
                 </a>
                 <form method="post" action="{{ url_for('wraps.delete_wrap', partition=wrap.partition_key, filename=wrap.filename) }}"
-                      onsubmit="return confirm('Are you sure you want to delete {{ wrap.filename }}?');"
+                      onsubmit="return confirm(_t('media.wraps_confirm_delete'));"
                       style="flex: 1; margin: 0; display: flex;">
-                    <button type="submit" class="action-btn danger" style="width: 100%;">Delete</button>
+                    <button type="submit" class="action-btn danger" style="width: 100%;">{{ _("common.delete") }}</button>
                 </form>
             </div>
         </div>
@@ -160,9 +159,9 @@
     </div>
     {% else %}
     <div class="info-box">
-        <p>No custom wrap files found in the Wraps folder.</p>
+        <p>{{ _("media.wraps_no_wraps") }}</p>
         <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
-            Upload PNG files to customize your Tesla's 3D vehicle visualization in the Paint Shop.
+            {{ _("media.wraps_desc") }}
         </p>
     </div>
     {% endif %}
@@ -305,14 +304,14 @@ async function handleFiles(files) {
     });
 
     if (pngFiles.length === 0) {
-        alert('Please select PNG files only');
+        alert(_t('media.wraps_invalid_format'));
         return;
     }
 
     // Check if we'd exceed max count
     const remainingSlots = MAX_WRAP_COUNT - CURRENT_WRAP_COUNT - selectedFiles.length;
     if (remainingSlots <= 0) {
-        alert(`Maximum of ${MAX_WRAP_COUNT} wraps allowed. You already have ${CURRENT_WRAP_COUNT} wraps.`);
+        alert(_t('media.wraps_too_many').replace('{max}', MAX_WRAP_COUNT));
         return;
     }
 
@@ -331,7 +330,7 @@ async function handleFiles(files) {
         // Check remaining slots
         if (selectedFiles.length >= remainingSlots) {
             if (pngFiles.indexOf(file) < pngFiles.length - 1) {
-                alert(`Only ${remainingSlots} slot(s) remaining. Some files were not added.`);
+                alert(_t('media.wraps_slots_remaining').replace('{slots}', remainingSlots));
             }
             break;
         }
@@ -491,7 +490,7 @@ async function uploadMultipleFiles() {
     });
 
     if (validFiles.length === 0) {
-        alert('No valid files to upload. Please fix validation errors first.');
+        alert(_t('media.wraps_no_valid_files'));
         return;
     }
 
@@ -510,7 +509,7 @@ async function uploadMultipleFiles() {
         progressDiv.style.display = 'block';
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        statusText.textContent = 'Preparing upload...';
+        statusText.textContent = _t('media.wraps_preparing_upload');
     }
 
     const formData = new FormData();
@@ -545,7 +544,7 @@ async function uploadMultipleFiles() {
                     progressBar.style.background = '#28a745';
 
                     if (response.success) {
-                        statusText.textContent = response.summary || 'Upload complete!';
+                        statusText.textContent = response.summary || _t('media.wraps_upload_complete');
                         statusText.style.color = '#28a745';
 
                         // Show detailed results
@@ -558,7 +557,7 @@ async function uploadMultipleFiles() {
                             window.location.reload();
                         }, 2000);
                     } else {
-                        statusText.textContent = 'Upload completed with errors';
+                        statusText.textContent = _t('media.wraps_upload_errors');
                         statusText.style.color = '#ffc107';
                         showUploadResults(response.results);
 
@@ -568,7 +567,7 @@ async function uploadMultipleFiles() {
                     }
                 } catch (e) {
                     progressBar.style.background = '#dc3545';
-                    statusText.textContent = 'Upload complete! Redirecting...';
+                    statusText.textContent = _t('media.wraps_upload_complete_redirect');
                     statusText.style.color = '#28a745';
                     setTimeout(function() {
                         window.location.reload();
@@ -576,7 +575,7 @@ async function uploadMultipleFiles() {
                 }
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = _t('media.wraps_upload_failed') + ': ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 if (uploadBtn) uploadBtn.disabled = false;
                 if (clearBtn) clearBtn.disabled = false;
@@ -586,7 +585,7 @@ async function uploadMultipleFiles() {
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = _t('media.wraps_upload_network_error');
             statusText.style.color = '#dc3545';
             if (uploadBtn) uploadBtn.disabled = false;
             if (clearBtn) clearBtn.disabled = false;
@@ -599,7 +598,7 @@ async function uploadMultipleFiles() {
 
     } catch (error) {
         console.error('Upload error:', error);
-        alert('Upload failed: ' + error.message);
+        alert(_t('media.wraps_upload_failed') + ': ' + error.message);
         if (uploadBtn) uploadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
     }
@@ -608,7 +607,7 @@ async function uploadMultipleFiles() {
 function showUploadResults(results) {
     if (!results || results.length === 0) return;
 
-    let html = '<div style="margin-top: 15px; padding: 10px; background: var(--form-input-bg); border-radius: 4px;"><strong>Upload Results:</strong><ul style="margin: 10px 0 0 20px; padding: 0;">';
+    let html = '<div style="margin-top: 15px; padding: 10px; background: var(--form-input-bg); border-radius: 4px;"><strong>' + _t('media.wraps_upload_results') + '</strong><ul style="margin: 10px 0 0 20px; padding: 0;">';
 
     results.forEach(result => {
         const icon = result.success ? '✓' : '✗';
@@ -641,7 +640,7 @@ function initializeSimpleUpload() {
 
             const validation = await validateFile(file);
             if (!validation.valid) {
-                alert('File validation failed:\n• ' + validation.errors.join('\n• '));
+                alert(_t('media.wraps_validation_failed') + ':\n• ' + validation.errors.join('\n• '));
                 fileInput.value = '';
             }
         });
@@ -656,7 +655,7 @@ function initializeSimpleUpload() {
         const statusText = document.getElementById('wrapUploadStatus');
 
         if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please select a file to upload');
+            alert(_t('media.wraps_no_file_selected'));
             return;
         }
 
@@ -665,7 +664,7 @@ function initializeSimpleUpload() {
 
         // Disable upload button and show progress
         uploadBtn.disabled = true;
-        uploadBtn.textContent = '⏳ Uploading...';
+        uploadBtn.textContent = _t('media.wraps_uploading');
         progressDiv.style.display = 'block';
 
         // Create AJAX request with progress tracking
@@ -691,7 +690,7 @@ function initializeSimpleUpload() {
                 progressBar.style.width = '100%';
                 progressBar.textContent = '100%';
                 progressBar.style.background = '#28a745';
-                statusText.textContent = 'Upload complete! Redirecting...';
+                statusText.textContent = _t('media.wraps_upload_complete_redirect');
                 statusText.style.color = '#28a745';
 
                 // Redirect after short delay
@@ -700,20 +699,20 @@ function initializeSimpleUpload() {
                 }, 1000);
             } else {
                 progressBar.style.background = '#dc3545';
-                statusText.textContent = 'Upload failed: ' + xhr.statusText;
+                statusText.textContent = _t('media.wraps_upload_failed') + ': ' + xhr.statusText;
                 statusText.style.color = '#dc3545';
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '📤 Upload';
+                uploadBtn.textContent = _t('common.upload');
             }
         });
 
         // Handle errors
         xhr.addEventListener('error', function() {
             progressBar.style.background = '#dc3545';
-            statusText.textContent = 'Upload failed: Network error';
+            statusText.textContent = _t('media.wraps_upload_network_error');
             statusText.style.color = '#dc3545';
             uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Upload';
+            uploadBtn.textContent = _t('common.upload');
         });
 
         // Send the request

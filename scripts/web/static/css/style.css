@@ -833,6 +833,10 @@
    ============================================================ */
 
 @media (min-width: 1024px) {
+    body {
+        padding-left: var(--sidebar-collapsed);
+    }
+
     .sidebar-rail {
         display: flex;
     }
@@ -1096,7 +1100,6 @@ textarea {
 .main-content {
     max-width: 1200px;
     margin: 20px auto;
-    margin-left: calc(var(--sidebar-collapsed) + 20px);
     padding: 0 20px;
     display: flex;
     flex-direction: column;
@@ -2014,13 +2017,13 @@ details summary:hover {
     transition: background-color 0.3s ease;
 }
 
-details[open] summary span:first-of-type {
+.details-rotate-icon details[open] summary span:first-of-type {
     transform: rotate(90deg);
     display: inline-block;
     transition: transform 0.2s ease;
 }
 
-details summary span:first-of-type {
+.details-rotate-icon details summary span:first-of-type {
     transition: transform 0.2s ease;
 }
 
@@ -2773,7 +2776,8 @@ details summary span:first-of-type {
 }
 
 /* ── Button Components ── */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md, 8px); font-size: 0.875rem; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all 150ms ease; text-decoration: none; line-height: 1.4; min-height: 44px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md, 8px); font-size: 0.875rem; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all 150ms ease; text-decoration: none; line-height: 1.4; min-height: 44px; box-sizing: border-box; }
+.btn .nav-icon { flex-shrink: 0; width: 16px; height: 16px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--accent-primary, #3B82F6); color: #fff; border-color: var(--accent-primary, #3B82F6); }
 .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
@@ -2783,6 +2787,8 @@ details summary span:first-of-type {
 .btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
 .btn-ghost { background: transparent; color: var(--text-secondary); border: none; padding: 8px; }
 .btn-ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-secondary); }
+.btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-secondary); color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; font-weight: 500; transition: all 0.3s ease; border: 2px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
+.btn-back:hover { background: var(--accent-success, #4CAF50); color: #fff; border-color: var(--accent-success, #4CAF50); box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); transform: translateY(-1px); }
 .btn-sm { padding: 4px 10px; font-size: 0.8125rem; min-height: 36px; }
 .btn-icon { padding: 8px; min-width: 44px; min-height: 44px; justify-content: center; }
 .btn .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
@@ -2886,6 +2892,7 @@ details summary span:first-of-type {
     .archive-watchdog-actions {
         justify-content: center;
     }
+    .btn-back { width: 100%; justify-content: center; }
 }
 
 /* Storage progress bar */
@@ -2993,3 +3000,67 @@ details summary span:first-of-type {
     outline-offset: 2px;
     border-color: var(--ds-accent-primary);
 }
+
+/* === Filesystem Check cards === */
+.fsck-partitions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.fsck-partition-card {
+    padding: 14px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md, 8px);
+}
+.fsck-partition-card h4 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+}
+.last-check-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    min-height: 1.2em;
+}
+.fsck-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.fsck-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+}
+
+/* === Settings action row (multi-button toolbars) === */
+.settings-action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.settings-action-row .btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+}
+@media (max-width: 600px) {
+    .settings-action-row .btn { min-width: 120px; }
+}
+
+/* === Fsck status & history === */
+.fsck-status-container { display: none; }
+.fsck-status-container.info .fsck-status-message { background: var(--msg-info-bg); color: var(--msg-info-text); padding: 10px 14px; border-radius: 6px; }
+.fsck-status-container.success .fsck-status-message { background: var(--msg-success-bg); color: var(--msg-success-text); padding: 10px 14px; border-radius: 6px; }
+.fsck-status-container.warning .fsck-status-message { background: var(--msg-warning-bg); color: var(--msg-warning-text); padding: 10px 14px; border-radius: 6px; }
+.fsck-status-container.error .fsck-status-message { background: var(--msg-error-bg); color: var(--msg-error-text); padding: 10px 14px; border-radius: 6px; }
+.fsck-status-message { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.btn-cancel-fsck { padding: 4px 12px; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; font-size: 0.8rem; min-height: 32px; }
+.fsck-history-container { margin-top: 12px; }
+.fsck-history-container h4 { margin: 0 0 8px; font-size: 0.9rem; }
+.fsck-history-scroll { max-height: 260px; overflow-y: auto; }
+.fsck-history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.fsck-history-table th, .fsck-history-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
+.fsck-history-table th { color: var(--text-secondary); font-weight: 600; }

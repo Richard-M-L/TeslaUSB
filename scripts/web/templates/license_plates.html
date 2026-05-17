@@ -2,37 +2,37 @@
 {% block content %}
 <div class="container">
     {% include 'media_hub_nav.html' %}
-    <h2>Custom License Plates</h2>
+    <h2>{{ _('media.plates_title') }}</h2>
 
     {# iOS Safari Warning — file uploads only work in mobile Safari on iOS #}
     <div id="iosWarning" class="ios-warning" style="display: none;">
         <p>
             <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use></svg>
-            <strong>iOS Browser Limitation:</strong>
-            File uploading is only available through Safari when running on iOS. Please open this page in Safari to upload files.
+            <strong>{{ _('media.ios_warning_title') }}:</strong>
+            {{ _('media.ios_warning_body') }}
         </p>
-        <p>Note: Desktop browsers (Windows/Mac/Linux) work normally regardless of browser choice.</p>
+        <p>{{ _('media.ios_warning_desktop_note') }}</p>
     </div>
 
     {# Tesla Requirements Info #}
     <div class="info-box" style="margin-bottom: 20px;">
         <p>
             <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
-            <strong>Tesla License-Plate Requirements:</strong>
+            <strong>{{ _('media.plates_requirements') }}:</strong>
         </p>
         <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 13px; color: var(--text-secondary);">
-            <li><strong>Format:</strong> PNG only</li>
-            <li><strong>Size:</strong> {{ (max_file_size / 1024)|round(0)|int }} KB maximum</li>
-            <li><strong>Dimensions:</strong> {{ plate_width_na }}x{{ plate_height_na }} (North America) or {{ plate_width_eu }}x{{ plate_height_eu }} (Europe / Italy)</li>
-            <li><strong>Filename:</strong> {{ max_filename_length }} characters max, letters and numbers only (no spaces, dashes, or underscores)</li>
-            <li><strong>Count:</strong> Up to {{ max_plate_count }} plates at a time (currently: {{ plate_count }}/{{ max_plate_count }})</li>
+            <li><strong>{{ _('media.plates_req_format_label') }}:</strong> {{ _('media.plates_req_format_value') }}</li>
+            <li><strong>{{ _('common.size') }}:</strong> {{ _('media.plates_req_size_value', max_kb=(max_file_size / 1024)|round(0)|int) }}</li>
+            <li><strong>{{ _('media.dimensions_label') }}:</strong> {{ _('media.plates_req_dims_value', na_w=plate_width_na, na_h=plate_height_na, eu_w=plate_width_eu, eu_h=plate_height_eu) }}</li>
+            <li><strong>{{ _('common.filename') }}:</strong> {{ _('media.plates_req_filename_value', max_len=max_filename_length) }}</li>
+            <li><strong>{{ _('media.plates_req_count_label') }}:</strong> {{ _('media.plates_req_count_value', max=max_plate_count, count=plate_count) }}</li>
         </ul>
         <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
-            <strong>Usage:</strong> License plates appear in the in-car Background &rarr; Image selector under license plate config.
-            <a href="https://github.com/teslamotors/custom-wraps" target="_blank" rel="noopener" style="color: var(--text-link);">View Tesla's custom-wraps repository</a> (license-plate spec is documented in <a href="https://github.com/teslamotors/custom-wraps/issues/13" target="_blank" rel="noopener" style="color: var(--text-link);">issue #13</a>).
+            <strong>{{ _('media.plates_usage_label') }}</strong> {{ _('media.plates_usage_desc') }}
+            <a href="https://github.com/teslamotors/custom-wraps" target="_blank" rel="noopener" style="color: var(--text-link);">{{ _('media.plates_usage_link_repo') }}</a>{{ _('media.plates_usage_spec_suffix') }}<a href="https://github.com/teslamotors/custom-wraps/issues/13" target="_blank" rel="noopener" style="color: var(--text-link);">{{ _('media.plates_usage_link_issue') }}</a>{{ _('media.plates_usage_spec_close') }}
         </p>
         <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
-            Drop any image and we'll open a cropper to produce a Tesla-compliant PNG &mdash; no need to resize ahead of time.
+            {{ _('media.plates_cropper_desc') }}
         </p>
     </div>
 
@@ -42,9 +42,9 @@
             <div class="drag-drop-zone" id="dragDropZone" style="border: 3px dashed var(--border-input); border-radius: 8px; padding: 40px; text-align: center; background: var(--form-input-bg); cursor: pointer; transition: all 0.3s; margin-bottom: 20px; min-height: 44px;">
                 <div style="pointer-events: none;">
                     <svg class="drop-zone-icon" aria-hidden="true" style="width: 48px; height: 48px; color: var(--accent); display: block; margin: 0 auto 15px;"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-image"></use></svg>
-                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Drag &amp; drop image files here or click to browse</p>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">{{ _('media.plates_drop_hint') }}</p>
                     <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-                        Any image format &middot; we'll crop to {{ plate_width_na }}x{{ plate_height_na }} or {{ plate_width_eu }}x{{ plate_height_eu }} &middot; max {{ (max_file_size / 1024)|round(0)|int }} KB output
+                        {{ _('media.plates_drop_format_hint', na_w=plate_width_na, na_h=plate_height_na, eu_w=plate_width_eu, eu_h=plate_height_eu, max_kb=(max_file_size / 1024)|round(0)|int) }}
                     </p>
                 </div>
             </div>
@@ -66,27 +66,27 @@
 
         {# Mobile / fallback simple form (always rendered; JS hides it when desktop interface is active) #}
         <form method="post" action="{{ url_for('license_plates.upload_plate') }}" enctype="multipart/form-data" style="margin-bottom: 20px;" id="plateUploadForm">
-            <label for="plate_file" style="display: block; margin-bottom: 8px; font-weight: 600;">Upload Custom License Plate:</label>
+            <label for="plate_file" style="display: block; margin-bottom: 8px; font-weight: 600;">{{ _('media.plates_upload') }}</label>
             <p style="margin: 0 0 10px 0; font-size: 13px; color: var(--text-secondary);">
-                Any image &middot; we'll crop to {{ plate_width_na }}x{{ plate_height_na }} or {{ plate_width_eu }}x{{ plate_height_eu }} &middot; max {{ (max_file_size / 1024)|round(0)|int }} KB output
+                {{ _('media.plates_upload_format_hint', na_w=plate_width_na, na_h=plate_height_na, eu_w=plate_width_eu, eu_h=plate_height_eu, max_kb=(max_file_size / 1024)|round(0)|int) }}
             </p>
             <input type="file" name="plate_file" id="plate_file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" required
                    style="display: block; margin-bottom: 10px; padding: 10px; border: 2px solid var(--border-input); border-radius: 4px; background: var(--form-input-bg); width: 100%; max-width: 400px; font-size: 14px; color: var(--text-primary); min-height: 44px;">
-            <button type="submit" class="action-btn" id="plateUploadBtn" style="min-height: 44px;">Upload</button>
+            <button type="submit" class="action-btn" id="plateUploadBtn" style="min-height: 44px;">{{ _('common.upload') }}</button>
         </form>
 
         <div id="plateUploadProgress" style="display: none; margin-bottom: 20px;">
             <div style="background: var(--upload-progress-bg, var(--form-input-bg)); border-radius: 8px; padding: 15px; border: 2px solid var(--accent);">
                 <h4 style="margin: 0 0 10px 0; color: var(--accent);">
                     <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-upload"></use></svg>
-                    Uploading License Plate&hellip;
+                    {{ _('media.plates_uploading') }}
                 </h4>
                 <div style="background: var(--upload-progress-bar-bg, var(--bg-secondary)); border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px;">
                     <div id="plateProgressBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: var(--bg-primary); font-weight: bold; font-size: 14px;">
                         0%
                     </div>
                 </div>
-                <p id="plateUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Preparing upload&hellip;</p>
+                <p id="plateUploadStatus" style="margin: 0; font-size: 13px; color: var(--text-secondary);">{{ _('media.plates_preparing_upload') }}</p>
             </div>
         </div>
     </div>
@@ -97,11 +97,11 @@
         <table class="video-table" style="table-layout: fixed;">
             <thead>
                 <tr>
-                    <th style="width: 18%;">Preview</th>
-                    <th style="width: 28%;">Filename</th>
-                    <th style="width: 14%;">Dimensions</th>
-                    <th style="width: 12%;">Size</th>
-                    <th style="width: 28%;">Actions</th>
+                    <th style="width: 18%;">{{ _('common.preview') }}</th>
+                    <th style="width: 28%;">{{ _('common.filename') }}</th>
+                    <th style="width: 14%;">{{ _('media.dimensions_label') }}</th>
+                    <th style="width: 12%;">{{ _('common.size') }}</th>
+                    <th style="width: 28%;">{{ _('common.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,7 +110,7 @@
                     <td>
                         {# User-uploaded PNG rendered as a thumbnail — exempt from the SVG-only rule per design system #}
                         <img src="{{ url_for('license_plates.download_plate', partition=plate.partition_key, filename=plate.filename) }}"
-                             alt="License plate {{ plate.filename }}"
+                             alt="{{ _('media.plates_alt_plate') }} {{ plate.filename }}"
                              style="max-width: 120px; max-height: 60px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-secondary);"
                              loading="lazy">
                     </td>
@@ -131,11 +131,11 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <a href="{{ url_for('license_plates.download_plate', partition=plate.partition_key, filename=plate.filename) }}"
                                class="action-btn" style="min-height: 44px; display: inline-flex; align-items: center;">
-                                Download
+                                {{ _('common.download') }}
                             </a>
                             <form method="post" action="{{ url_for('license_plates.delete_plate', partition=plate.partition_key, filename=plate.filename) }}" style="display: inline; margin: 0;"
-                                  onsubmit="return confirm('Are you sure you want to delete {{ plate.filename }}?');">
-                                <button type="submit" class="action-btn danger" style="min-height: 44px;">Delete</button>
+                                  onsubmit="return confirm(_t('media.plates_confirm_delete'));">
+                                <button type="submit" class="action-btn danger" style="min-height: 44px;">{{ _('common.delete') }}</button>
                             </form>
                         </div>
                     </td>
@@ -151,7 +151,7 @@
         <div class="mobile-card plate-card"{% if not plate.compliant %} style="border-color: var(--accent-danger, var(--border-input));"{% endif %}>
             <div style="text-align: center; margin-bottom: 8px;">
                 <img src="{{ url_for('license_plates.download_plate', partition=plate.partition_key, filename=plate.filename) }}"
-                     alt="License plate {{ plate.filename }}"
+                     alt="{{ _('media.plates_alt_plate') }} {{ plate.filename }}"
                      style="max-width: 100%; max-height: 80px; border: 1px solid var(--border-input); border-radius: 4px; background: var(--bg-secondary);"
                      loading="lazy">
             </div>
@@ -168,23 +168,23 @@
             {% endif %}
             <div class="mobile-card-info">
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Dimensions:</span>
+                    <span class="mobile-card-info-label">{{ _('media.dimensions_label') }}:</span>
                     <span class="mobile-card-info-value">{{ plate.dimensions }}</span>
                 </div>
                 <div class="mobile-card-info-row">
-                    <span class="mobile-card-info-label">Size:</span>
+                    <span class="mobile-card-info-label">{{ _('common.size') }}:</span>
                     <span class="mobile-card-info-value">{{ plate.size_str }}</span>
                 </div>
             </div>
             <div class="mobile-card-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <a href="{{ url_for('license_plates.download_plate', partition=plate.partition_key, filename=plate.filename) }}"
                    class="action-btn" style="flex: 1; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
-                    Download
+                    {{ _('common.download') }}
                 </a>
                 <form method="post" action="{{ url_for('license_plates.delete_plate', partition=plate.partition_key, filename=plate.filename) }}"
-                      onsubmit="return confirm('Are you sure you want to delete {{ plate.filename }}?');"
+                      onsubmit="return confirm(_t('media.plates_confirm_delete'));"
                       style="flex: 1; margin: 0; display: flex;">
-                    <button type="submit" class="action-btn danger" style="width: 100%; min-height: 44px;">Delete</button>
+                    <button type="submit" class="action-btn danger" style="width: 100%; min-height: 44px;">{{ _('common.delete') }}</button>
                 </form>
             </div>
         </div>
@@ -192,9 +192,9 @@
     </div>
     {% else %}
     <div class="info-box">
-        <p>No license-plate files found in the LicensePlate folder.</p>
+        <p>{{ _('media.plates_no_plates') }}</p>
         <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
-            Upload a PNG to set a custom background image behind the license plate in your Tesla.
+            {{ _('media.plates_desc') }}
         </p>
     </div>
     {% endif %}
@@ -210,7 +210,7 @@
                 <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-image"></use></svg>
                 {{ _("media.plates_crop_title") }}
             </h3>
-            <button type="button" id="cropperCloseBtn" class="action-btn" aria-label="Close cropper" style="min-width: 44px; min-height: 44px;">
+            <button type="button" id="cropperCloseBtn" class="action-btn" aria-label="{{ _('media.plates_close_cropper') }}" style="min-width: 44px; min-height: 44px;">
                 <svg class="inline-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-x"></use></svg>
             </button>
         </header>
@@ -222,11 +222,11 @@
                 <legend style="font-size: 13px; font-weight: 600; padding: 0 6px;">{{ _("media.plates_region") }}</legend>
                 <label style="display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; min-height: 44px; cursor: pointer;">
                     <input type="radio" name="plateRegion" value="na" id="cropperRegionNa" checked style="width: 18px; height: 18px;">
-                    <span>North America ({{ plate_width_na }}&times;{{ plate_height_na }})</span>
+                    <span>{{ _('media.plates_region_na') }} ({{ plate_width_na }}&times;{{ plate_height_na }})</span>
                 </label>
                 <label style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer;">
                     <input type="radio" name="plateRegion" value="eu" id="cropperRegionEu" style="width: 18px; height: 18px;">
-                    <span>Europe / Italy ({{ plate_width_eu }}&times;{{ plate_height_eu }})</span>
+                    <span>{{ _('media.plates_region_eu') }} ({{ plate_width_eu }}&times;{{ plate_height_eu }})</span>
                 </label>
             </fieldset>
 
@@ -240,7 +240,7 @@
             </div>
 
             <div style="margin-top: 14px;">
-                <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: var(--text-primary);">Live preview (actual size):</p>
+                <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ _('media.plates_live_preview') }}</p>
                 <div style="background: var(--bg-secondary); padding: 8px; border-radius: 4px; border: 1px solid var(--border-input); display: inline-block;">
                     <canvas id="cropperPreview" style="display: block; image-rendering: auto; background: var(--bg-primary);"></canvas>
                 </div>
@@ -249,7 +249,7 @@
         </div>
 
         <footer class="cropper-footer" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px;">
-            <button type="button" id="cropperCancelBtn" class="action-btn" style="min-height: 44px;">Cancel</button>
+            <button type="button" id="cropperCancelBtn" class="action-btn" style="min-height: 44px;">{{ _('common.cancel') }}</button>
             <button type="button" id="cropperConfirmBtn" class="action-btn" style="min-height: 44px;">{{ _("media.plates_use_image") }}</button>
         </footer>
     </div>
@@ -399,23 +399,22 @@ function initializeDragDrop() {
 async function handleSelectedFiles(files) {
     const remainingSlots = MAX_PLATE_COUNT - CURRENT_PLATE_COUNT - selectedFiles.length;
     if (remainingSlots <= 0) {
-        alert('Maximum of ' + MAX_PLATE_COUNT + ' license plates allowed. ' +
-              'You already have ' + CURRENT_PLATE_COUNT + ' plates.');
+        alert(_t('media.plates_too_many', { max: MAX_PLATE_COUNT }) + ' ' +
+              _t('media.plates_current_count', { count: CURRENT_PLATE_COUNT }));
         return;
     }
 
     // Filter to images only.
     const images = files.filter(f => f.type.startsWith('image/'));
     if (images.length === 0) {
-        alert('Please select image files (PNG, JPEG, WebP, GIF, BMP).');
+        alert(_t('media.plates_invalid_format'));
         return;
     }
 
     let added = 0;
     for (const file of images) {
         if (added >= remainingSlots) {
-            alert('Only ' + remainingSlots + ' slot(s) remaining. ' +
-                  'Some files were not added.');
+            alert(_t('media.plates_slots_remaining', { slots: remainingSlots }));
             break;
         }
         // Each file goes through the cropper (or bypass if already exact dims).
@@ -459,7 +458,7 @@ async function processOneFile(file) {
     try {
         img = await loadImageFromFile(file);
     } catch (e) {
-        alert('Could not read ' + file.name + ': ' + e.message);
+        alert(_t('media.plates_could_not_read') + ' ' + file.name + ': ' + e.message);
         return null;
     }
 
@@ -552,9 +551,8 @@ function renderFilesList() {
 
         const meta = document.createElement('span');
         meta.style.cssText = 'color: var(--text-secondary); font-size: 12px;';
-        meta.textContent = ' (' + (item.blob.size / 1024).toFixed(1) + ' KB' +
-            (item.dimensions ? ', ' + item.dimensions.width + 'x' + item.dimensions.height : '') +
-            ')';
+        const dimStr = item.dimensions ? ', ' + item.dimensions.width + 'x' + item.dimensions.height : '';
+        meta.textContent = _t('media.plates_meta_info', { size_kb: (item.blob.size / 1024).toFixed(1), dims: dimStr });
 
         left.appendChild(icon);
         left.appendChild(name);
@@ -562,7 +560,7 @@ function renderFilesList() {
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.setAttribute('aria-label', 'Remove ' + item.name);
+        removeBtn.setAttribute('aria-label', _t('media.plates_remove_file') + ' ' + item.name);
         removeBtn.style.cssText = 'background: none; border: none; cursor: pointer; ' +
             'color: var(--accent-danger, var(--text-primary)); padding: 8px; ' +
             'min-width: 44px; min-height: 44px; flex-shrink: 0;';
@@ -595,7 +593,7 @@ async function uploadAllFiles() {
         (validationResults.get(item.name) || {}).valid
     );
     if (valid.length === 0) {
-        alert('No valid files to upload. Please fix validation errors first.');
+        alert(_t('media.plates_no_valid_files'));
         return;
     }
 
@@ -612,7 +610,7 @@ async function uploadAllFiles() {
         progressDiv.style.display = 'block';
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        statusText.textContent = 'Preparing upload...';
+        statusText.textContent = _t('media.plates_preparing_upload');
     }
 
     const formData = new FormData();
@@ -626,9 +624,7 @@ async function uploadAllFiles() {
         const pct = Math.round((e.loaded / e.total) * 100);
         progressBar.style.width = pct + '%';
         progressBar.textContent = pct + '%';
-        statusText.textContent = 'Uploading ' + valid.length + ' file(s)... (' +
-            (e.loaded / 1024).toFixed(1) + ' KB / ' +
-            (e.total / 1024).toFixed(1) + ' KB)';
+        statusText.textContent = _t('media.plates_uploading_progress', { count: valid.length, loaded_kb: (e.loaded / 1024).toFixed(1), total_kb: (e.total / 1024).toFixed(1) });
     });
     xhr.addEventListener('load', function() {
         if (xhr.status === 200) {
@@ -637,16 +633,16 @@ async function uploadAllFiles() {
                 progressBar.style.width = '100%';
                 progressBar.textContent = '100%';
                 progressBar.style.background = 'var(--accent-success, var(--accent))';
-                statusText.textContent = resp.summary || 'Upload complete';
+                statusText.textContent = resp.summary || _t('media.plates_upload_complete');
                 statusText.style.color = 'var(--accent-success, var(--text-primary))';
                 setTimeout(function() { window.location.reload(); }, 1500);
             } catch (e) {
-                statusText.textContent = 'Upload complete. Reloading...';
+                statusText.textContent = _t('media.plates_upload_complete_reload');
                 setTimeout(function() { window.location.reload(); }, 1000);
             }
         } else {
             progressBar.style.background = 'var(--accent-danger, var(--accent))';
-            statusText.textContent = 'Upload failed: ' + xhr.statusText;
+            statusText.textContent = _t('media.plates_upload_failed') + ': ' + xhr.statusText;
             statusText.style.color = 'var(--accent-danger, var(--text-primary))';
             if (uploadBtn) uploadBtn.disabled = false;
             if (clearBtn) clearBtn.disabled = false;
@@ -654,7 +650,7 @@ async function uploadAllFiles() {
     });
     xhr.addEventListener('error', function() {
         progressBar.style.background = 'var(--accent-danger, var(--accent))';
-        statusText.textContent = 'Upload failed: network error';
+        statusText.textContent = _t('media.plates_upload_network_error');
         statusText.style.color = 'var(--accent-danger, var(--text-primary))';
         if (uploadBtn) uploadBtn.disabled = false;
         if (clearBtn) clearBtn.disabled = false;
@@ -675,7 +671,7 @@ function initializeSimpleUpload() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         if (!fileInput.files || !fileInput.files[0]) {
-            alert('Please select an image file.');
+            alert(_t('media.plates_no_file_selected'));
             return;
         }
         const file = fileInput.files[0];
@@ -683,7 +679,7 @@ function initializeSimpleUpload() {
         if (!item) return;
         const v = validatePlateBlob(item);
         if (!v.valid) {
-            alert('Cannot upload: ' + v.errors.join('; '));
+            alert(_t('media.plates_validation_failed') + ': ' + v.errors.join('; '));
             return;
         }
         // Build a one-file FormData and submit to the single-file endpoint.
@@ -703,7 +699,7 @@ function initializeSimpleUpload() {
             // the flash message.
             window.location.reload();
         } catch (err) {
-            alert('Upload failed: ' + err.message);
+            alert(_t('media.plates_upload_failed') + ': ' + err.message);
             if (btn) btn.disabled = false;
         }
     });
@@ -743,9 +739,7 @@ function openCropper(file, img) {
 
         const info = document.getElementById('cropperFileInfo');
         if (info) {
-            info.textContent = file.name + ' — source ' + img.naturalWidth +
-                'x' + img.naturalHeight + ' (' +
-                (file.size / 1024).toFixed(1) + ' KB)';
+            info.textContent = file.name + ' — ' + _t('media.plates_source_info', { w: img.naturalWidth, h: img.naturalHeight, size_kb: (file.size / 1024).toFixed(1) });
         }
 
         setupCropperCanvas();
@@ -901,10 +895,7 @@ function renderPreview() {
 function updateOutputInfo() {
     const info = document.getElementById('cropperOutputInfo');
     if (!info) return;
-    info.textContent = 'Output ' + cropperState.target.width + 'x' +
-        cropperState.target.height + ' PNG, filename ' +
-        cropperState.fileBaseName + '.png. Max ' +
-        (MAX_FILE_SIZE / 1024).toFixed(0) + ' KB.';
+    info.textContent = _t('media.plates_output_info', { w: cropperState.target.width, h: cropperState.target.height, name: cropperState.fileBaseName, max_kb: (MAX_FILE_SIZE / 1024).toFixed(0) });
 }
 
 // ---------------------------------------------------------------
@@ -1086,7 +1077,7 @@ function confirmCrop() {
     );
     out.toBlob(function(blob) {
         if (!blob) {
-            alert('Could not create the cropped PNG.');
+            alert(_t('media.plates_could_not_create_png'));
             return;
         }
         const finalName = cropperState.fileBaseName + '.png';

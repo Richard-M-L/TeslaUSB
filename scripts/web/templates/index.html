@@ -144,7 +144,7 @@
                                  display:inline-block; flex-shrink:0;
                                  background:var(--text-secondary);"></span>
                     <span id="system-health-overall-text">
-                        Loading…
+                        {{ _("index.system_health_loading") }}
                     </span>
                 </p>
                 <div id="system-health-rows"
@@ -157,13 +157,13 @@
                 <p id="system-health-error" hidden
                    style="font-size:0.85rem; color:var(--msg-error-text);
                           margin:6px 0 0;">
-                    System Health probe failed —
+                    {{ _("index.system_health_probe_failed_msg") }}
                     <button type="button" class="btn btn-ghost"
                             id="system-health-retry-btn"
-                            aria-label="Retry system health probe"
+                            aria-label="{{ _('index.system_health_retry_btn') }}"
                             style="min-height:44px; min-width:44px;
                                    padding:0 14px; margin-left:6px;
-                                   font-size:0.9rem;">Retry</button>
+                                   font-size:0.9rem;">{{ _("index.system_health_retry_btn") }}</button>
                 </p>
             </div>
         </div>
@@ -186,17 +186,17 @@
                 {% endif %}">
                 <button type="button" onclick="dismissWifiStatus()"
                         style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.7; color: inherit;"
-                        title="Dismiss">&times;</button>
+                        title="{{ _('index.dismiss') }}">&times;</button>
                 <div style="padding-right: 30px;">
                     <strong>
                         {% if wifi_change_status.success %}
-                            ✓ WiFi Connection Updated
+                            {{ _("index.wifi_alert_updated") }}
                         {% elif wifi_change_status.action == 'reverted' %}
-                            ⚠ WiFi Connection Reverted
+                            {{ _("index.wifi_alert_reverted") }}
                         {% elif wifi_change_status.action == 'ap_started' %}
-                            WiFi Connection Failed — AP Started
+                            {{ _("index.wifi_alert_ap_started") }}
                         {% else %}
-                            WiFi Connection Failed
+                            {{ _("index.wifi_alert_failed") }}
                         {% endif %}
                     </strong>
                     <div style="margin-top: 4px; font-size: 0.95em;">{{ wifi_change_status.message }}</div>
@@ -209,31 +209,31 @@
 
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                 <p style="font-size:0.85em;color:var(--text-secondary);margin:0">{{ _("index.wifi_priority_hint") }}</p>
-                <button class="edit-btn" onclick="scanAndRefreshNetworks()" id="btnWifiScan" style="padding:4px 10px;font-size:0.85em;white-space:nowrap">Scan</button>
+                <button class="edit-btn" onclick="scanAndRefreshNetworks()" id="btnWifiScan" style="padding:4px 10px;font-size:0.85em;white-space:nowrap">{{ _("index.scan") }}</button>
             </div>
             <div id="savedNetworksList">
                 <div style="text-align:center;padding:12px;color:var(--text-secondary)">{{ _("common.loading") }}</div>
             </div>
             <div style="margin-top:12px">
-                <button class="edit-btn" onclick="toggleAddNetwork()" id="btnAddNetwork" style="padding:4px 10px;font-size:0.85em">+ Add Network</button>
+                <button class="edit-btn" onclick="toggleAddNetwork()" id="btnAddNetwork" style="padding:4px 10px;font-size:0.85em">{{ _("index.add_network") }}</button>
             </div>
             <div id="addNetworkPanel" style="display:none;margin-top:12px;padding:12px;background-color:var(--bg-info);border:1px solid var(--border-color);border-radius:var(--radius-md,8px)">
                 <div style="margin-bottom:8px">
-                    <label for="newWifiSSID" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">SSID</label>
-                    <input type="text" id="newWifiSSID" maxlength="32" placeholder="Network name" list="wifiScanResults"
+                    <label for="newWifiSSID" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">{{ _("index.ssid") }}</label>
+                    <input type="text" id="newWifiSSID" maxlength="32" placeholder="{{ _('index.network_name') }}" list="wifiScanResults"
                            class="settings-form-input" style="max-width:300px">
                     <datalist id="wifiScanResults"></datalist>
                 </div>
                 <div style="margin-bottom:8px">
-                    <label for="newWifiPassword" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">Password</label>
-                    <input type="password" id="newWifiPassword" minlength="8" maxlength="63" placeholder="Password (empty for open)"
+                    <label for="newWifiPassword" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">{{ _("index.password") }}</label>
+                    <input type="password" id="newWifiPassword" minlength="8" maxlength="63" placeholder="{{ _('index.password_empty_for_open') }}"
                            class="settings-form-input" style="max-width:300px">
                 </div>
-                <button class="edit-btn" onclick="addWifiNetwork()" id="addWifiBtn" style="padding:4px 10px;font-size:0.85em">Connect</button>
+                <button class="edit-btn" onclick="addWifiNetwork()" id="addWifiBtn" style="padding:4px 10px;font-size:0.85em">{{ _("index.connect") }}</button>
             </div>
 
             <div style="margin-top: 8px; font-size: 0.9em; color: var(--text-secondary);">
-                <strong>How it works:</strong> The Pi will attempt to connect to the new network. Thanks to concurrent AP mode, you can remain connected to the fallback AP during the transition. If the new WiFi network is unreachable or credentials are incorrect, you'll maintain access via the AP.
+                {{ _("index.wifi_how_it_works_title") }} {{ _("index.wifi_how_it_works") }}
             </div>
         </div>
     </details>
@@ -243,50 +243,50 @@
         <summary>{{ _('index.access_point') }}</summary>
         <div class="section-content">
             {% if ap_status.error %}
-                <div style="color: var(--error-text);">AP status unavailable ({{ ap_status.error }})</div>
+                <div style="color: var(--error-text);">{{ _("index.ap_status_unavailable", error=ap_status.error) }}</div>
             {% else %}
                 <div style="margin-bottom: 12px;">
-                    <div>Status: <strong>{{ 'Active' if ap_status.ap_active else 'Inactive' }}</strong> | Mode: <strong>{{ 'AP On' if ap_status.force_mode == 'force_on' else 'Auto' }}</strong></div>
-                    <div style="margin-top: 4px;">SSID: <code>{{ ap_status.ssid }}</code> | IP: <code>{{ ap_status.static_ip }}</code> | DHCP: <code>{{ ap_status.dhcp_range_start }} - {{ ap_status.dhcp_range_end }}</code></div>
+                    <div>{{ _("index.status_label") }}: <strong>{{ _("index.active") if ap_status.ap_active else _("index.inactive") }}</strong> | {{ _("index.mode") }}: <strong>{{ _("index.ap_on") if ap_status.force_mode == 'force_on' else _("index.auto") }}</strong></div>
+                    <div style="margin-top: 4px;">{{ _("index.ap_ssid_label") }} <code>{{ ap_status.ssid }}</code> | IP: <code>{{ ap_status.static_ip }}</code> | DHCP: <code>{{ ap_status.dhcp_range_start }} - {{ ap_status.dhcp_range_end }}</code></div>
                     {% if ap_status.allow_concurrent %}
-                        <div style="font-size: 0.9em; color: var(--text-secondary); margin-top: 4px;">The AP runs on a virtual interface, allowing simultaneous WiFi and AP access.</div>
+                        <div style="font-size: 0.9em; color: var(--text-secondary); margin-top: 4px;">{{ _("index.concurrent_ap_note") }}</div>
                     {% endif %}
                 </div>
 
                 <div style="padding: 12px; background-color: var(--bg-info); border: 1px solid var(--border-color); border-radius: var(--radius-md, 8px); margin-bottom: 12px;">
-                    <strong style="color: var(--text-primary);">AP Configuration:</strong>
+                    <strong style="color: var(--text-primary);">{{ _("index.ap_config_title") }}</strong>
                     <form method="post" action="{{ url_for('mode_control.configure_ap') }}" id="apConfigForm" style="margin-top: 8px;">
                         <div style="margin-bottom: 8px;">
-                            <label for="ap_ssid" style="display: inline-block; width: 100px; color: var(--text-primary);">SSID:</label>
+                            <label for="ap_ssid" style="display: inline-block; width: 100px; color: var(--text-primary);">{{ _("index.ap_ssid_label") }}</label>
                             <input type="text" id="ap_ssid" name="ssid" value="{{ ap_config.ssid }}" maxlength="32" required
                                    class="settings-form-input" style="max-width:300px">
-                            <span style="font-size: 0.85em; color: var(--text-secondary);">(1-32 chars)</span>
+                            <span style="font-size: 0.85em; color: var(--text-secondary);">{{ _("index.ap_chars_hint_1") }}</span>
                         </div>
                         <div style="margin-bottom: 8px;">
-                            <label for="ap_passphrase" style="display: inline-block; width: 100px; color: var(--text-primary);">Password:</label>
+                            <label for="ap_passphrase" style="display: inline-block; width: 100px; color: var(--text-primary);">{{ _("index.ap_password_label") }}</label>
                             <input type="password" id="ap_passphrase" name="passphrase" value="{{ ap_config.passphrase }}" minlength="8" maxlength="63"
                                    class="settings-form-input" style="max-width:300px">
-                            <button type="button" onclick="togglePassword(this)" style="min-height:44px; padding: 8px 12px; margin-left: 4px; background-color: var(--btn-info-bg); color: var(--btn-info-text); border: none; border-radius: 3px; cursor: pointer;">Show</button>
-                            <span style="font-size: 0.85em; color: var(--text-secondary);">(8-63 chars)</span>
+                            <button type="button" onclick="togglePassword(this)" style="min-height:44px; padding: 8px 12px; margin-left: 4px; background-color: var(--btn-info-bg); color: var(--btn-info-text); border: none; border-radius: 3px; cursor: pointer;">{{ _("index.show") }}</button>
+                            <span style="font-size: 0.85em; color: var(--text-secondary);">{{ _("index.ap_chars_hint_2") }}</span>
                         </div>
-                        <button type="submit" class="edit-btn" id="updateApBtn" onclick="return confirm('Changing AP credentials will disconnect all connected clients. Continue?')">Update AP Credentials</button>
+                        <button type="submit" class="edit-btn" id="updateApBtn" onclick="return confirm(_t('index.ap_change_confirm'))">{{ _("index.update_ap_btn") }}</button>
                     </form>
                 </div>
 
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                     <form method="post" action="{{ url_for('mode_control.force_ap') }}" id="startApForm" style="margin: 0;">
                         <input type="hidden" name="mode" value="on">
-                        <button type="submit" class="edit-btn" id="startApBtn">Start AP Now</button>
+                        <button type="submit" class="edit-btn" id="startApBtn">{{ _("index.start_ap_btn") }}</button>
                     </form>
                     <form method="post" action="{{ url_for('mode_control.force_ap') }}" id="stopApForm" style="margin: 0;">
                         <input type="hidden" name="mode" value="off">
-                        <button type="submit" class="present-btn" id="stopApBtn">Stop AP</button>
+                        <button type="submit" class="present-btn" id="stopApBtn">{{ _("index.stop_ap_btn") }}</button>
                     </form>
                 </div>
 
                 <div style="font-size: 0.9em; color: var(--text-secondary);">
-                    <strong>Auto mode:</strong> AP automatically starts when WiFi is unavailable and stops when WiFi is restored.<br>
-                    <strong>AP On mode:</strong> AP stays on continuously regardless of WiFi status (activated by "Start AP Now" button).
+                    {{ _("index.ap_auto_desc") }}<br>
+                    {{ _("index.ap_on_desc") }}
                 </div>
             {% endif %}
         </div>
@@ -312,17 +312,14 @@
         <summary>{{ _('index.storage_retention') }}</summary>
         <div class="section-content">
             <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 12px">
-                Controls how long archived dashcam clips are kept on the Pi's SD card and how
-                aggressively the cleanup pass runs. Changes take effect on the next cleanup pass —
-                no service restart needed.
+                {{ _("index.retention_description") }}
             </p>
 
             <div id="sr-warning-banner" hidden
                  style="margin:0 0 14px; padding:10px 14px; border-radius:8px;
                         background:var(--msg-warning-bg); color:var(--msg-warning-text);
                         border:1px solid var(--msg-warning-text); font-size:0.85rem;">
-                <strong>Heads up:</strong> short retention may delete footage of incidents that take time
-                to discover (e.g., scratches noticed days later).
+                {{ _("index.heads_up_short_retention") }}
             </div>
 
             <div id="sr-error-banner" hidden
@@ -333,73 +330,67 @@
             <form id="storage-retention-form" onsubmit="return false;">
                 <div class="settings-form-grid">
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Default retention (days)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.default_retention_label") }}</strong></label>
                         <input type="number" name="default_retention_days" id="sr-default-retention"
                                min="1" max="3650" value="30"
                                class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Applied to ArchivedClips and any folder without an override below.
+                            {{ _("index.default_retention_desc") }}
                         </p>
                     </div>
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Free-space target (% of SD card)</strong>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.free_space_target_label") }}</strong>
                             <span style="font-weight:normal; color:var(--text-secondary)">
-                                — Phase 5 (preview)
+                                {{ _("index.free_space_target_phase5") }}
                             </span>
                         </label>
                         <input type="number" name="free_space_target_pct" id="sr-free-space-target"
                                min="5" max="50" value="10"
                                class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Saved now; not yet enforced by the prune. Phase 5 will use this to keep at
-                            least the requested free percentage.
+                            {{ _("index.free_space_target_desc") }}
                         </p>
                     </div>
                 </div>
 
                 <div class="settings-form-grid">
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Maximum archive size (GB)</strong>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.max_archive_label") }}</strong>
                             <span style="font-weight:normal; color:var(--text-secondary)">
-                                — Phase 5 (preview)
+                                {{ _("index.max_archive_phase5") }}
                             </span>
                         </label>
                         <input type="number" name="max_archive_size_gb" id="sr-max-archive"
                                min="0" max="10000" value="0"
                                class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Saved now; not yet enforced by the prune. Phase 5 will treat this as a hard
-                            cap. Leave at <strong>0</strong> to use only time-based retention.
+                            {{ _("index.max_archive_desc") }}
                         </p>
                     </div>
                     <div class="form-group">
-                        <label style="font-size:0.85rem"><strong>Short-retention warning (days)</strong></label>
+                        <label style="font-size:0.85rem"><strong>{{ _("index.short_retention_warning_label") }}</strong></label>
                         <input type="number" name="short_retention_warning_days" id="sr-short-warning"
                                min="1" max="365" value="7"
                                class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Show the yellow warning banner when default retention drops below this.
+                            {{ _("index.short_retention_warning_desc") }}
                         </p>
                     </div>
                 </div>
 
                 <details style="margin-bottom:14px; border:1px solid var(--border-color); border-radius:8px; padding:10px 14px">
-                    <summary style="cursor:pointer; font-weight:600">Per-folder overrides (advanced)</summary>
+                    <summary style="cursor:pointer; font-weight:600">{{ _("index.per_folder_overrides") }}</summary>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:8px 0 12px">
-                        Override retention for individual Tesla folders. Leave a row disabled to inherit the default.
-                        ArchivedClips lives on the Pi's SD card; the others (SentryClips, SavedClips, RecentClips,
-                        EncryptedClips) are inside the USB image that Tesla writes to.
+                        {{ _("index.per_folder_overrides_desc") }}
                     </p>
                     <div id="sr-policy-rows" style="display:flex; flex-direction:column; gap:10px">
                         <!-- rows rendered by JS from /api/cleanup/status -->
                     </div>
                 </details>
 
-                <div style="display:flex; gap:10px; flex-wrap:wrap">
-                    <button type="button" id="sr-save-btn" class="btn btn-primary"
-                            style="flex:1; min-width:160px">{{ _("index.save_retention_btn") }}</button>
-                    <button type="button" id="sr-run-now-btn" class="btn btn-secondary"
-                            style="flex:1; min-width:160px">{{ _("index.run_cleanup_btn") }}</button>
+                <div class="settings-action-row">
+                    <button type="button" id="sr-save-btn" class="btn btn-primary">{{ _("index.save_retention_btn") }}</button>
+                    <button type="button" id="sr-run-now-btn" class="btn btn-secondary">{{ _("index.run_cleanup_btn") }}</button>
                 </div>
 
                 <div style="margin-top:14px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary)">
@@ -407,10 +398,7 @@
                         {{ _("index.reclaim_stationary_title") }}
                     </div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 10px">
-                        Deletes archived RecentClips with no GPS movement (parked Sentry-mode footage,
-                        no driving, no events). Saved/Sentry event clips are preserved even if a
-                        RecentClips copy of the same recording exists. This can free a lot of space —
-                        on a typical install, RecentClips dominates the SD card.
+                        {{ _("index.reclaim_stationary_desc") }}
                     </p>
                     <button type="button" id="sr-reclaim-stationary-btn" class="btn btn-secondary"
                             style="width:100%; min-width:160px">{{ _("index.reclaim_stationary_btn") }}</button>
@@ -421,10 +409,7 @@
                         {{ _("index.stationary_skipped_title") }}
                     </div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 10px">
-                        The archive worker peeks at each new RecentClips file and skips
-                        copying it to the SD card if no GPS movement is detected — this
-                        keeps overnight Sentry-mode parking footage from filling the SD
-                        card. Sentry/Saved event clips are <strong>never</strong> skipped.
+                        {{ _("index.stationary_skipped_desc") }}
                     </p>
                     <div id="sr-skip-stationary-status" style="font-size:0.85rem; color:var(--text-secondary)">
                         {{ _("index.skipped_last_24h") }}: <strong><span id="sr-skip-stationary-count">—</span></strong>
@@ -436,12 +421,12 @@
             </form>
 
             <div id="sr-last-run" style="margin-top:14px; padding:10px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary); font-size:0.85rem">
-                <strong>Last cleanup:</strong>
+                <strong>{{ _("index.last_cleanup") }}:</strong>
                 <span id="sr-last-run-text">—</span>
             </div>
 
             <div id="sr-disk-usage" hidden style="margin-top:10px; font-size:0.8rem; color:var(--text-secondary)">
-                <strong>SD card:</strong> <span id="sr-disk-text">—</span>
+                <strong>{{ _("index.sd_card_label") }}:</strong> <span id="sr-disk-text">—</span>
             </div>
         </div>
     </details>
@@ -460,8 +445,7 @@
                         <strong>{{ _("index.enable_archival_label") }}</strong>
                     </label>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0 26px">
-                        When enabled, clips are automatically copied from the USB drive to the SD card every 2 minutes.
-                        Disable this if you don't need local copies of your dashcam footage.
+                        {{ _("index.enable_archival_desc") }}
                     </p>
                 </div>
                 <div class="settings-form-grid">
@@ -469,14 +453,14 @@
                         <label style="font-size:0.85rem"><strong>{{ _("index.retention_days_label") }}</strong></label>
                         <input type="number" name="retention_days" value="{{ cfg_archive.retention_days }}" min="1" max="365" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Archived clips older than this are automatically deleted to free up SD card space.
+                            {{ _("index.retention_days_desc") }}
                         </p>
                     </div>
                     <div class="form-group">
                         <label style="font-size:0.85rem"><strong>{{ _("index.min_free_space_label") }}</strong></label>
                         <input type="number" name="min_free_space_gb" value="{{ cfg_archive.min_free_space_gb }}" min="1" max="100" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Archival stops when SD card free space drops below this. Protects the OS and other services from running out of disk.
+                            {{ _("index.min_free_space_desc") }}
                         </p>
                     </div>
                 </div>
@@ -537,22 +521,19 @@
                 <strong>{{ _("index.last_error") }}:</strong>
                 <span id="archive-last-error"></span>
             </p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
+            <div class="settings-action-row" style="margin-top:12px">
                 <button type="button" class="btn btn-primary"
-                        id="archive-run-now-btn"
-                        style="min-height:44px">
+                        id="archive-run-now-btn">
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-refresh-cw"></use></svg>
                     {{ _('index.run_archive_now') }}
                 </button>
-                <a href="{{ url_for('jobs.failed_jobs_page') }}"
-                   class="btn btn-secondary"
-                   style="min-height:44px; text-decoration:none;">
-                    <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
-                    {{ _('index.failed_jobs') }}
-                </a>
                 <button type="button" class="btn btn-secondary"
-                        id="archive-view-dl-btn"
-                        style="min-height:44px">
+                        onclick="window.location.href='{{ url_for('jobs.failed_jobs_page') }}'">
+                    <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-alert-triangle"></use></svg>
+                    {{ _('index.failed_jobs') }}
+                </button>
+                <button type="button" class="btn btn-secondary"
+                        id="archive-view-dl-btn">
                     <svg class="nav-icon" aria-hidden="true"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-info"></use></svg>
                     {{ _("index.archive_dead_letters_btn") }}
                 </button>
@@ -566,7 +547,7 @@
                             aria-label="{{ _('index.close_dl_list') }}">×</button>
                 </div>
                 <div id="archive-dl-content" style="font-size:0.85rem; max-height:300px; overflow:auto">
-                    Loading…
+                    {{ _("common.loading") }}
                 </div>
             </div>
         </div>
@@ -589,8 +570,8 @@
                          style="width:0%"></div>
                 </div>
                 <div class="storage-progress-text">
-                    <span id="storage-used-text">— used</span>
-                    <span id="storage-free-text">— free</span>
+                    <span id="storage-used-text">— {{ _("index.used_label") }}</span>
+                    <span id="storage-free-text">— {{ _("index.free_label") }}</span>
                 </div>
             </div>
             <div class="archive-status-grid" style="margin-bottom:12px">
@@ -622,9 +603,7 @@
                       color:var(--text-primary);"
                hidden></p>
             <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 8px">
-                Clips older than the retention window above are automatically deleted.
-                Trips, waypoints, and detected events are <strong>preserved</strong> —
-                only the dashcam clip is removed.
+                {{ _("index.prune_summary_fallback") }}
             </p>
             <button type="button" class="btn btn-secondary"
                     id="storage-prune-now-btn"
@@ -650,8 +629,7 @@
                         <strong>{{ _("index.enable_gps_label") }}</strong>
                     </label>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0 26px">
-                        Scans dashcam videos to extract GPS waypoints and build trip routes.
-                        When disabled, the map page won't show any trips or routes. Videos can still be browsed by folder.
+                        {{ _("index.enable_gps_desc") }}
                     </p>
                 </div>
                 <div class="settings-form-grid">
@@ -659,17 +637,14 @@
                         <label style="font-size:0.85rem"><strong>{{ _("index.trip_gap_label") }}</strong></label>
                         <input type="number" name="trip_gap_minutes" value="{{ cfg_mapping.trip_gap_minutes }}" min="1" max="60" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            If there's a gap longer than this between GPS waypoints, a new trip is started.
-                            Lower values split stops (gas station, drive-through) into separate trips.
-                            Higher values keep them as one continuous trip.
+                            {{ _("index.trip_gap_desc") }}
                         </p>
                     </div>
                     <div class="form-group">
                         <label style="font-size:0.85rem"><strong>{{ _("index.speed_alert_label_km") }}</strong></label>
                         <input type="number" name="speed_limit_kph" value="{{ cfg_mapping.speed_limit_kph|int }}" min="0" max="300" step="5" class="settings-form-input">
                         <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0">
-                            Marks a driving event on the map when your speed exceeds this threshold.
-                            Set to 0 to disable speed alerts entirely.
+                            {{ _("index.speed_alert_desc") }}
                         </p>
                     </div>
                 </div>
@@ -712,7 +687,7 @@
             <div class="fsck-partitions">
                 <div class="fsck-partition-card">
                     <h4>📹 {{ _("index.fsck_teslacam") }}</h4>
-                    <div id="part1-last-check" class="last-check-info">Loading...</div>
+                    <div id="part1-last-check" class="last-check-info">{{ _("common.loading") }}</div>
                     <div class="fsck-actions">
                         <button onclick="startFsck(1, 'quick')" class="btn btn-secondary" id="btn-fsck-part1-quick">{{ _("index.fsck_quick") }}</button>
                         <button onclick="startFsck(1, 'repair')" class="btn btn-warning" id="btn-fsck-part1-repair">{{ _("index.fsck_repair") }}</button>
@@ -720,7 +695,7 @@
                 </div>
                 <div class="fsck-partition-card">
                     <h4>💡 {{ _("index.fsck_lightshow") }}</h4>
-                    <div id="part2-last-check" class="last-check-info">Loading...</div>
+                    <div id="part2-last-check" class="last-check-info">{{ _("common.loading") }}</div>
                     <div class="fsck-actions">
                         <button onclick="startFsck(2, 'quick')" class="btn btn-secondary" id="btn-fsck-part2-quick">{{ _("index.fsck_quick") }}</button>
                         <button onclick="startFsck(2, 'repair')" class="btn btn-warning" id="btn-fsck-part2-repair">{{ _("index.fsck_repair") }}</button>
@@ -729,7 +704,7 @@
                 {% if music_available %}
                 <div class="fsck-partition-card">
                     <h4>🎵 {{ _("index.fsck_music") }}</h4>
-                    <div id="part3-last-check" class="last-check-info">Loading...</div>
+                    <div id="part3-last-check" class="last-check-info">{{ _("common.loading") }}</div>
                     <div class="fsck-actions">
                         <button onclick="startFsck(3, 'quick')" class="btn btn-secondary" id="btn-fsck-part3-quick">{{ _("index.fsck_quick") }}</button>
                         <button onclick="startFsck(3, 'repair')" class="btn btn-warning" id="btn-fsck-part3-repair">{{ _("index.fsck_repair") }}</button>
@@ -741,7 +716,7 @@
             <div id="fsck-history-container" class="fsck-history-container" style="margin-top:12px">
                 <h4>{{ _("index.fsck_recent_checks") }}</h4>
                 <div class="fsck-history-scroll">
-                    <div id="fsck-history-list">Loading...</div>
+                    <div id="fsck-history-list">{{ _("common.loading") }}</div>
                 </div>
             </div>
         </div>
@@ -803,6 +778,12 @@
 </div>
 
 <script>
+// HTML-escape a string for safe innerHTML insertion.
+function escapeHTML(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function togglePassword(btn) {
     const passField = document.getElementById('ap_passphrase');
     if (passField.type === 'password') {
@@ -843,13 +824,13 @@ function loadSavedNetworks() {
     .then(networks => {
         const el = document.getElementById('savedNetworksList');
         if (!networks.length || networks.error) {
-            el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-secondary)">No saved networks</div>';
+            el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-secondary)">' + _t('index.no_saved_networks') + '</div>';
             return;
         }
         let html = '';
         networks.forEach((net, idx) => {
             const dot = net.active ? '<span style="color:var(--success-text, #22c55e);margin-right:6px">●</span>' : '<span style="margin-right:14px"></span>';
-            const signal = net.in_range ? '<span style="font-size:0.8em;color:var(--text-secondary)">' + getSignalIcon(net.signal) + ' ' + net.signal + '%</span>' : '<span style="font-size:0.8em;color:var(--text-secondary)">Not in range</span>';
+            const signal = net.in_range ? '<span style="font-size:0.8em;color:var(--text-secondary)">' + getSignalIcon(net.signal) + ' ' + net.signal + '%</span>' : '<span style="font-size:0.8em;color:var(--text-secondary)">' + _t('index.not_in_range') + '</span>';
             const name = (net.ssid || net.name).replace(/</g, '&lt;').replace(/>/g, '&gt;');
             // Defence against XSS via SSID. The value is embedded inside
             //   onclick="someFn('VALUE')"
@@ -874,18 +855,18 @@ function loadSavedNetworks() {
             // Connect button: only shown for non-active networks. Disabled if not in range.
             if (!net.active) {
                 const cantConnect = !net.in_range;
-                html += '<button class="edit-btn wifi-connect-btn" onclick="connectToNetwork(\'' + escapedName + '\')" title="' + (cantConnect ? 'Network not in range' : 'Connect to this network now') + '" style="padding:2px 8px;font-size:0.8em;min-height:auto"' + (cantConnect ? ' disabled' : '') + '>Connect</button>';
+                html += '<button class="edit-btn wifi-connect-btn" onclick="connectToNetwork(\'' + escapedName + '\')" title="' + (cantConnect ? _t('index.network_not_in_range_title') : _t('index.connect_to_network_title')) + '" style="padding:2px 8px;font-size:0.8em;min-height:auto"' + (cantConnect ? ' disabled' : '') + '>' + _t('index.connect_button') + '</button>';
             }
-            html += '<button class="edit-btn" onclick="moveNetwork(\'' + escapedName + '\',-1)" title="Move up" style="padding:2px 6px;font-size:0.8em;min-height:auto"' + (idx === 0 ? ' disabled' : '') + '>▲</button>';
-            html += '<button class="edit-btn" onclick="moveNetwork(\'' + escapedName + '\',1)" title="Move down" style="padding:2px 6px;font-size:0.8em;min-height:auto"' + (idx === networks.length - 1 ? ' disabled' : '') + '>▼</button>';
-            html += '<button class="present-btn" onclick="forgetNetwork(\'' + escapedName + '\')" title="Forget" style="padding:2px 6px;font-size:0.8em;min-height:auto">✕</button>';
+            html += '<button class="edit-btn" onclick="moveNetwork(\'' + escapedName + '\',-1)" title="' + _t('index.move_up_title') + '" style="padding:2px 6px;font-size:0.8em;min-height:auto"' + (idx === 0 ? ' disabled' : '') + '>▲</button>';
+            html += '<button class="edit-btn" onclick="moveNetwork(\'' + escapedName + '\',1)" title="' + _t('index.move_down_title') + '" style="padding:2px 6px;font-size:0.8em;min-height:auto"' + (idx === networks.length - 1 ? ' disabled' : '') + '>▼</button>';
+            html += '<button class="present-btn" onclick="forgetNetwork(\'' + escapedName + '\')" title="' + _t('index.forget_title') + '" style="padding:2px 6px;font-size:0.8em;min-height:auto">✕</button>';
             html += '</div>';
         });
         el.innerHTML = html;
         el._networks = networks;
     })
     .catch(e => {
-        document.getElementById('savedNetworksList').innerHTML = '<div style="color:var(--error-text)">Failed to load networks</div>';
+        document.getElementById('savedNetworksList').innerHTML = '<div style="color:var(--error-text)">' + _t('index.failed_to_load_networks') + '</div>';
     });
 }
 
@@ -904,12 +885,12 @@ function moveNetwork(name, direction) {
         body: JSON.stringify({networks: ordered})
     }).then(r => r.json()).then(data => {
         if (data.success) loadSavedNetworks();
-        else alert(data.message || 'Reorder failed');
+        else alert(data.message || _t('index.reorder_failed'));
     });
 }
 
 function forgetNetwork(name) {
-    if (!confirm('Forget network "' + name + '"?')) return;
+    if (!confirm(_t('index.forget_network_confirm').replace('{name}', name))) return;
     fetch('{{ url_for("mode_control.api_wifi_forget") }}', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -921,13 +902,7 @@ function forgetNetwork(name) {
 }
 
 function connectToNetwork(name) {
-    const msg = 'Connect to "' + name + '" now?\n\n'
-        + 'If the offline access point is currently active, it will drop for ~30-60 seconds '
-        + 'while we attempt the connection. After about 60-90 seconds:\n\n'
-        + '  - If WiFi reconnect succeeds, the AP stays off. Reach the Pi at '
-        + 'http://cybertruckusb.local on your home WiFi.\n'
-        + '  - If WiFi reconnect fails, the AP comes back automatically. '
-        + 'Reconnect to the TeslaUSB AP and try again.';
+    const msg = _t('index.connect_confirm_msg').replace('{name}', name);
     if (!confirm(msg)) return;
 
     // Disable all Connect buttons so the user cannot double-fire.
@@ -945,21 +920,19 @@ function connectToNetwork(name) {
     }).then(r => r.json().then(data => ({status: r.status, data: data})))
       .then(({status, data}) => {
           if (status === 202 || (data && data.success)) {
-              alert((data && data.message) || 'Reconnect started.');
+              alert((data && data.message) || _t('index.reconnect_started'));
           } else if (status === 409) {
-              alert('Another connect attempt is already in progress. Please wait.');
+              alert(_t('index.connect_in_progress'));
               loadSavedNetworks();
           } else {
-              alert((data && data.message) || ('Connect failed (HTTP ' + status + ')'));
+              alert((data && data.message) || _t('index.connect_failed_http').replace('{status}', status));
               loadSavedNetworks();
           }
       })
       .catch(err => {
           // Expected when the AP drops mid-fetch: the request is in flight, the
           // server is doing its work, but the response could not be delivered.
-          alert('Reconnect attempt sent. The AP may have dropped. Wait ~60-90s, '
-              + 'then try http://cybertruckusb.local on your home WiFi, or '
-              + 'reconnect to the TeslaUSB AP if the attempt failed.');
+          alert(_t('index.ap_drop_msg'));
       });
 }
 
@@ -971,7 +944,7 @@ function toggleAddNetwork() {
 function addWifiNetwork() {
     const ssid = document.getElementById('newWifiSSID').value.trim();
     const password = document.getElementById('newWifiPassword').value;
-    if (!ssid) { alert('Please enter an SSID'); return; }
+    if (!ssid) { alert(_t('index.enter_ssid')); return; }
     const btn = document.getElementById('addWifiBtn');
     btn.disabled = true; btn.textContent = _t('index.connecting');
 
@@ -986,15 +959,15 @@ function addWifiNetwork() {
         if (response.redirected) {
             window.location.href = response.url;
         } else {
-            btn.disabled = false; btn.textContent = 'Connect';
+            btn.disabled = false; btn.textContent = _t('index.connect_button');
             loadSavedNetworks();
             document.getElementById('newWifiSSID').value = '';
             document.getElementById('newWifiPassword').value = '';
             document.getElementById('addNetworkPanel').style.display = 'none';
         }
     }).catch(() => {
-        btn.disabled = false; btn.textContent = 'Connect';
-        alert('Error connecting to network');
+        btn.disabled = false; btn.textContent = _t('index.connect_button');
+        alert(_t('index.error_connecting'));
     });
 }
 
@@ -1027,21 +1000,13 @@ function confirmWifiUpdate() {
     let message = '';
 
     if (connectedViaWifi && !accessingViaAP && currentSSID) {
-        message = '⚠️ WARNING: You are currently connected via WiFi (network: ' + currentSSID + ').\n\n';
-        message += 'If you change the WiFi credentials and they are incorrect, you will lose this connection.\n\n';
-        message += 'HOWEVER: The fallback AP is ' + (apActive ? 'already running' : 'available') + '.\n';
-        message += 'If the new WiFi fails, you can reconnect to the AP to fix it.\n\n';
-        message += 'Recommended: Connect to the AP first for safer credential updates.\n\n';
-        message += 'Continue anyway?';
+        message = _t('index.wifi_confirm_warning')
+            .replace('{ssid}', currentSSID)
+            .replace('{ap_status}', apActive ? 'already running' : 'available');
     } else if (accessingViaAP || apActive) {
-        message = '✓ You are connected via the fallback AP.\n\n';
-        message += 'The Pi will attempt to connect to the new WiFi network.\n';
-        message += 'Your AP connection will remain active during the process.\n\n';
-        message += 'Continue?';
+        message = _t('index.wifi_confirm_via_ap');
     } else {
-        message = 'The Pi will attempt to connect to the new WiFi network.\n';
-        message += 'The fallback AP will remain available if connection fails.\n\n';
-        message += 'Continue?';
+        message = _t('index.wifi_confirm_default');
     }
 
     return confirm(message);
@@ -1081,7 +1046,7 @@ if (modeActionBtn) {
             console.error('Error switching modes:', error);
             modeActionBtn.disabled = false;
             loadingOverlay.style.display = 'none';
-            alert('Error switching modes. Please try again.');
+            alert(_t('index.mode_switch_error'));
         });
     });
 }
@@ -1157,7 +1122,7 @@ let currentMode = '{{ mode_token }}';
 
 function startFsck(partition, mode) {
     if (mode === 'repair' && currentMode !== 'edit') {
-        if (confirm('Check & Repair requires Network Sharing mode.\n\nEnable Network Sharing, run repair, then switch back?')) {
+        if (confirm(_t('index.confirm_repair_mode'))) {
             startFsckWithModeSwitch(partition, mode);
         }
         return;
@@ -1169,21 +1134,21 @@ function executeFsck(partition, mode) {
     disableFsckButtons(true);
     fetch('/fsck/api/start', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({partition, mode}) })
     .then(r => r.json()).then(data => {
-        if (data.success) { showFsckStatus('Filesystem check started...', 'info'); startFsckStatusPolling(); }
+        if (data.success) { showFsckStatus(_t('index.fsck_starting'), 'info'); startFsckStatusPolling(); }
         else { showFsckStatus(data.message, 'error'); disableFsckButtons(false); }
-    }).catch(e => { showFsckStatus('Error: ' + e, 'error'); disableFsckButtons(false); });
+    }).catch(e => { showFsckStatus(_t('index.fsck_error_prefix') + e, 'error'); disableFsckButtons(false); });
 }
 
 function startFsckWithModeSwitch(partition, mode) {
     const originalMode = currentMode;
     const name = partition === 1 ? _t('index.fsck_teslacam') : partition === 2 ? _t('index.fsck_lightshow') : _t('index.fsck_music');
     disableFsckButtons(true);
-    showFsckStatus('Enabling Network Sharing...', 'info');
+    showFsckStatus(_t('index.fsck_enabling_sharing'), 'info');
     fetch('/settings/edit_usb', { method: 'POST' })
-    .then(r => { if (!r.ok) throw new Error('Failed to switch'); currentMode = 'edit'; showFsckStatus('Network Sharing active...', 'info'); return new Promise(res => setTimeout(res, 3000)); })
-    .then(() => { showFsckStatus(`Starting ${name} repair...`, 'info'); return fetch('/fsck/api/start', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({partition, mode}) }); })
-    .then(r => r.json()).then(data => { if (data.success) { showFsckStatus(`${name} repair in progress...`, 'info'); startFsckStatusPollingWithRestore(originalMode); } else throw new Error(data.message); })
-    .catch(e => { showFsckStatus('Error: ' + e.message, 'error'); disableFsckButtons(false); if (currentMode !== originalMode) restoreMode(originalMode); });
+    .then(r => { if (!r.ok) throw new Error('Failed to switch'); currentMode = 'edit'; showFsckStatus(_t('index.fsck_sharing_active'), 'info'); return new Promise(res => setTimeout(res, 3000)); })
+    .then(() => { showFsckStatus(_t('index.fsck_repair_start').replace('{name}', name), 'info'); return fetch('/fsck/api/start', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({partition, mode}) }); })
+    .then(r => r.json()).then(data => { if (data.success) { showFsckStatus(_t('index.fsck_repair_progress').replace('{name}', name), 'info'); startFsckStatusPollingWithRestore(originalMode); } else throw new Error(data.message); })
+    .catch(e => { showFsckStatus(_t('index.fsck_error_prefix') + e.message, 'error'); disableFsckButtons(false); if (currentMode !== originalMode) restoreMode(originalMode); });
 }
 
 function startFsckStatusPollingWithRestore(originalMode) {
@@ -1192,10 +1157,17 @@ function startFsckStatusPollingWithRestore(originalMode) {
         fetch('/fsck/api/status').then(r => r.json()).then(s => {
             if (s.running) {
                 const elapsed = s.start_time ? Math.round((new Date() - new Date(s.start_time)) / 1000) : 0;
-                showFsckStatus(`${getFriendlyPartitionName(s.partition)} - ${s.progress || 'Running...'} (${elapsed}s)`, 'info');
+                showFsckStatus(_t('index.fsck_running_format')
+                    .replace('{partition}', getFriendlyPartitionName(s.partition))
+                    .replace('{progress}', s.progress || _t('index.fsck_running_progress'))
+                    .replace('{elapsed}', elapsed), 'info');
             } else {
                 clearInterval(fsckCheckInterval); fsckCheckInterval = null;
-                if (s.result) { const cls = (s.result === 'healthy' || s.result === 'repaired') ? 'success' : 'warning'; showFsckStatus(`${getFriendlyPartitionName(s.partition)} - ${s.result}: ${s.details} (${s.duration}s) - Restoring...`, cls); }
+                if (s.result) { const cls = (s.result === 'healthy' || s.result === 'repaired') ? 'success' : 'warning'; showFsckStatus(_t('index.fsck_result_format')
+                    .replace('{partition}', getFriendlyPartitionName(s.partition))
+                    .replace('{result}', s.result)
+                    .replace('{details}', s.details)
+                    .replace('{duration}', s.duration) + _t('index.fsck_restoring_suffix'), cls); }
                 restoreMode(originalMode); updateLastChecks(); updateFsckHistory();
             }
         }).catch(e => console.error('Fsck status error:', e));
@@ -1208,8 +1180,8 @@ function restoreMode(targetMode) {
     if (currentMode === targetMode) { disableFsckButtons(false); return; }
     const endpoint = targetMode === 'present' ? '/settings/present_usb' : '/settings/edit_usb';
     fetch(endpoint, { method: 'POST' })
-    .then(r => { if (r.ok) { currentMode = targetMode; showFsckStatus('Mode restored', 'success'); setTimeout(() => { document.getElementById('fsck-status-container').style.display = 'none'; disableFsckButtons(false); }, 3000); } else throw new Error('Failed'); })
-    .catch(e => { showFsckStatus('Error restoring mode: ' + e.message, 'error'); disableFsckButtons(false); });
+    .then(r => { if (r.ok) { currentMode = targetMode; showFsckStatus(_t('index.fsck_mode_restored'), 'success'); setTimeout(() => { document.getElementById('fsck-status-container').style.display = 'none'; disableFsckButtons(false); }, 3000); } else throw new Error('Failed'); })
+    .catch(e => { showFsckStatus(_t('index.fsck_error_prefix') + _t('index.fsck_mode_restored') + ': ' + e.message, 'error'); disableFsckButtons(false); });
 }
 
 function startFsckStatusPolling() { if (fsckCheckInterval) clearInterval(fsckCheckInterval); updateFsckStatus(); fsckCheckInterval = setInterval(updateFsckStatus, 2000); }
@@ -1220,13 +1192,20 @@ function updateFsckStatus() {
         if (s.running) {
             disableFsckButtons(true);
             const elapsed = s.start_time ? Math.round((new Date() - new Date(s.start_time)) / 1000) : 0;
-            showFsckStatus(`${getFriendlyPartitionName(s.partition)} - ${s.progress || 'Running...'} (${elapsed}s)`, 'info');
+            showFsckStatus(_t('index.fsck_running_format')
+                .replace('{partition}', getFriendlyPartitionName(s.partition))
+                .replace('{progress}', s.progress || _t('index.fsck_running_progress'))
+                .replace('{elapsed}', elapsed), 'info');
             if (!fsckCheckInterval) fsckCheckInterval = setInterval(updateFsckStatus, 2000);
         } else {
             if (fsckCheckInterval) { clearInterval(fsckCheckInterval); fsckCheckInterval = null; }
             if (s.result) {
                 const cls = (s.result === 'healthy' || s.result === 'repaired') ? 'success' : 'warning';
-                showFsckStatus(`${getFriendlyPartitionName(s.partition)} - ${s.result}: ${s.details} (${s.duration}s)`, cls);
+                showFsckStatus(_t('index.fsck_result_format')
+                    .replace('{partition}', getFriendlyPartitionName(s.partition))
+                    .replace('{result}', s.result)
+                    .replace('{details}', s.details)
+                    .replace('{duration}', s.duration), cls);
                 setTimeout(() => { const c = document.getElementById('fsck-status-container'); if (c) c.style.display = 'none'; }, 30000);
             } else { const c = document.getElementById('fsck-status-container'); if (c) c.style.display = 'none'; }
             disableFsckButtons(false); updateLastChecks(); updateFsckHistory();
@@ -1237,14 +1216,14 @@ function updateFsckStatus() {
 function showFsckStatus(msg, type) {
     const c = document.getElementById('fsck-status-container'); if (!c) return;
     c.style.display = 'block'; c.className = 'fsck-status-container fsck-status-' + type;
-    c.innerHTML = `<div class="fsck-status-message">${msg}</div>${type === 'info' ? '<button onclick="cancelFsck()" class="btn-cancel-fsck">Cancel</button>' : ''}`;
+    c.innerHTML = `<div class="fsck-status-message">${escapeHTML(msg)}</div>${type === 'info' ? '<button onclick="cancelFsck()" class="btn-cancel-fsck">' + _t('index.fsck_cancel') + '</button>' : ''}`;
 }
 
 function cancelFsck() {
-    if (!confirm('Cancel the filesystem check?')) return;
+    if (!confirm(_t('index.confirm_cancel_fsck'))) return;
     fetch('/fsck/api/cancel', { method: 'POST', headers: {'Content-Type': 'application/json'} })
-    .then(r => r.json()).then(d => showFsckStatus(d.success ? 'Cancelling...' : 'Failed: ' + d.message, d.success ? 'warning' : 'error'))
-    .catch(e => showFsckStatus('Error: ' + e, 'error'));
+    .then(r => r.json()).then(d => showFsckStatus(d.success ? _t('index.fsck_cancelling') : _t('flash.operation_failed') + ': ' + d.message, d.success ? 'warning' : 'error'))
+    .catch(e => showFsckStatus(_t('index.fsck_error_prefix') + e, 'error'));
 }
 
 function disableFsckButtons(disabled) { document.querySelectorAll('.fsck-actions button').forEach(b => b.disabled = disabled); }
@@ -1255,11 +1234,11 @@ function updateLastChecks() {
             const c = document.getElementById(`part${p}-last-check`); if (!c) return;
             if (d.timestamp) {
                 const age = d.age_hours || 0;
-                const ageStr = age < 1 ? 'Less than 1 hour ago' : age < 24 ? `${Math.round(age)} hours ago` : `${Math.round(age / 24)} days ago`;
+                const ageStr = age < 1 ? _t('index.fsck_less_than_1h') : age < 24 ? _t('index.fsck_hours_ago').replace('{n}', Math.round(age)) : _t('index.fsck_days_ago').replace('{n}', Math.round(age / 24));
                 const icon = {healthy:'✅',repaired:'🔧',recording:'📹',errors:'⚠️',failed:'❌',timeout:'⏱️'}[d.result] || '❓';
                 const cls = {healthy:'status-healthy',repaired:'status-repaired',recording:'status-recording',errors:'status-errors'}[d.result] || 'status-warning';
-                c.innerHTML = `<div class="last-check-result ${cls}">${icon} Last checked: ${ageStr}<br><small>${d.details}</small></div>`;
-            } else { c.innerHTML = '<div class="last-check-never">Never checked</div>'; }
+                c.innerHTML = `<div class="last-check-result ${cls}">${icon} ${_t('index.fsck_checked_ago').replace('{time}', ageStr)}<br><small>${escapeHTML(d.details)}</small></div>`;
+            } else { c.innerHTML = '<div class="last-check-never">' + _t('index.fsck_never_checked') + '</div>'; }
         }).catch(e => console.error('Last check error:', e));
     });
 }
@@ -1267,12 +1246,12 @@ function updateLastChecks() {
 function updateFsckHistory() {
     fetch('/fsck/api/history').then(r => r.json()).then(history => {
         const c = document.getElementById('fsck-history-list'); if (!c) return;
-        if (!history.length) { c.innerHTML = '<div class="no-history">No filesystem checks recorded yet</div>'; return; }
+        if (!history.length) { c.innerHTML = '<div class="no-history">' + _t('index.fsck_no_history') + '</div>'; return; }
         const recent = history.slice(-5).reverse();
-        let html = '<table class="fsck-history-table"><thead><tr><th>Time</th><th>Drive</th><th>Mode</th><th>Result</th><th>Details</th></tr></thead><tbody>';
+        let html = '<table class="fsck-history-table"><thead><tr><th>' + _t('index.fsck_col_time') + '</th><th>' + _t('index.fsck_col_drive') + '</th><th>' + _t('index.fsck_col_mode') + '</th><th>' + _t('index.fsck_col_result') + '</th><th>' + _t('index.fsck_col_details') + '</th></tr></thead><tbody>';
         recent.forEach(e => {
             const icon = {healthy:'✅',repaired:'🔧',recording:'📹',timeout:'⏱️',failed:'❌'}[e.result] || '❓';
-            html += `<tr><td>${new Date(e.timestamp).toLocaleString()}</td><td>${getFriendlyPartitionName(e.partition)}</td><td>${e.mode}</td><td>${icon} ${e.result}</td><td><small>${e.details}</small></td></tr>`;
+            html += `<tr><td>${new Date(e.timestamp).toLocaleString()}</td><td>${escapeHTML(getFriendlyPartitionName(e.partition))}</td><td>${escapeHTML(e.mode)}</td><td>${icon} ${escapeHTML(e.result)}</td><td><small>${escapeHTML(e.details)}</small></td></tr>`;
         });
         c.innerHTML = html + '</tbody></table>';
     }).catch(e => console.error('Fsck history error:', e));
@@ -1291,14 +1270,14 @@ if (document.getElementById('fsck-status-container')) {
     if (!document.getElementById('archive-status-chips')) return;
 
     function fmtAgo(iso) {
-        if (!iso) return 'never';
+        if (!iso) return _t('index.retention_never');
         const t = Date.parse(iso);
-        if (isNaN(t)) return 'never';
+        if (isNaN(t)) return _t('index.retention_never');
         const ageS = Math.max(0, Math.floor((Date.now() - t) / 1000));
-        if (ageS < 60) return ageS + 's ago';
-        if (ageS < 3600) return Math.floor(ageS / 60) + ' min ago';
-        if (ageS < 86400) return Math.floor(ageS / 3600) + ' h ago';
-        return Math.floor(ageS / 86400) + ' d ago';
+        if (ageS < 60) return _t('index.retention_s_ago').replace('{n}', ageS);
+        if (ageS < 3600) return _t('index.retention_min_ago_short').replace('{n}', Math.floor(ageS / 60));
+        if (ageS < 86400) return _t('index.retention_h_ago').replace('{n}', Math.floor(ageS / 3600));
+        return _t('index.retention_d_ago').replace('{n}', Math.floor(ageS / 86400));
     }
 
     function fmtBytes(bytes) {
@@ -1322,12 +1301,12 @@ if (document.getElementById('fsck-status-container')) {
     // backend cap; anything larger is suppressed at the source.
     function fmtEta(seconds) {
         if (!seconds || seconds < 0) return '—';
-        if (seconds < 60) return '<1 min';
-        if (seconds < 3600) return Math.floor(seconds / 60) + ' min';
+        if (seconds < 60) return _t('index.retention_lt1min');
+        if (seconds < 3600) return _t('index.eta_min_format').replace('{n}', Math.floor(seconds / 60));
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        if (minutes === 0) return hours + ' h';
-        return hours + ' h ' + minutes + ' min';
+        if (minutes === 0) return _t('index.eta_hour_format').replace('{n}', hours);
+        return _t('index.eta_hour_format').replace('{n}', hours) + ' ' + _t('index.eta_min_format').replace('{n}', minutes);
     }
 
     function setText(id, txt) {
@@ -1406,19 +1385,22 @@ if (document.getElementById('fsck-status-container')) {
             else if (pct >= 90) fill.classList.add('warning');
         }
         setText('storage-used-text',
-            fmtMb(data.disk_used_mb) + ' used (' +
-            fmtMb(data.disk_total_mb) + ' total)');
-        setText('storage-free-text', fmtMb(data.disk_free_mb) + ' free');
+            _t('index.retention_total_format')
+                .replace('{used}', fmtMb(data.disk_used_mb))
+                .replace('{total}', fmtMb(data.disk_total_mb)));
+        setText('storage-free-text',
+            _t('index.retention_free_format')
+                .replace('{free}', fmtMb(data.disk_free_mb)));
         setText('chip-retention',
             data.retention_days
-            ? data.retention_days + ' days'
+            ? data.retention_days + _t('index.retention_days_unit')
             : '—');
         setText('chip-lastprune', fmtAgo(data.last_prune_at));
         setText('chip-lastfreed',
             data.last_prune_deleted
-            ? data.last_prune_deleted + ' files (' +
+            ? data.last_prune_deleted + _t('index.retention_files_unit') + ' (' +
               fmtBytes(data.last_prune_freed_bytes) + ')'
-            : 'no files');
+            : _t('index.retention_no_files'));
 
         // Phase 4.7 (#101) — prominent retention summary line.
         // Reassures users that retention is keeping the SD card healthy
@@ -1440,8 +1422,8 @@ if (document.getElementById('fsck-status-container')) {
     // ever run yet — the chips already show '—' in that case.
     function composePruneSummary(data) {
         if (data.last_prune_error) {
-            return 'Last retention prune failed: ' +
-                   String(data.last_prune_error);
+            return _t('index.retention_summary_failed')
+                .replace('{error}', String(data.last_prune_error));
         }
         if (!data.last_prune_at) {
             return '';
@@ -1453,17 +1435,17 @@ if (document.getElementById('fsck-status-container')) {
 
         let main;
         if (deleted > 0) {
-            const noun = deleted === 1 ? 'clip' : 'clips';
-            main = 'Retention pruned ' + deleted + ' ' + noun + ' ' +
-                   when + ', ' + fmtBytes(freed) + ' freed.';
+            main = _t('index.retention_summary_pruned')
+                .replace('{deleted}', deleted)
+                .replace('{when}', when)
+                .replace('{freed}', fmtBytes(freed));
         } else {
-            main = 'Retention ran ' + when +
-                   '; no clips removed (all within retention window).';
+            main = _t('index.retention_summary_none')
+                .replace('{when}', when);
         }
         if (kept > 0) {
-            const keptNoun = kept === 1 ? 'clip' : 'clips';
-            main += ' Kept ' + kept + ' ' + keptNoun +
-                    ' past retention awaiting cloud sync.';
+            main += _t('index.retention_summary_kept')
+                .replace('{kept}', kept);
         }
         return main;
     }
@@ -1472,11 +1454,11 @@ if (document.getElementById('fsck-status-container')) {
     // tone of the rest of the Storage panel.
     function fmtPruneWhen(iso) {
         const t = Date.parse(iso);
-        if (isNaN(t)) return 'recently';
+        if (isNaN(t)) return _t('index.retention_recently');
         const ageS = Math.max(0, (Date.now() - t) / 1000);
-        if (ageS < 86400) return 'today';
-        if (ageS < 2 * 86400) return 'yesterday';
-        return Math.floor(ageS / 86400) + ' days ago';
+        if (ageS < 86400) return _t('index.retention_today');
+        if (ageS < 2 * 86400) return _t('index.retention_yesterday');
+        return _t('index.retention_days_ago').replace('{n}', Math.floor(ageS / 86400));
     }
 
     async function poll() {
@@ -1500,8 +1482,8 @@ if (document.getElementById('fsck-status-container')) {
                 });
                 if (typeof showToast === 'function') {
                     showToast(
-                        r.ok ? 'Archive run triggered.'
-                             : 'Failed to trigger archive run.',
+                        r.ok ? _t('index.archive_triggered')
+                             : _t('index.archive_trigger_failed'),
                         r.ok ? 'success' : 'error');
                 }
             } finally {
@@ -1523,19 +1505,20 @@ if (document.getElementById('fsck-status-container')) {
                 if (typeof showToast === 'function') {
                     if (r.ok && data.started) {
                         showToast(
-                            'Prune complete: ' +
-                            (data.deleted_count || 0) + ' files removed.',
+                            _t('index.prune_complete')
+                                .replace('{count}', data.deleted_count || 0),
                             'success');
                     } else if (r.ok && data.status === 'already_running') {
                         // Issue #91: another prune (watchdog tick or
                         // disk-critical cleanup) is in flight.
                         showToast(
                             data.message ||
-                            'A retention prune is already running.',
+                            _t('index.prune_already_running'),
                             'info');
                     } else {
                         showToast(
-                            data.message || 'Prune failed.', 'error');
+                            data.message || _t('index.prune_failed'),
+                            'error');
                     }
                 }
             } finally {
@@ -1552,21 +1535,21 @@ if (document.getElementById('fsck-status-container')) {
     if (dlBtn && dlModal) {
         dlBtn.addEventListener('click', async function() {
             dlModal.hidden = false;
-            dlContent.textContent = 'Loading…';
+            dlContent.textContent = _t('common.loading');
             try {
                 const r = await fetch('/api/archive/dead_letters', {
                     credentials: 'same-origin'
                 });
                 const data = await r.json();
                 if (!data.rows || data.rows.length === 0) {
-                    dlContent.innerHTML = '<em>No dead-letter rows.</em>';
+                    dlContent.innerHTML = '<em>' + _t('index.no_dead_letter_rows') + '</em>';
                     return;
                 }
                 let html = '<table style="width:100%; border-collapse:collapse">';
                 html += '<thead><tr>'
-                     + '<th style="text-align:left; padding:4px">Source</th>'
-                     + '<th style="text-align:left; padding:4px">Attempts</th>'
-                     + '<th style="text-align:left; padding:4px">Error</th>'
+                     + '<th style="text-align:left; padding:4px">' + _t('index.dl_col_source') + '</th>'
+                     + '<th style="text-align:left; padding:4px">' + _t('index.dl_col_attempts') + '</th>'
+                     + '<th style="text-align:left; padding:4px">' + _t('index.dl_col_error') + '</th>'
                      + '</tr></thead><tbody>';
                 for (const row of data.rows) {
                     const src = String(row.source_path || '')
@@ -1582,7 +1565,7 @@ if (document.getElementById('fsck-status-container')) {
                 html += '</tbody></table>';
                 dlContent.innerHTML = html;
             } catch (e) {
-                dlContent.innerHTML = '<em>Failed to load.</em>';
+                dlContent.innerHTML = '<em>' + _t('index.failed_to_load') + '</em>';
             }
         });
     }
@@ -1619,15 +1602,15 @@ if (document.getElementById('fsck-status-container')) {
     }
 
     function fmtRelative(iso) {
-        if (!iso) return 'never';
+        if (!iso) return _t('index.retention_never');
         try {
             var t = new Date(iso).getTime();
             if (!t) return iso;
             var diff = (Date.now() - t) / 1000;
-            if (diff < 60) return 'just now';
-            if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
-            if (diff < 86400) return Math.floor(diff / 3600) + ' hr ago';
-            return Math.floor(diff / 86400) + ' days ago';
+            if (diff < 60) return _t('index.retention_just_now');
+            if (diff < 3600) return _t('index.retention_min_ago_short').replace('{n}', Math.floor(diff / 60));
+            if (diff < 86400) return _t('index.retention_hr_ago').replace('{n}', Math.floor(diff / 3600));
+            return _t('index.retention_days_ago').replace('{n}', Math.floor(diff / 86400));
         } catch (e) { return iso; }
     }
 
@@ -1657,7 +1640,7 @@ if (document.getElementById('fsck-status-container')) {
                   '<input type="checkbox" name="policy_' + name + '_enabled" ' + (enabled ? 'checked' : '') + '>' +
                   '<strong>' + name + '</strong>' +
                 '</label>' +
-                '<span style="font-size:0.8rem; color:var(--text-secondary)">Retention (days)</span>' +
+                '<span style="font-size:0.8rem; color:var(--text-secondary)">' + _t('index.retention_days_label') + '</span>' +
                 '<input type="number" name="policy_' + name + '_days" value="' + days +
                   '" min="1" max="3650" class="settings-form-input">';
             container.appendChild(row);
@@ -1669,15 +1652,15 @@ if (document.getElementById('fsck-status-container')) {
         if (!el) return;
         var lr = snapshot.last_run || {};
         if (!lr.at) {
-            el.textContent = 'never run yet';
+            el.textContent = _t('index.retention_never_run');
             return;
         }
         var parts = [];
         parts.push(fmtRelative(lr.at));
-        if (lr.deleted_count != null) parts.push('pruned ' + lr.deleted_count + ' clips');
-        if (lr.freed_bytes != null) parts.push('freed ' + fmtBytes(lr.freed_bytes));
-        if (lr.kept_unsynced_count) parts.push('kept ' + lr.kept_unsynced_count + ' un-synced');
-        if (lr.error) parts.push('error: ' + lr.error);
+        if (lr.deleted_count != null) parts.push(_t('index.retention_pruned').replace('{n}', lr.deleted_count));
+        if (lr.freed_bytes != null) parts.push(_t('index.retention_freed').replace('{n}', fmtBytes(lr.freed_bytes)));
+        if (lr.kept_unsynced_count) parts.push(_t('index.retention_kept_unsynced').replace('{n}', lr.kept_unsynced_count));
+        if (lr.error) parts.push(_t('index.retention_error_prefix') + lr.error);
         el.textContent = parts.join(' — ');
     }
 
@@ -1690,9 +1673,10 @@ if (document.getElementById('fsck-status-container')) {
             box.hidden = true;
             return;
         }
-        txt.textContent =
-            fmtBytes(disk.free_bytes) + ' free of ' + fmtBytes(disk.total_bytes) +
-            ' (' + disk.free_pct + '% free)';
+        txt.textContent = _t('index.retention_disk_format')
+            .replace('{free}', fmtBytes(disk.free_bytes))
+            .replace('{total}', fmtBytes(disk.total_bytes))
+            .replace('{pct}', disk.free_pct);
         box.hidden = false;
     }
 
@@ -1757,7 +1741,7 @@ if (document.getElementById('fsck-status-container')) {
         if (!btn) return;
         var origText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = 'Saving…';
+        btn.textContent = _t('index.saving');
         setError(null);
         fetch(SAVE_API, {
             method: 'POST',
@@ -1770,15 +1754,15 @@ if (document.getElementById('fsck-status-container')) {
             })
             .then(function (res) {
                 if (!res.ok || !res.data || res.data.success === false) {
-                    setError((res.data && res.data.message) || 'Failed to save retention settings');
+                    setError((res.data && res.data.message) || _t('index.save_failed'));
                     return;
                 }
-                btn.textContent = 'Saved ✓';
+                btn.textContent = _t('index.saved_ok');
                 loadStatus();
                 setTimeout(function () { btn.textContent = origText; }, 1500);
             })
             .catch(function (e) {
-                setError('Network error: ' + e.message);
+                setError(_t('index.network_error').replace('{message}', e.message));
             })
             .finally(function () {
                 btn.disabled = false;
@@ -1791,7 +1775,7 @@ if (document.getElementById('fsck-status-container')) {
         if (!btn) return;
         var origText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = 'Running…';
+        btn.textContent = _t('index.running');
         setError(null);
         fetch(RUN_NOW_API, { method: 'POST', credentials: 'same-origin' })
             .then(function (r) {
@@ -1801,13 +1785,13 @@ if (document.getElementById('fsck-status-container')) {
                 var d = res.data || {};
                 var result = d.result || {};
                 if (result.status === 'already_running') {
-                    btn.textContent = 'Already running';
+                    btn.textContent = _t('index.already_running');
                 } else if (res.status >= 200 && res.status < 300 && d.success !== false) {
                     var deleted = result.deleted_count || 0;
                     var freed = result.freed_bytes ? fmtBytes(result.freed_bytes) : '0 B';
-                    btn.textContent = '✓ ' + deleted + ' clips, ' + freed;
+                    btn.textContent = _t('index.cleanup_result').replace('{deleted}', deleted).replace('{freed}', freed);
                 } else {
-                    setError(d.message || 'Cleanup failed');
+                    setError(d.message || _t('index.cleanup_failed'));
                     btn.textContent = origText;
                     return;
                 }
@@ -1815,7 +1799,7 @@ if (document.getElementById('fsck-status-container')) {
                 setTimeout(function () { btn.textContent = origText; }, 4000);
             })
             .catch(function (e) {
-                setError('Network error: ' + e.message);
+                setError(_t('index.network_error').replace('{message}', e.message));
                 btn.textContent = origText;
             })
             .finally(function () { btn.disabled = false; });
@@ -1824,16 +1808,11 @@ if (document.getElementById('fsck-status-container')) {
     function onReclaimStationary() {
         var btn = $('sr-reclaim-stationary-btn');
         if (!btn) return;
-        var ok = window.confirm(
-            'Delete all archived RecentClips with no GPS movement?\n\n' +
-            'This deletes parked-Sentry / stationary footage from the SD card. ' +
-            'Saved/Sentry event clips are preserved. Indexed driving footage is preserved. ' +
-            'This may free several GB.'
-        );
+        var ok = window.confirm(_t('index.reclaim_confirm'));
         if (!ok) return;
         var origText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = 'Reclaiming…';
+        btn.textContent = _t('index.reclaiming');
         setError(null);
         fetch(RECLAIM_STATIONARY_API, {
             method: 'POST',
@@ -1848,13 +1827,13 @@ if (document.getElementById('fsck-status-container')) {
                 var d = res.data || {};
                 var result = d.result || {};
                 if (result.status === 'already_running') {
-                    btn.textContent = 'Already running';
+                    btn.textContent = _t('index.already_running');
                 } else if (res.status >= 200 && res.status < 300 && d.success !== false) {
                     var deleted = result.deleted_count || 0;
                     var freed = result.freed_bytes ? fmtBytes(result.freed_bytes) : '0 B';
-                    btn.textContent = '✓ ' + deleted + ' clips, ' + freed;
+                    btn.textContent = _t('index.cleanup_result').replace('{deleted}', deleted).replace('{freed}', freed);
                 } else {
-                    setError(d.message || 'Reclaim failed');
+                    setError(d.message || _t('index.reclaim_failed'));
                     btn.textContent = origText;
                     return;
                 }
@@ -1862,7 +1841,7 @@ if (document.getElementById('fsck-status-container')) {
                 setTimeout(function () { btn.textContent = origText; }, 6000);
             })
             .catch(function (e) {
-                setError('Network error: ' + e.message);
+                setError(_t('index.network_error').replace('{message}', e.message));
                 btn.textContent = origText;
             })
             .finally(function () { btn.disabled = false; });
@@ -2038,7 +2017,18 @@ if (document.getElementById('fsck-status-container')) {
             var sub = SUBSYSTEMS[i];
             var block = payload[sub.key] || {};
             var sev = block.severity || 'unknown';
-            var msg = escapeText(block.message || '\u2014');
+            var msg;
+            if (block.message_key) {
+                msg = escapeText(_t(block.message_key).replace(
+                    /\{(\w+)\}/g,
+                    function(_, k) {
+                        var v = (block.message_params || {})[k];
+                        return v != null ? v : '';
+                    }
+                ));
+            } else {
+                msg = escapeText(block.message || '\u2014');
+            }
             html += '<div>' + dotMarkup(sev) + '</div>';
             html += '<div style="color:var(--text-primary)">' +
                     escapeText(sub.label) + '</div>';
@@ -2055,11 +2045,21 @@ if (document.getElementById('fsck-status-container')) {
 
     function renderOverall(payload) {
         var overall = payload.overall || { severity: 'unknown',
-                                            message: 'Unknown' };
+                                            message: _t('index.system_health_unknown') };
         var sev = overall.severity || 'unknown';
         var color = SEV_COLORS[sev] || SEV_COLORS.unknown;
         overallEl.querySelector('.health-dot').style.background = color;
-        overallText.textContent = overall.message || 'Unknown';
+        if (overall.message_key) {
+            overallText.textContent = _t(overall.message_key).replace(
+                /\{(\w+)\}/g,
+                function(_, k) {
+                    var v = (overall.message_params || {})[k];
+                    return v != null ? v : '';
+                }
+            );
+        } else {
+            overallText.textContent = overall.message || _t('index.system_health_unknown');
+        }
         // Toggle the click affordance to track the current severity —
         // a system that recovers to 'ok' must shed both the listener
         // and the pointer cursor, otherwise it still looks clickable.
@@ -2129,11 +2129,7 @@ if (document.getElementById('fsck-status-container')) {
             // If a brand-new loss arrives later, the next poll will
             // re-show the banner.
             if (!window.confirm(
-                    'Dismiss the lost-footage banner?\n\n' +
-                    'This permanently deletes the records of clips ' +
-                    'Tesla rotated out before they could be archived. ' +
-                    'The footage itself is already gone — this only ' +
-                    'clears the count from the banner.')) {
+                    _t('index.dismiss_banner_confirm'))) {
                 return;
             }
             lostDismiss.disabled = true;

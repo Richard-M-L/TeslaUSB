@@ -347,7 +347,7 @@
 {% block content %}
 <div class="container">
     {% include 'media_hub_nav.html' %}
-    <h2>Music Library</h2>
+    <h2>{{ _("media.music_title") }}</h2>
 
     {% if error %}
     <div class="messages"><div class="error">{{ error }}</div></div>
@@ -355,8 +355,7 @@
 
     <div class="info-box" style="margin-bottom: 20px;">
         <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">
-            Tesla only scans music inside the <code style="background: var(--bg-code); padding: 2px 5px; border-radius: 3px;">/Music</code> folder.
-            This page always reads and uploads inside that folder; paths shown below are relative to <code style="background: var(--bg-code); padding: 2px 5px; border-radius: 3px;">/Music</code>.
+            {{ _("media.music_info_box") | safe }}
         </p>
     </div>
 
@@ -371,15 +370,15 @@
         <div class="music-panel">
             <div class="music-summary">
                 <div class="stat-item">
-                    <div class="stat-label">Used</div>
+                    <div class="stat-label">{{ _("media.music_used") }}</div>
                     <div class="stat-value">{{ format_file_size(used_bytes) }}</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Free</div>
+                    <div class="stat-label">{{ _("media.music_free") }}</div>
                     <div class="stat-value">{{ format_file_size(free_bytes) }}</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Files</div>
+                    <div class="stat-label">{{ _("media.music_files") }}</div>
                     <div class="stat-value">{{ files|length }}</div>
                 </div>
             </div>
@@ -408,17 +407,17 @@
 
             <h3 style="margin-top: 10px;">
                 {% if current_path %}
-                <a href="{{ url_for('music.music_home', path=(current_path.rsplit('/', 1)[0] if '/' in current_path else '')) }}" style="text-decoration: none; color: var(--text-link); font-size: 14px; margin-right: 8px;">⬆️ Up</a>
+                <a href="{{ url_for('music.music_home', path=(current_path.rsplit('/', 1)[0] if '/' in current_path else '')) }}" style="text-decoration: none; color: var(--text-link); font-size: 14px; margin-right: 8px;">⬆️ {{ _("common.back") }}</a>
                 {% endif %}
-                Files
+                {{ _("media.music_files") }}
             </h3>
             {% if dirs %}
             <div class="video-table-container">
                 <table class="video-table" id="folderTable" style="table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th>Folders</th>
-                            <th style="width: 100px; text-align: right;">Actions</th>
+                            <th>{{ _("media.music_folders") }}</th>
+                            <th style="width: 100px; text-align: right;">{{ _("common.actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -426,7 +425,7 @@
                         <tr class="music-folder-row" data-dir="{{ d.path }}">
                             <td style="color: var(--text-link);">📁 {{ d.name }}</td>
                             <td style="text-align: right;">
-                                <button class="action-btn danger" data-delete-dir="{{ d.path }}">Delete</button>
+                                <button class="action-btn danger" data-delete-dir="{{ d.path }}">{{ _("common.delete") }}</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -439,7 +438,7 @@
                 <div class="music-mobile-folder" data-dir="{{ d.path }}">
                     <span class="music-mobile-folder-name">📁 {{ d.name }}</span>
                     <span class="music-mobile-folder-actions">
-                        <button class="action-btn danger" data-delete-dir="{{ d.path }}">Delete</button>
+                        <button class="action-btn danger" data-delete-dir="{{ d.path }}">{{ _("common.delete") }}</button>
                     </span>
                 </div>
                 {% endfor %}
@@ -450,9 +449,9 @@
                 <table class="video-table" id="fileTable" style="table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th style="width: 120px;">Size</th>
-                            <th style="width: 240px;">Actions</th>
+                            <th>{{ _("media.music_name") }}</th>
+                            <th style="width: 120px;">{{ _("common.size") }}</th>
+                            <th style="width: 240px;">{{ _("common.actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -466,8 +465,8 @@
                                     <source src="{{ url_for('music.play_music', filepath=file.path) }}" type="{{ 'audio/mpeg' if ext == 'mp3' else 'audio/wav' if ext == 'wav' else 'audio/flac' if ext == 'flac' else 'audio/aac' if ext == 'aac' else 'audio/mp4' if ext == 'm4a' else 'application/octet-stream' }}">
                                 </audio>
                                 <div style="display: flex; gap: 6px;">
-                                    <button class="action-btn" data-move="{{ file.path }}">Move</button>
-                                    <button class="action-btn danger" data-delete="{{ file.path }}">Delete</button>
+                                    <button class="action-btn" data-move="{{ file.path }}">{{ _("media.music_move") }}</button>
+                                    <button class="action-btn danger" data-delete="{{ file.path }}">{{ _("common.delete") }}</button>
                                 </div>
                             </td>
                         </tr>
@@ -486,39 +485,38 @@
                         <source src="{{ url_for('music.play_music', filepath=file.path) }}" type="{{ 'audio/mpeg' if ext == 'mp3' else 'audio/wav' if ext == 'wav' else 'audio/flac' if ext == 'flac' else 'audio/aac' if ext == 'aac' else 'audio/mp4' if ext == 'm4a' else 'application/octet-stream' }}">
                     </audio>
                     <div class="music-mobile-file-actions">
-                        <button class="action-btn" data-move="{{ file.path }}">Move</button>
-                        <button class="action-btn danger" data-delete="{{ file.path }}">Delete</button>
+                        <button class="action-btn" data-move="{{ file.path }}">{{ _("media.music_move") }}</button>
+                        <button class="action-btn danger" data-delete="{{ file.path }}">{{ _("common.delete") }}</button>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">No music files found on the drive.</p>
+            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">{{ _("media.music_no_files") }}</p>
             {% endif %}
         </div>
 
         <!-- Upload panel -->
         <div class="music-panel">
-            <h3 style="margin-top: 0;">Upload</h3>
+            <h3 style="margin-top: 0;">{{ _("media.music_upload") }}</h3>
             <p style="margin: 0 0 15px 0; font-size: 13px; color: var(--text-secondary);">
-                Uploads require Edit mode. Files larger than {{ max_upload_chunk_mb }} MiB are sent in chunks.
-                You can drop whole folders to preserve subfolder structure. Target folder:
+                {{ _("media.music_upload_desc", chunk_mb=max_upload_chunk_mb) }}
                 <strong id="currentPathLabel" style="color: var(--text-primary);">/{{ current_path }}</strong>
             </p>
             <div id="dropZone" class="music-drop-zone">
                 <div class="drop-icon">🎵</div>
                 <div class="drop-label">{{ _("media.music_drop_hint") }}</div>
-                <div class="drop-hint">Allowed: mp3, flac, wav, aac, m4a. Max {{ max_upload_size_mb }} MiB per file.</div>
+                <div class="drop-hint">{{ _("media.music_format_hint", max_mb=max_upload_size_mb) }}</div>
                 <input id="fileInput" type="file" name="music_files" multiple webkitdirectory directory
                     style="display: none;" accept=".mp3,.flac,.wav,.aac,.m4a">
             </div>
             <div class="music-file-list" id="fileList"></div>
             <div class="music-folder-input">
-                <input id="folderName" type="text" placeholder="New folder name">
+                <input id="folderName" type="text" placeholder="{{ _('media.music_new_folder_placeholder') }}">
                 <button id="createFolder" class="action-btn">{{ _("media.music_create_folder") }}</button>
             </div>
             <div class="music-upload-actions">
-                <button id="startUpload" class="action-btn" disabled>Upload</button>
+                <button id="startUpload" class="action-btn" disabled>{{ _("common.upload") }}</button>
                 <button id="clearSelection" class="action-btn danger" disabled>{{ _("media.wraps_clear_all") }}</button>
             </div>
             <div id="uploadStatus" class="music-status"></div>

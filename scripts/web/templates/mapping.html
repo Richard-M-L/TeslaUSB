@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/MarkerCluster.Default.css') }}">
 <style>
     /* Override for full-height map page — no page scroll */
-    html, body { overflow: hidden !important; height: 100vh !important; }
+    html, body { overflow: hidden !important; height: 100vh !important; height: 100dvh !important; }
     .main-content {
         margin: 0 !important; padding: 0 !important;
         max-width: none !important; overflow: hidden !important;
@@ -18,6 +18,7 @@
     .map-container {
         position: relative;
         height: calc(100vh - var(--topbar-height));
+        height: calc(100dvh - var(--topbar-height));  /* iOS Safari dynamic toolbar */
         overflow: hidden;
     }
     #map { width: 100%; height: 100%; z-index: 1; }
@@ -88,6 +89,7 @@
         min-width: 240px;
         max-width: 360px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
     }
     [data-theme="dark"] .trip-card {
@@ -177,6 +179,7 @@
         cursor: pointer;
         transition: all 200ms ease;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
         position: relative;
     }
@@ -211,7 +214,6 @@
     .map-fab.spinning .nav-icon {
         animation: spin 1s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Event-Type Filter Pills (top-center floating) ── */
     .event-filter-pills {
@@ -231,6 +233,7 @@
         border: 1px solid var(--border-color, var(--border));
         border-radius: 999px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
     }
     [data-theme="dark"] .event-filter-pills {
@@ -284,6 +287,7 @@
         border-radius: var(--radius-lg, 12px);
         padding: 8px 10px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
         font-size: 0.6875rem;
         color: var(--text-secondary);
@@ -333,6 +337,7 @@
         color: var(--text-primary);
         border: 1px solid var(--border-color, var(--border));
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
         max-width: calc(100vw - 120px);
         overflow: hidden;
@@ -536,7 +541,7 @@
        fullscreen layer when only <video> goes fullscreen). */
     .video-overlay-stage:fullscreen,
     .video-overlay-stage:-webkit-full-screen {
-        width: 100vw; height: 100vh;
+        width: 100vw; height: 100vh; height: 100dvh;
         background: #000;
         display: flex; align-items: center; justify-content: center;
     }
@@ -556,6 +561,7 @@
         grid-template-areas: "gear brake bL speed bR wheel throttle" ". . ap ap ap . .";
         gap: 4px 6px; align-items: center;
         padding: 5px 10px; border-radius: 14px;
+        -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px); background: rgba(10,10,12,0.45);
         border: 1px solid rgba(255,255,255,0.12); pointer-events: none;
         z-index: 10; font-family: system-ui, sans-serif; color: #fff;
@@ -592,25 +598,54 @@
 
     /* ── Mobile (<1024px): bottom tabs visible ── */
     @media (max-width: 1023px) {
+        /* Prevent ALL scrolling on the map page. The top bar, bottom
+           tabs, trip-card and FABs are all position:fixed, and the map
+           fills the remaining space — there is no reason to scroll.
+           Without this, even 1-2 px of scroll room lets a tap on the
+           Leaflet zoom control shift the map container upward, pushing
+           the buttons under the fixed top bar. */
+        html, body {
+            overflow: hidden;
+            -webkit-overscroll-behavior: none;
+            overscroll-behavior: none;
+        }
+
         .main-content {
             margin-left: 0 !important;
+            padding-bottom: 0 !important;
+            overflow: hidden;
         }
+
         .map-container {
             height: calc(100vh - var(--topbar-height) - var(--bottomtab-height));
+            height: calc(100dvh - var(--topbar-height) - var(--bottomtab-height));
         }
+
         .trip-card {
-            left: 8px; right: 8px; bottom: 8px;
+            position: fixed;
+            left: 8px; right: 8px;
+            bottom: calc(var(--bottomtab-height) + 8px);
             max-width: none;
+            z-index: 90;
         }
+
         .map-fab-group {
-            top: auto; bottom: 140px;
+            position: fixed;
+            top: auto;
+            bottom: calc(var(--bottomtab-height) + 150px);
             right: 8px;
             transform: none;
+            z-index: 95;
         }
-        .legend {
-            bottom: 200px;
+
+        .speed-legend {
+            position: fixed;
             right: 8px;
+            top: calc(var(--topbar-height) + 8px);
+            bottom: auto;
+            z-index: 95;
         }
+
         .map-fab[title]:hover::after { display: none; }
     }
 
@@ -851,8 +886,8 @@
             </button>
         </div>
         <div class="trip-card-indexed" id="tripCardIndexed">
-            <span id="tripIndexedCount">&mdash;</span> videos mapped
-            <button class="trip-card-all-btn" id="dayAllBtn" onclick="showAllTime()">All time</button>
+            <span id="tripIndexedCount">&mdash;</span> {{ _("mapping.videos_mapped") }}
+            <button class="trip-card-all-btn" id="dayAllBtn" onclick="showAllTime()">{{ _("mapping.all_time") }}</button>
         </div>
     </div>
 
@@ -892,22 +927,22 @@
     <div class="video-panel" id="videoPanel">
         <div class="video-panel-header">
             <div class="vp-tabs">
-                <button class="vp-tab active" id="vpTabSentry" onclick="vpShowSentry()">Events</button>
-                <button class="vp-tab" id="vpTabTrips" onclick="vpShowTrips()">Trips</button>
-                <button class="vp-tab" id="vpTabClips" onclick="vpShowClips()">All Clips</button>
+                <button class="vp-tab active" id="vpTabSentry" onclick="vpShowSentry()">{{ _("mapping.tab_events") }}</button>
+                <button class="vp-tab" id="vpTabTrips" onclick="vpShowTrips()">{{ _("mapping.tab_trips") }}</button>
+                <button class="vp-tab" id="vpTabClips" onclick="vpShowClips()">{{ _("mapping.tab_all_clips") }}</button>
             </div>
             <button class="close-btn" onclick="toggleVideoPanel()" aria-label="Close video panel">✕</button>
         </div>
         <div class="vp-folder-row" id="vpFolderRow" style="display: none;">
             <select id="vpFolder" onchange="loadVideoList()">
-                <option value="RecentClips">Recent Clips</option>
-                <option value="SavedClips">Saved Clips</option>
-                <option value="SentryClips">Sentry Clips</option>
-                <option value="ArchivedClips">Archived Clips</option>
+                <option value="RecentClips">{{ _("mapping.folder_recent") }}</option>
+                <option value="SavedClips">{{ _("mapping.folder_saved") }}</option>
+                <option value="SentryClips">{{ _("mapping.folder_sentry") }}</option>
+                <option value="ArchivedClips">{{ _("mapping.folder_archived") }}</option>
             </select>
         </div>
         <div class="video-panel-list" id="vpList">
-            <div class="vp-empty">Loading events&hellip;</div>
+            <div class="vp-empty">{{ _("mapping.loading_events") }}</div>
         </div>
     </div>
 </div>
@@ -915,11 +950,27 @@
 <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
 <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.markercluster.js') }}"></script>
 <script>
+// Silence console in production — keeps the mobile dev-tools console
+// clean and avoids the iOS Safari console-access overhead. Set
+// localStorage.setItem('DEBUG','1') to re-enable for debugging.
+(function(){
+    if (!(window.localStorage && localStorage.getItem('DEBUG'))) {
+        var noop = function(){};
+        console.log = console.warn = console.info = console.debug = noop;
+    }
+})();
+
 // Register Service Worker for offline tile caching (gap 1)
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/tile-cache-sw.js', { scope: '/' })
         .then(reg => console.log('Tile cache SW registered'))
         .catch(err => console.warn('Tile cache SW failed:', err));
+}
+
+// HTML-escape a string for use in attribute values and text content.
+function escapeHTML(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // Format ISO timestamp to local time
@@ -1002,26 +1053,54 @@ function writeUrlState(state, options) {
     } catch (e) { /* history API unavailable (e.g. sandboxed iframe) */ }
 }
 
-// Fix Leaflet marker icon path for vendored setup
-L.Icon.Default.imagePath = '{{ url_for("static", filename="vendor/leaflet/images/") }}';
-
 // --- Map Initialization ---
-const map = L.map('map').setView([37.7749, -122.4194], 10);
+// Guard against Leaflet script failing to load (server 404, network,
+// disk corruption). Without this the page silently shows a blank
+// container because the ReferenceError kills the whole script block.
+var map, sharedCanvasRenderer, tripLayer, eventCluster, fsdLayer;
+try {
+    if (typeof L === 'undefined') throw new Error('Leaflet library failed to load');
 
-// OpenStreetMap tiles (loaded from OSM servers; cached by browser for offline)
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
+    // Fix Leaflet marker icon path for vendored setup
+    L.Icon.Default.imagePath = '{{ url_for("static", filename="vendor/leaflet/images/") }}';
 
-// Layer groups
-// Map renderer: canvas is dramatically faster than SVG for the
-// dozens-of-polylines-per-trip workload introduced by speed-bucket
-// rendering. We share a single canvas instance across all polylines.
-const sharedCanvasRenderer = L.canvas({ padding: 0.2 });
-const tripLayer = L.layerGroup().addTo(map);
-const eventCluster = L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true }).addTo(map);
-const fsdLayer = L.layerGroup();
+    map = L.map('map').setView([37.7749, -122.4194], 10);
+
+    // OpenStreetMap tiles (loaded from OSM servers; cached by browser for offline)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Layer groups — shared canvas renderer is dramatically faster
+    // than SVG for the speed-bucket polylines workload.
+    sharedCanvasRenderer = L.canvas({ padding: 0.2 });
+    tripLayer = L.layerGroup().addTo(map);
+    eventCluster = L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true }).addTo(map);
+    fsdLayer = L.layerGroup();
+
+    // Expose map for dev-tools debugging
+    window.__map = map;
+} catch (e) {
+    // Show a visible error so the user knows something is wrong
+    // rather than staring at an empty grey container.
+    var el = document.getElementById('map');
+    if (el) {
+        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--msg-error-text,red);font-family:Inter,sans-serif;font-size:14px;text-align:center;padding:20px;">' +
+            '<div><strong>Map failed to load</strong><br><small>' +
+            escapeHTML(e.message || 'Unknown error') +
+            '</small></div></div>';
+    }
+    // Prevent follow-on errors from blocking the rest of the page
+    map = null;
+    sharedCanvasRenderer = null;
+    tripLayer = { clearLayers: function(){} };
+    eventCluster = { clearLayers: function(){} };
+    fsdLayer = { clearLayers: function(){} };
+}
+
+// Guard for functions that require the map to be initialised.
+function mapReady() { return map != null; }
 
 let fsdVisible = false;
 let speedLegendVisible = false;
@@ -1216,6 +1295,7 @@ function pointSegDistPx(p, a, b) {
 }
 
 function findCandidatesNearClick(clickLatLng, pixelRadius) {
+    if (!mapReady()) return [];
     // Returns one candidate per visible trip whose closest segment
     // is within ``pixelRadius`` pixels of the click. Picks the
     // active trip set based on the current view (All time vs
@@ -1860,8 +1940,10 @@ function renderAllTimeCard() {
     const totalTrips = allDays.reduce(
         (s, d) => s + (d.trip_count || 0), 0);
 
-    dateEl.textContent = `All time (${allDays.length} days)`;
-    statsEl.textContent = `${totalTrips} trips \u00B7 ${totalDist.toFixed(1)} mi total`;
+    dateEl.textContent = _t('mapping.all_time_days').replace('{n}', allDays.length);
+    statsEl.textContent = _t('mapping.trips_total')
+        .replace('{n}', totalTrips)
+        .replace('{distance}', totalDist.toFixed(1) + ' ' + _t('mapping.km'));
 
     // Enable nav so the user can exit "all time" by cycling, and
     // re-enable "All time" itself in case empty-state had disabled it.
@@ -1877,8 +1959,8 @@ function renderEmptyState() {
     const nextBtn = document.getElementById('dayNext');
     const allBtn = document.getElementById('dayAllBtn');
 
-    dateEl.textContent = 'No mapped drives yet';
-    statsEl.textContent = 'Index dashcam clips to see trips and events';
+    dateEl.textContent = _t('mapping.no_mapped_drives_title');
+    statsEl.textContent = _t('mapping.no_mapped_drives_desc');
     if (prevBtn) prevBtn.disabled = true;
     if (nextBtn) nextBtn.disabled = true;
     if (allBtn) allBtn.disabled = true;
@@ -2139,6 +2221,7 @@ function toggleSpeedLegend() {
 // shared canvas — see SPEED_BUCKETS / sharedCanvasRenderer above.
 
 async function renderDay() {
+    if (!mapReady()) return;
     tripLayer.clearLayers();
     fsdLayer.clearLayers();
     const bounds = [];
@@ -2344,6 +2427,7 @@ function renderTripOnDay(trip, bounds) {
 }
 
 async function renderAllTime() {
+    if (!mapReady()) return;
     // Render every indexed trip as a low-opacity gray polyline plus
     // every event marker. The trip routes come from /api/all-routes
     // which subsamples each trip's waypoints (default 50 points/trip)
@@ -3057,9 +3141,9 @@ document.addEventListener('click', function(e) {
     if (link) {
         e.preventDefault();
         openEventVideo(
-            parseInt(link.dataset.tripId) || 0,
+            parseInt(link.dataset.tripId, 10) || 0,
             link.dataset.videoPath || '',
-            parseInt(link.dataset.frameOffset) || 0,
+            parseInt(link.dataset.frameOffset, 10) || 0,
             parseFloat(link.dataset.lat) || 0,
             parseFloat(link.dataset.lon) || 0
         );
@@ -3138,7 +3222,7 @@ async function overlayDelete() {
     const folder = overlay.dataset.folder;
     const evt = overlay.dataset.event;
     if (!folder || !evt) {
-        if (typeof showToast === 'function') showToast('Cannot determine clip to delete', 'warning');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_no_clip_to_delete'), 'warning');
         return;
     }
     if (!confirm(_t('mapping.confirm_delete_clip').replace('{name}', evt))) return;
@@ -3147,12 +3231,12 @@ async function overlayDelete() {
         const data = await resp.json();
         if (data.success) {
             closeVideoOverlay();
-            if (typeof showToast === 'function') showToast('Deleted ' + data.deleted_count + ' files', 'success');
+            if (typeof showToast === 'function') showToast(_t('mapping.toast_deleted_n').replace('{n}', data.deleted_count), 'success');
         } else {
             if (typeof showToast === 'function') showToast(data.error || 'Delete failed', 'error');
         }
     } catch(e) {
-        if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_delete_fail') + ': ' + e.message, 'error');
     }
 }
 
@@ -3164,7 +3248,7 @@ async function overlayArchive() {
     const folder = overlay.dataset.folder;
     const evt = overlay.dataset.event;
     if (!folder || !evt) {
-        if (typeof showToast === 'function') showToast('Cannot determine clip to archive', 'warning');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_no_clip_to_archive'), 'warning');
         return;
     }
     const btn = document.getElementById('archiveNavBtn');
@@ -3185,7 +3269,7 @@ async function overlayArchive() {
             _resetArchiveNavBtn(btn);
         }
     } catch(e) {
-        if (typeof showToast === 'function') showToast('Archive failed: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_archive_fail') + ': ' + e.message, 'error');
         _resetArchiveNavBtn(btn);
     }
 }
@@ -3200,7 +3284,7 @@ function _startArchiveNavPoll(btn) {
             if (st.completed) {
                 clearInterval(_archivePollTimer); _archivePollTimer = null;
                 if (btn) { btn.textContent = '✓'; btn.style.color = '#34C759'; btn.title = 'Archived!'; }
-                if (typeof showToast === 'function') showToast('Archived to cloud!', 'success');
+                if (typeof showToast === 'function') showToast(_t('mapping.toast_archived'), 'success');
                 setTimeout(() => _resetArchiveNavBtn(btn), 4000);
             } else if (st.error) {
                 clearInterval(_archivePollTimer); _archivePollTimer = null;
@@ -3236,8 +3320,8 @@ function renderEvents() {
             icon: makeEventIcon(ev.event_type),
         });
 
-        const safeType = (ev.event_type || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/_/g, ' ');
-        const safeDesc = (ev.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeType = escapeHTML(ev.event_type || '').replace(/_/g, ' ');
+        const safeDesc = escapeHTML(ev.description || '');
 
         // In "All time" mode add a "Go to this day" link so the
         // popup is actionable — the user can drill into the day
@@ -3252,7 +3336,7 @@ function renderEvents() {
             `${formatLocalTime(ev.timestamp)}<br>` +
             `${safeDesc}` +
             (ev.video_path ?
-                `<br><a href="#" class="popup-video-link" data-trip-id="${ev.trip_id || 0}" data-video-path="${(ev.video_path || '').replace(/"/g, '&quot;')}" data-frame-offset="${ev.frame_offset || 0}" data-lat="${ev.lat}" data-lon="${ev.lon}">View Video</a>` : '') +
+                `<br><a href="#" class="popup-video-link" data-trip-id="${ev.trip_id || 0}" data-video-path="${(ev.video_path || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}" data-frame-offset="${ev.frame_offset || 0}" data-lat="${ev.lat}" data-lon="${ev.lon}">View Video</a>` : '') +
             dayLink
         );
 
@@ -3462,7 +3546,7 @@ async function loadSentryTimeline() {
         const data = await resp.json();
 
         if (!data.events || data.events.length === 0) {
-            list.innerHTML = '<div class="vp-empty">No events detected yet</div>';
+            list.innerHTML = '<div class="vp-empty">' + _t('mapping.no_events') + '</div>';
             return;
         }
 
@@ -3488,22 +3572,22 @@ async function loadSentryTimeline() {
             const evType = ev.event_type || '';
             // Map event types to display labels and dot classes
             const eventLabels = {
-                'sentry': { label: '🟣 Sentry Mode', dot: 'sentry' },
-                'saved': { label: '🔵 Saved Clip', dot: 'saved' },
-                'harsh_brake': { label: '🔴 Hard Brake', dot: 'driving' },
-                'emergency_brake': { label: '🔴 Emergency Brake', dot: 'driving-critical' },
-                'hard_acceleration': { label: '🟠 Hard Acceleration', dot: 'driving' },
-                'sharp_turn': { label: '🟡 Sharp Turn', dot: 'driving' },
-                'speed_alert': { label: '🔴 Speed Alert', dot: 'driving-critical' },
-                'fsd_disengage': { label: '🟢 FSD Disengage', dot: 'fsd' },
-                'fsd_engage': { label: '🟢 FSD Engage', dot: 'fsd' },
+                'sentry':          { label: _t('mapping.event_sentry'),           dot: 'sentry' },
+                'saved':           { label: _t('mapping.event_saved'),            dot: 'saved' },
+                'harsh_brake':     { label: _t('mapping.event_harsh_brake'),      dot: 'driving' },
+                'emergency_brake': { label: _t('mapping.event_emergency_brake'),  dot: 'driving-critical' },
+                'hard_acceleration': { label: _t('mapping.event_hard_accel'),     dot: 'driving' },
+                'sharp_turn':      { label: _t('mapping.event_sharp_turn'),       dot: 'driving' },
+                'speed_alert':     { label: _t('mapping.event_speed_alert'),      dot: 'driving-critical' },
+                'fsd_disengage':   { label: _t('mapping.event_fsd_disengage'),    dot: 'fsd' },
+                'fsd_engage':      { label: _t('mapping.event_fsd_engage'),       dot: 'fsd' },
             };
             const info = eventLabels[evType] || { label: evType.replace(/_/g, ' '), dot: 'driving' };
             const dotClass = info.dot;
             const typeLabel = info.label;
             const dateStr = formatLocalTime(ev.timestamp);
-            const folder = (ev.event_folder || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            const sourceFolder = (ev.source_folder || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const folder = escapeHTML(ev.event_folder || '');
+            const sourceFolder = escapeHTML(ev.source_folder || '');
 
             // Driving events have description; sentry/saved have clip counts
             const isFolderEvent = (evType === 'sentry' || evType === 'saved');
@@ -3529,7 +3613,7 @@ async function loadSentryTimeline() {
             }
 
             const hasCoords = ev.lat != null && ev.lon != null && (ev.lat !== 0 || ev.lon !== 0);
-            const videoPath = (ev.video_path || '').replace(/"/g, '&quot;');
+            const videoPath = escapeHTML(ev.video_path || '');
             const frameOffset = ev.frame_offset || 0;
 
             html += '<div class="st-event" data-folder="' + sourceFolder + '" data-name="' + folder + '" data-video-path="' + videoPath + '" data-frame-offset="' + frameOffset + '" data-event-type="' + evType + '"';
@@ -3563,7 +3647,7 @@ async function loadSentryTimeline() {
         startLazyEventDetails(list);
     } catch(e) {
         console.error('Failed to load sentry timeline:', e);
-        list.innerHTML = '<div class="vp-empty">Failed to load events</div>';
+        list.innerHTML = '<div class="vp-empty">' + _t('mapping.load_events_fail') + '</div>';
     }
 }
 
@@ -3639,14 +3723,14 @@ async function loadTripsTimeline() {
         const data = await resp.json();
 
         if (!data.trips || data.trips.length === 0) {
-            list.innerHTML = '<div class="vp-empty">No trips indexed yet.<br><small>Trips are detected from dashcam GPS data when videos are indexed.</small></div>';
+            list.innerHTML = '<div class="vp-empty">' + _t('mapping.no_trips') + '<br><small>' + _t('mapping.no_trips_desc') + '</small></div>';
             return;
         }
 
         const trips = data.trips;
         let html = '<div class="sentry-timeline">';
         const totalVideos = trips.reduce(function(s, t) { return s + (t.video_count || 0); }, 0);
-        html += '<div class="st-summary"><strong>' + trips.length + ' Trip' + (trips.length !== 1 ? 's' : '') + '</strong>' + (totalVideos > 0 ? ' \u00b7 <span>' + totalVideos + ' video' + (totalVideos !== 1 ? 's' : '') + '</span>' : '') + '</div>';
+        html += '<div class="st-summary"><strong>' + _t('mapping.sentry_trips').replace('{n}', trips.length) + '</strong>' + (totalVideos > 0 ? ' \u00b7 <span>' + _t('mapping.sentry_videos').replace('{n}', totalVideos) + '</span>' : '') + '</div>';
 
         trips.forEach(function(trip) {
             const dateStr = formatLocalTime(trip.start_time);
@@ -3662,17 +3746,17 @@ async function loadTripsTimeline() {
 
             const hasCoords = trip.start_lat != null && trip.start_lon != null;
 
-            html += '<div class="st-event" data-trip-id="' + trip.id + '"';
+            html += '<div class="st-event" data-trip-id="' + escapeHTML(String(trip.id)) + '"';
             if (hasCoords) html += ' data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '"';
             html += '>';
             html += '<div class="st-dot trip"></div>';
             html += '<div class="st-card">';
-            html += '<div class="st-type">' + (evCount > 0 ? '\u26A0 Trip with Events' : 'Trip') + '</div>';
+            html += '<div class="st-type">' + (evCount > 0 ? _t('mapping.trip_with_events') : _t('mapping.trip')) + '</div>';
             html += '<div class="st-date">' + dateStr + '</div>';
             html += '<div class="st-meta">' + metaHtml + '</div>';
             html += '<div class="st-actions">';
             if (hasCoords) {
-                html += '<button class="vp-btn st-btn-map" title="Show on Map" data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '" data-trip-id="' + trip.id + '">&#128205;</button>';
+                html += '<button class="vp-btn st-btn-map" title="' + _t('mapping.show_on_map') + '" data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '" data-trip-id="' + escapeHTML(String(trip.id)) + '">&#128205;</button>';
             }
             html += '</div></div></div>';
         });
@@ -3685,18 +3769,18 @@ async function loadTripsTimeline() {
             el.addEventListener('click', function(e) {
                 if (e.target.closest('.vp-btn')) return;
                 const tripId = el.dataset.tripId;
-                if (tripId) selectDayForTrip(parseInt(tripId));
+                if (tripId) selectDayForTrip(parseInt(tripId, 10));
             });
         });
         list.querySelectorAll('.st-btn-map[data-trip-id]').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const tripId = btn.dataset.tripId;
-                if (tripId) selectDayForTrip(parseInt(tripId));
+                if (tripId) selectDayForTrip(parseInt(tripId, 10));
             });
         });
     } catch(e) {
         console.error('Failed to load trips:', e);
-        list.innerHTML = '<div class="vp-empty">Failed to load trips</div>';
+        list.innerHTML = '<div class="vp-empty">' + _t('mapping.load_trips_fail') + '</div>';
     }
 }
 
@@ -3716,7 +3800,7 @@ async function loadVideoList(append) {
 
         if (!append) list.innerHTML = '';
         if (!data.events || data.events.length === 0) {
-            if (!append) list.innerHTML = '<div class="vp-empty">No videos in this folder</div>';
+            if (!append) list.innerHTML = '<div class="vp-empty">' + _t('mapping.no_videos_folder') + '</div>';
             return;
         }
 
@@ -3734,13 +3818,12 @@ async function loadVideoList(append) {
             card.className = 'vp-clip';
 
             const name = ev.name || 'Unknown';
-            const safeName = name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            const dateStr = name.replace(/_/g, ' ').substring(0, 16);
-            const safeDateStr = dateStr.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const safeName = escapeHTML(ev.name || 'Unknown');
+            const dateStr = (ev.name || '').replace(/_/g, ' ').substring(0, 16);
+            const safeDateStr = escapeHTML(dateStr);
             const sizeMb = ev.size_mb || 0;
             const cameras = Object.keys(ev.camera_videos || {}).length;
-            const reason = ev.reason || '';
-            const safeReason = reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const safeReason = escapeHTML(ev.reason || '');
 
             card.innerHTML =
                 '<div class="vp-clip-info">' +
@@ -3771,13 +3854,13 @@ async function loadVideoList(append) {
         if (vpHasNext) {
             var more = document.createElement('button');
             more.className = 'vp-load-more';
-            more.textContent = 'Load More';
-            more.onclick = function() { vpPage++; more.remove(); loadVideoList(true); };
+            more.textContent = _t('mapping.load_more');
+            more.onclick = function() { vpPage++; more.disabled = true; more.textContent = _t('mapping.loading'); loadVideoList(true).finally(function() { more.remove(); }); };
             list.appendChild(more);
         }
     } catch(e) {
         console.error('Failed to load videos:', e);
-        if (!append) list.innerHTML = '<div class="vp-empty">Failed to load videos</div>';
+        if (!append) list.innerHTML = '<div class="vp-empty">' + _t('mapping.load_videos_fail') + '</div>';
     }
 }
 
@@ -3797,7 +3880,7 @@ async function openVideoFromPanel(folder, eventName) {
 
         const frontClips = data.front_clips || [];
         if (frontClips.length === 0) {
-            if (typeof showToast === 'function') showToast('No video clips found', 'warning');
+            if (typeof showToast === 'function') showToast(_t('mapping.toast_no_clips_found'), 'warning');
             return;
         }
 
@@ -3830,7 +3913,7 @@ async function openVideoFromPanel(folder, eventName) {
         }
     } catch(e) {
         console.error('Failed to open video:', e);
-        if (typeof showToast === 'function') showToast('Failed to open video: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_open_video_fail') + ': ' + e.message, 'error');
     }
 }
 
@@ -3839,18 +3922,18 @@ function vpDownload(folder, name) {
 }
 
 async function vpDelete(folder, name) {
-    if (!confirm('Delete "' + name + '" and all its camera angles?')) return;
+    if (!confirm(_t('mapping.confirm_delete_clip').replace('{name}', name))) return;
     try {
         var resp = await fetch('/videos/delete_event/' + encodeURIComponent(folder) + '/' + encodeURIComponent(name), { method: 'POST' });
         var data = await resp.json();
         if (data.success) {
-            if (typeof showToast === 'function') showToast('Deleted ' + data.deleted_count + ' files', 'success');
+            if (typeof showToast === 'function') showToast(_t('mapping.toast_deleted_n').replace('{n}', data.deleted_count), 'success');
             loadVideoList();
         } else {
             if (typeof showToast === 'function') showToast(data.error || 'Delete failed', 'error');
         }
     } catch(e) {
-        if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_delete_fail') + ': ' + e.message, 'error');
     }
 }
 
@@ -3871,7 +3954,7 @@ async function vpArchive(folder, name, btn) {
             if (btn) { btn.disabled = false; btn.textContent = '☁'; }
         }
     } catch(e) {
-        if (typeof showToast === 'function') showToast('Archive failed: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_archive_fail') + ': ' + e.message, 'error');
         if (btn) { btn.disabled = false; btn.textContent = '☁'; }
     }
 }
@@ -3884,7 +3967,7 @@ function _vpArchivePoll(btn) {
             if (st.completed) {
                 clearInterval(timer);
                 if (btn) { btn.textContent = '✓'; btn.style.color = '#34C759'; }
-                if (typeof showToast === 'function') showToast('Archived to cloud!', 'success');
+                if (typeof showToast === 'function') showToast(_t('mapping.toast_archived'), 'success');
                 setTimeout(function() { if (btn) { btn.disabled = false; btn.textContent = '☁'; btn.style.color = '#32ADE6'; } }, 4000);
             } else if (st.error) {
                 clearInterval(timer);
@@ -3914,7 +3997,7 @@ async function vpQueueForSync(folder, name, btn) {
             if (typeof showToast === 'function') showToast(data.message || 'Queue failed', 'error');
         }
     } catch(e) {
-        if (typeof showToast === 'function') showToast('Queue failed: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast(_t('mapping.toast_queue_fail') + ': ' + e.message, 'error');
     } finally {
         if (btn) { btn.disabled = false; }
     }
@@ -3941,16 +4024,16 @@ document.getElementById('vpList').addEventListener('click', function(e) {
                 // Driving event — open overlay with the video directly
                 var lat = parseFloat(stEvent.dataset.lat);
                 var lon = parseFloat(stEvent.dataset.lon);
-                var frameOffset = parseInt(stEvent.dataset.frameOffset) || 0;
+                var frameOffset = parseInt(stEvent.dataset.frameOffset, 10) || 0;
                 openVideoOverlay({ video_path: videoPath, frame_offset: frameOffset, lat: lat, lon: lon });
-                if (!isNaN(lat) && !isNaN(lon)) map.setView([lat, lon], 16);
+                if (!isNaN(lat) && !isNaN(lon) && mapReady()) map.setView([lat, lon], 16);
             }
         } else if (btn.classList.contains('st-btn-dl')) {
             window.location.href = '/videos/download_event/' + encodeURIComponent(folder) + '/' + encodeURIComponent(name);
         } else if (btn.classList.contains('st-btn-map')) {
             var lat = parseFloat(btn.dataset.lat);
             var lon = parseFloat(btn.dataset.lon);
-            if (!isNaN(lat) && !isNaN(lon)) {
+            if (!isNaN(lat) && !isNaN(lon) && mapReady()) {
                 map.setView([lat, lon], 16);
                 toggleVideoPanel();
             }
