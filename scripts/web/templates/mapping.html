@@ -2769,6 +2769,9 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     });
     overlayClipIdx = Math.max(0, overlayClips.findIndex(c => c.basePath === overlayBasePath));
 
+    // Disable prev/next buttons when there's only 0-1 clips
+    var hasMultiple = overlayClips.length > 1;
+
     // Position overlay
     const mapEl = document.getElementById('map');
     const mapRect = mapEl.getBoundingClientRect();
@@ -2818,8 +2821,8 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             <span id="olHudStatus" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
             <div class="overlay-actions">
                 <button class="nav-btn" id="overlayHudBtn" title="遥测 HUD 开关" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
-                <button class="nav-btn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
-                <button class="nav-btn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
+                <button class="nav-btn" id="overlayPrevBtn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
+                <button class="nav-btn" id="overlayNextBtn" onclick="navigateClip(1)" title="${_t('player.next_clip')}">${_iconSvg('icon-chevron-right', 16)}</button>
                 <button class="nav-btn" onclick="overlayDownload()" title="${_t('mapping.download_zip')}">${_iconSvg('icon-download', 16)}</button>
                 {% if cloud_provider_connected %}<button class="nav-btn" id="archiveNavBtn" onclick="overlayArchive()" title="${_t('mapping.archive_to_cloud')}" style="color:#32ADE6">${_iconSvg('icon-cloud-upload', 16)}</button>{% endif %}
                 <button class="nav-btn" onclick="overlayFullscreen()" title="${_t('player.fullscreen')}" aria-label="${_t('player.fullscreen')}"><svg class="nav-icon"><use href="${LUCIDE_SPRITE}#icon-maximize"></use></svg></button>
@@ -2831,6 +2834,14 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
 
     document.body.appendChild(overlay);
     document.getElementById('overlayTitle').textContent = filename;
+
+    // Disable prev/next buttons when only one clip
+    if (!hasMultiple) {
+        var prevBtn = document.getElementById('overlayPrevBtn');
+        var nextBtn = document.getElementById('overlayNextBtn');
+        if (prevBtn) { prevBtn.disabled = true; prevBtn.style.opacity = '0.35'; }
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.35'; }
+    }
 
     // Wire up HUD toggle button — show/hide the telemetry overlay on the video
     var hudBtn = document.getElementById('overlayHudBtn');
@@ -3204,7 +3215,7 @@ function switchCamera(angle) {
     });
 
     const title = document.getElementById('overlayTitle');
-    if (title) title.textContent = `🎥 ${newFilename}`;
+    if (title) title.textContent = newFilename;
 
     video.src = `/videos/stream/${newPath}`;
     video.addEventListener('loadedmetadata', function onLoad() {
@@ -3226,7 +3237,7 @@ function navigateClip(direction) {
     const newFilename = newPath.split('/').pop();
 
     const title = document.getElementById('overlayTitle');
-    if (title) title.textContent = `🎥 ${newFilename}`;
+    if (title) title.textContent = newFilename;
 
     const video = document.getElementById('overlayVideo');
     if (!video) return;
@@ -3238,6 +3249,12 @@ function navigateClip(direction) {
     }, { once: true });
 
     updateOverlayTelemetry(clip.firstWaypoint);
+
+    // Update button states
+    var prevBtn = document.getElementById('overlayPrevBtn');
+    var nextBtn = document.getElementById('overlayNextBtn');
+    if (prevBtn) { prevBtn.disabled = (overlayClipIdx === 0); prevBtn.style.opacity = overlayClipIdx === 0 ? '0.35' : ''; }
+    if (nextBtn) { nextBtn.disabled = (overlayClipIdx >= overlayClips.length - 1); nextBtn.style.opacity = nextBtn.disabled ? '0.35' : ''; }
 }
 
 async function openEventVideo(tripId, videoPath, frameOffset, lat, lon) {
