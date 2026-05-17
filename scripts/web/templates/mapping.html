@@ -448,7 +448,7 @@
         position: fixed; z-index: 2000;
         background: var(--bg-secondary, #1a1a2e); border-radius: 12px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.5); overflow: hidden;
-        width: 480px; max-width: 90vw;
+        width: 480px; max-width: 94vw;
         border: 1px solid var(--border, #333);
     }
     .video-overlay-header {
@@ -467,30 +467,34 @@
     }
     .video-overlay-info {
         padding: 8px 12px; font-size: 12px; color: var(--text-secondary, #aaa);
-        display: flex; gap: 12px; flex-wrap: wrap;
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    /* Bottom button bar: center on mobile, right-align on desktop */
+    .video-overlay-info .overlay-actions {
+        display: flex; gap: 4px;
+        margin-left: auto;
     }
     .video-overlay-stage { position: relative; }
     .cam-switcher {
         display: flex; gap: 3px; padding: 6px;
         background: var(--bg-primary, #111);
-        /* No horizontal scroll: buttons share space evenly via flex:1.
-           Tight gap + minimal padding lets full labels (incl. "L Pillar"
-           and "R Pillar") fit without truncation in the default 480px
-           overlay width. */
-        overflow: hidden;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;  /* hide scrollbar on Firefox */
     }
+    .cam-switcher::-webkit-scrollbar { display: none; }  /* hide scrollbar on WebKit */
     .cam-btn {
-        flex: 1 1 0; min-width: 0;
-        padding: 4px 4px; border: 1px solid var(--border, #333); border-radius: 4px;
+        flex: 0 0 auto; min-width: 52px;
+        padding: 4px 6px; border: 1px solid var(--border, #333); border-radius: 4px;
         background: var(--bg-secondary, #1a1a2e); color: var(--text-secondary, #aaa);
         font-size: 11px; cursor: pointer;
         display: inline-flex; align-items: center; justify-content: center;
-        gap: 4px; overflow: hidden;
+        gap: 3px; white-space: nowrap;
     }
     .cam-btn:hover { background: var(--bg-hover, #333); color: var(--text-primary, #eee); }
     .cam-btn.active { background: var(--accent-color, #007bff); color: #fff; border-color: var(--accent-color, #007bff); }
     .cam-btn .cam-icon { width: 12px; height: 12px; flex-shrink: 0; }
-    .cam-btn .cam-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cam-btn .cam-label { white-space: nowrap; }
     .nav-btn {
         padding: 3px 10px; border: 1px solid var(--border, #333); border-radius: 4px;
         background: var(--bg-secondary, #1a1a2e); color: var(--text-primary, #eee);
@@ -499,6 +503,27 @@
     }
     .nav-btn:hover { background: var(--accent-color, #007bff); color: #fff; }
     .nav-btn .nav-icon { width: 14px; height: 14px; }
+
+    /* ── Mobile overlay fixes ── */
+    @media (max-width: 768px) {
+        .video-overlay {
+            width: 94vw !important;
+            left: 3vw !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            border-radius: 12px;
+        }
+        .video-overlay-info .overlay-actions {
+            margin-left: 0;
+            justify-content: center;
+            width: 100%;
+        }
+        .cam-btn {
+            min-width: 44px;
+            padding: 4px 5px;
+            font-size: 10px;
+        }
+    }
 
     /* ── Maximized video overlay (window-bound, keeps HUD) ──
        Different from the native <video controls> fullscreen, which only
@@ -2771,7 +2796,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
         <div class="video-overlay-info" id="overlayInfo">
             <span id="olCoords">${_iconSvg('icon-map-pin', 14)} —</span>
             <span id="olHudStatus" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
-            <div style="margin-left:auto; display:flex; gap:4px;">
+            <div class="overlay-actions">
                 <button class="nav-btn" id="overlayHudBtn" title="遥测 HUD 开关" style="color:#60a5fa">${_iconSvg('icon-eye', 16)}</button>
                 <button class="nav-btn" id="overlayPlayerBtn" title="全屏播放页" style="color:#60a5fa">${_iconSvg('icon-play', 16)}</button>
                 <button class="nav-btn" onclick="navigateClip(-1)" title="${_t('player.previous_clip')}">${_iconSvg('icon-chevron-left', 16)}</button>
