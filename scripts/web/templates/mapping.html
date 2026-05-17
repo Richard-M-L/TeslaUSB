@@ -513,10 +513,24 @@
             transform: translateY(-50%) !important;
             border-radius: 12px;
         }
+        .video-overlay-info {
+            padding: 6px 8px;
+            gap: 4px;
+        }
         .video-overlay-info .overlay-actions {
             margin-left: 0;
             justify-content: center;
             width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+        }
+        .video-overlay-info .overlay-actions::-webkit-scrollbar { display: none; }
+        .nav-btn {
+            padding: 2px 8px;
+            font-size: 13px;
+            flex-shrink: 0;
         }
         .cam-btn {
             min-width: 44px;
