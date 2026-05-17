@@ -458,78 +458,27 @@
         transform: none;
     }
 
-    /* SEI Overlay Toggle */
-    .sei-toggle-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 0 15px;
-        border-right: 1px solid rgba(255,255,255,0.1);
-        margin-right: 10px;
-    }
-
-    .sei-toggle-label {
-        font-size: 0.7em;
-        color: rgba(255,255,255,0.7);
-        margin-bottom: 8px;
-        text-align: center;
-        line-height: 1.2;
-        font-weight: 500;
-    }
-
-    .sei-toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-
-    .sei-toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .sei-toggle-slider {
-        position: absolute;
+    /* Telemetry HUD toggle card — matches camera-option style */
+    .sei-toggle-option {
+        border-color: rgba(100, 180, 255, 0.45);
+        background: rgba(20, 40, 80, 0.65);
         cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(120, 120, 120, 0.8);
-        transition: 0.3s;
-        border-radius: 24px;
     }
 
-    .sei-toggle-slider::after {
-        content: '';
-        position: absolute;
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        top: 3px;
-        background-color: white;
-        transition: 0.3s;
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .sei-toggle-option:hover {
+        border-color: rgba(100, 180, 255, 0.7);
+        background: rgba(25, 55, 100, 0.8);
+        transform: translateY(-4px);
     }
 
-    .sei-toggle-switch input:checked + .sei-toggle-slider {
-        background-color: #4CAF50;
+    .sei-toggle-option.active {
+        border-color: rgba(100, 180, 255, 1);
+        background: rgba(30, 60, 110, 0.9);
+        box-shadow: 0 4px 16px rgba(50, 140, 255, 0.4);
     }
 
-    .sei-toggle-switch input:checked + .sei-toggle-slider::after {
-        transform: translateX(26px);
-    }
-
-    .sei-toggle-status {
-        font-size: 0.65em;
-        color: rgba(255,255,255,0.9);
-        margin-top: 6px;
-        text-align: center;
-        font-weight: 500;
+    .sei-toggle-option .camera-icon {
+        color: rgba(120, 180, 255, 0.9);
     }
 
     /* Hide HUD when in stream mode */
@@ -740,7 +689,7 @@
                     <!-- Speed -->
                     <div class="hud-speed">
                         <div class="hud-speed-value" id="hudSpeed">0</div>
-                        <div class="hud-speed-label">km/h</div>
+                        <div class="hud-speed-label">{{ _("player.hud_speed_unit") }}</div>
                     </div>
 
                     <!-- Right turn signal -->
@@ -766,7 +715,7 @@
                     </div>
 
                     <!-- Autopilot status label -->
-                    <div class="hud-autopilot" id="autopilotIndicator">Self-Driving</div>
+                    <div class="hud-autopilot" id="autopilotIndicator">{{ _("player.hud_self_driving") }}</div>
                 </div>
             </div>
         </div>
@@ -794,13 +743,15 @@
         </div>
         {% endif %}
 
-        <!-- SEI Overlay Toggle -->
-        <div class="sei-toggle-container">
-            <div class="sei-toggle-label">HUD<br>Overlay</div>
-            <label class="sei-toggle-switch">
-                <input type="checkbox" id="seiToggle" onchange="toggleSEIMode()">
-                <span class="sei-toggle-slider"></span>
-            </label>
+        <!-- Telemetry HUD Toggle — shows speed, steering, brake, throttle, gear -->
+        <div class="camera-option sei-toggle-option" id="seiToggleCard"
+             onclick="toggleSEIMode()" title="{{ _('player.hud_overlay') }}">
+            <svg class="camera-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="8" r="5"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+                <circle cx="12" cy="14" r="1" fill="currentColor"/>
+                <path d="M12 10v3"/>
+            </svg>
+            <div class="camera-label" id="seiToggleLabel">{{ _("player.hud_overlay") }}</div>
         </div>
 
         {% if event.camera_videos.front %}
@@ -932,7 +883,7 @@
         {% elif cloud_archive_available %}
         <div class="camera-option archive-option disabled" id="archiveButton" title="Connect a cloud provider in Cloud settings to archive videos" style="opacity:0.4;cursor:not-allowed;">
             <i class="bi bi-cloud-arrow-up camera-icon" id="archiveIcon"></i>
-            <div class="camera-label" id="archiveLabel">Archive</div>
+            <div class="camera-label" id="archiveLabel">{{ _("player.archive") }}</div>
         </div>
         {% endif %}
 
@@ -943,9 +894,9 @@
             <div class="camera-label" id="deleteLabel">{{ _("common.delete") }}</div>
         </div>
         {% else %}
-        <div class="camera-option delete-option disabled" id="deleteButton" title="Enable Network Sharing to delete videos">
+        <div class="camera-option delete-option disabled" id="deleteButton" title="{{ _('player.enable_sharing_to_delete') }}">
             <i class="bi bi-trash camera-icon" id="deleteIcon"></i>
-            <div class="camera-label" id="deleteLabel">Delete</div>
+            <div class="camera-label" id="deleteLabel">{{ _("common.delete") }}</div>
         </div>
         {% endif %}
     </div>
@@ -991,7 +942,7 @@
         const nextBtn = document.getElementById('nextClipBtn');
 
         if (clipInfo) {
-            clipInfo.textContent = `Clip ${currentClipIndex + 1} of ${eventClips.length}`;
+            clipInfo.textContent = (_t ? _t('player.clip_of', {n: currentClipIndex + 1, total: eventClips.length}) : ('Clip ' + (currentClipIndex + 1) + ' of ' + eventClips.length));
         }
 
         if (prevBtn) {
@@ -1114,31 +1065,37 @@
 
     // SEI overlay mode management
     let seiOverlayEnabled = localStorage.getItem('seiOverlayEnabled') === 'true';
-    const seiToggle = document.getElementById('seiToggle');
+    const seiToggleCard = document.getElementById('seiToggleCard');
+    const seiToggleLabel = document.getElementById('seiToggleLabel');
 
     // Initialize toggle state from localStorage
     function initSEIToggle() {
-        seiToggle.checked = seiOverlayEnabled;
+        if (seiOverlayEnabled) {
+            seiToggleCard.classList.add('active');
+            if (seiToggleLabel) seiToggleLabel.textContent = _t ? _t('player.hud_overlay') : 'Telemetry';
+        }
         updateHUDVisibility();
     }
 
     // Show/hide HUD based on mode
     function updateHUDVisibility() {
-        const hudElement = document.querySelector('.tesla-hud');
+        var hudElement = document.querySelector('.tesla-hud');
         if (hudElement) {
-            if (seiOverlayEnabled) {
-                hudElement.classList.remove('hidden');
-            } else {
-                hudElement.classList.add('hidden');
-            }
+            hudElement.classList.toggle('hidden', !seiOverlayEnabled);
         }
     }
 
     // Toggle SEI mode and reload video
     function toggleSEIMode() {
-        seiOverlayEnabled = seiToggle.checked;
+        seiOverlayEnabled = !seiOverlayEnabled;
         localStorage.setItem('seiOverlayEnabled', seiOverlayEnabled);
 
+        if (seiOverlayEnabled) {
+            seiToggleCard.classList.add('active');
+            if (seiToggleLabel) seiToggleLabel.textContent = (_t ? _t('player.hud_overlay') : 'Telemetry');
+        } else {
+            seiToggleCard.classList.remove('active');
+        }
         updateHUDVisibility();
 
         // If switching to stream mode and download is in progress, abort it
@@ -1369,7 +1326,8 @@
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'seiLoading';
         loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:#fff;padding:30px 50px;border-radius:12px;z-index:9999;font-size:18px;text-align:center;backdrop-filter:blur(10px);';
-        loadingDiv.innerHTML = '<div style="margin-bottom:15px;">⏳ Loading Video...</div><div style="font-size:14px;opacity:0.7;" id="seiProgress">Preparing...</div>';
+        var loadingText = _t ? _t('player.loading_video') : 'Loading Video...';
+        loadingDiv.innerHTML = '<div style="margin-bottom:15px;">⏳ ' + loadingText + '</div><div style="font-size:14px;opacity:0.7;" id="seiProgress">' + (_t ? _t('player.preparing') : 'Preparing...') + '</div>';
         document.body.appendChild(loadingDiv);
 
         try {
@@ -1380,7 +1338,7 @@
             console.log('Fetching SEI data from:', videoUrl);
 
             const progressDiv = document.getElementById('seiProgress');
-            progressDiv.textContent = resumeFrom > 0 ? 'Resuming download...' : 'Downloading video file...';
+            progressDiv.textContent = _t ? _t('player.downloading_video') : 'Downloading video file...';
 
             const headers = {
                 'Accept': 'video/mp4'
@@ -1514,7 +1472,9 @@
             // Show error and remove loading indicator
             const loadingDiv = document.getElementById('seiLoading');
             if (loadingDiv) {
-                loadingDiv.innerHTML = '<div style="color:#ff5555;">❌ Video download failed</div><div style="font-size:14px;margin-top:10px;">' + err.message + '</div><div style="margin-top:15px;font-size:14px;opacity:0.7;">Please check your connection and try again</div>';
+                var failText = _t ? _t('player.video_download_failed') : '❌ Video download failed';
+                var checkText = _t ? _t('player.check_connection') : 'Please check your connection and try again';
+                loadingDiv.innerHTML = '<div style="color:#ff5555;">' + failText + '</div><div style="font-size:14px;margin-top:10px;">' + err.message + '</div><div style="margin-top:15px;font-size:14px;opacity:0.7;">' + checkText + '</div>';
                 setTimeout(() => loadingDiv.remove(), 3000);
             }
 
@@ -1729,7 +1689,7 @@
 
         // Show preparing state
         icon.className = 'bi bi-hourglass-split camera-icon';
-        label.textContent = 'Preparing...';
+        label.textContent = _t ? _t('player.preparing') : 'Preparing...';
 
         // Build download URL
         const downloadUrl = "{{ url_for('videos.download_event', folder=folder, event_name=event.name) }}";
@@ -1745,13 +1705,13 @@
         // Show downloading state after 1 second
         setTimeout(() => {
             icon.className = 'bi bi-cloud-download camera-icon';
-            label.textContent = 'Downloading...';
+            label.textContent = _t ? _t('player.downloading') : 'Downloading...';
         }, 1000);
 
         // Reset to ready state after 8 seconds
         setTimeout(() => {
             icon.className = 'bi bi-download camera-icon';
-            label.textContent = 'Download All';
+            label.textContent = _t ? _t('player.download_all') : 'Download All';
             button.style.pointerEvents = '';
             button.style.opacity = '';
             downloadInProgress = false;
@@ -1764,16 +1724,17 @@
 
         // Check if disabled (not in edit mode)
         if (button.classList.contains('disabled')) {
-            alert('Enable Network Sharing to delete videos');
+            alert(_t ? _t('player.enable_sharing_to_delete') : 'Enable Network Sharing to delete videos');
             return;
         }
 
         // Confirm deletion
-        const confirmMsg = folderStructure === 'flat'
-            ? `Delete all camera views for session "${eventName}"?`
-            : `Delete entire event folder "${eventName}" and all its contents?`;
+        var tFn = _t || function(k, p) { return k; };
+        var confirmMsg = folderStructure === 'flat'
+            ? tFn('player.delete_confirm_session', {name: eventName})
+            : tFn('player.delete_confirm_event', {name: eventName});
 
-        if (!confirm(confirmMsg + '\n\nThis cannot be undone.')) {
+        if (!confirm(confirmMsg + '\n\n' + tFn('player.cannot_undo'))) {
             return;
         }
 
@@ -1784,7 +1745,7 @@
         button.style.pointerEvents = 'none';
         button.style.opacity = '0.5';
         icon.className = 'bi bi-hourglass-split camera-icon';
-        label.textContent = 'Deleting...';
+        label.textContent = _t ? _t('player.deleting') : 'Deleting...';
 
         // Make delete request
         fetch(`/videos/delete_event/${encodeURIComponent(folder)}/${encodeURIComponent(eventName)}`, {
@@ -1797,7 +1758,7 @@
         .then(data => {
             if (data.success) {
                 icon.className = 'bi bi-check-circle camera-icon';
-                label.textContent = 'Deleted!';
+                label.textContent = _t ? _t('player.deleted') : 'Deleted!';
 
                 // Redirect back to video list after a brief delay
                 setTimeout(() => {

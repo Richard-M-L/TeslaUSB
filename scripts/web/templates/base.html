@@ -46,10 +46,15 @@
                 }
                 return undefined;
             }
-            window._t = function(key) {
-                if (data[key]) return data[key];
-                var result = _t_nested(data, key);
-                return result !== undefined ? result : key;
+            window._t = function(key, params) {
+                var text = data[key] || _t_nested(data, key);
+                if (text === undefined) text = key;
+                if (params) {
+                    Object.keys(params).forEach(function(k) {
+                        text = text.replace('{' + k + '}', params[k]);
+                    });
+                }
+                return text;
             };
             window._locale = locale;
         })();
