@@ -68,6 +68,16 @@ PROVIDERS = {
         "rclone_type": "dropbox",
         "authorize_cmd": 'rclone authorize "dropbox"',
     },
+    "smb": {
+        "label": "SMB/CIFS (NAS)",
+        "rclone_type": "smb",
+        "authorize_cmd": None,
+    },
+    "sftp": {
+        "label": "SFTP/SSH (NAS)",
+        "rclone_type": "sftp",
+        "authorize_cmd": None,
+    },
 }
 
 
@@ -156,6 +166,40 @@ def save_credentials(provider: str, token: dict) -> None:
     os.replace(tmp, CLOUD_PROVIDER_CREDS_PATH)
 
     logger.info("Cloud credentials saved for provider: %s", provider)
+
+
+def save_nas_credentials(provider: str, creds: dict) -> None:
+    """Encrypt and persist NAS (SMB/SFTP) rclone credentials.
+
+    Mirrors :func:`save_credentials` but for non-OAuth providers.
+    The ``creds`` dict is written directly into the rclone config
+    (host, user, pass, share, etc.) with an explicit backend type.
+
+    Args:
+        provider: Provider key ('smb' or 'sftp').
+        creds: Dict of rclone config keys from the UI form.
+    """
+    from services.crypto_utils import derive_encryption_key
+    from cryptography.fernet import Fernet
+
+    rclone_type = PROVIDERS.get(provider, {}).get("rclone_type", provider)
+
+    store = {"type": rclone_type}
+    store.update(creds)
+
+    key = derive_encryption_key()
+    fernet = Fernet(key)
+    encrypted = fernet.encrypt(json.dumps(store).encode())
+
+    os.makedirs(os.path.dirname(CLOUD_PROVIDER_CREDS_PATH) or '.', exist_ok=True)
+    tmp = CLOUD_PROVIDER_CREDS_PATH + '.tmp'
+    with open(tmp, 'wb') as f:
+        f.write(encrypted)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, CLOUD_PROVIDER_CREDS_PATH)
+
+    logger.info("NAS credentials saved for provider: %s", provider)
 
 
 def _discover_onedrive_id(token: dict) -> Optional[str]:

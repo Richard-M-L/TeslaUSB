@@ -406,6 +406,62 @@ def api_save_provider():
         return jsonify({"success": False, "message": str(exc)}), 500
 
 
+@cloud_archive_bp.route('/api/nas_connect', methods=['POST'])
+def api_nas_connect():
+    """Save NAS (SMB/SFTP) provider credentials.
+
+    Expects JSON: { "provider": "smb", "credentials": { "host": "...", ... } }
+    """
+    from services.cloud_rclone_service import save_nas_credentials, PROVIDERS
+
+    data = request.get_json(silent=True) or {}
+    provider = data.get('provider', '')
+    credentials = data.get('credentials', {})
+
+    if not provider or not credentials:
+        return jsonify({"success": False,
+                        "message": "Missing provider or credentials."}), 400
+
+    if provider not in PROVIDERS:
+        return jsonify({"success": False,
+                        "message": f"Unknown provider: {provider}"}), 400
+
+    if provider not in ('smb', 'sftp'):
+        return jsonify({"success": False,
+                        "message": f"Provider {provider} does not use NAS credentials."}), 400
+
+    # Validate required fields per provider
+    if provider == 'smb':
+        required = ['host', 'user', 'pass', 'share']
+    else:  # sftp
+        required = ['host', 'user', 'pass']
+
+    missing = [f for f in required if not credentials.get(f)]
+    if missing:
+        return jsonify({
+            "success": False,
+            "message": f"Missing required fields: {', '.join(missing)}"
+        }), 400
+
+    # Apply defaults
+    if not credentials.get('port'):
+        credentials['port'] = '445' if provider == 'smb' else '22'
+    if provider == 'smb' and not credentials.get('domain'):
+        credentials['domain'] = 'WORKGROUP'
+
+    # Remove empty optional fields so rclone doesn't see key_file = ""
+    if provider == 'sftp' and not credentials.get('key_file'):
+        credentials.pop('key_file', None)
+
+    try:
+        save_nas_credentials(provider, credentials)
+        _update_config_yaml({'cloud_archive.provider': provider})
+        return jsonify({"success": True, "message": "Connected successfully."})
+    except Exception as exc:
+        logger.exception("Failed to save NAS credentials for %s", provider)
+        return jsonify({"success": False, "message": str(exc)}), 500
+
+
 # ---------------------------------------------------------------------------
 # rclone authorize token paste endpoints
 # ---------------------------------------------------------------------------

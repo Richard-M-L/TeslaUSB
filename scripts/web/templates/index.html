@@ -2151,7 +2151,13 @@ if (document.getElementById('fsck-status-container')) {
                     /\{(\w+)\}/g,
                     function(_, k) {
                         var v = (block.message_params || {})[k];
-                        return v != null ? v : '';
+                        if (v == null) return '';
+                        // If the value looks like a translation key
+                        // (e.g. health.pause_reason_load), resolve it.
+                        if (typeof v === 'string' && v.indexOf('health.') === 0) {
+                            return _t(v);
+                        }
+                        return v;
                     }
                 ));
             } else {

@@ -169,7 +169,7 @@ cloud_archive:
   enabled: true                             # 是否启用云同步
 
   # 云服务商（通过 Web 界面配置 OAuth 授权，凭据加密存储，不在此处填写）
-  provider: ""                              # google_drive / onedrive / dropbox / s3 / b2 / wasabi
+  provider: ""                              # google_drive / onedrive / dropbox / s3 / b2 / wasabi / smb / sftp
   remote_path: "TeslaUSB"                   # 云端存储路径/文件夹名
 
   # 要同步的 TeslaCam 子文件夹

@@ -245,6 +245,8 @@
                     <option value="s3"{% if provider == 's3' %} selected{% endif %}>Amazon S3</option>
                     <option value="b2"{% if provider == 'b2' %} selected{% endif %}>Backblaze B2</option>
                     <option value="wasabi"{% if provider == 'wasabi' %} selected{% endif %}>Wasabi</option>
+                    <option value="smb"{% if provider == 'smb' %} selected{% endif %}>SMB/CIFS (NAS)</option>
+                    <option value="sftp"{% if provider == 'sftp' %} selected{% endif %}>SFTP/SSH (NAS)</option>
                 </select>
             </div>
 
@@ -319,6 +321,62 @@
                     </button>
                     <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtnSetup">{{ _("cloud.test_connection") }}</button>
                     <span id="testConnResultSetup" style="font-size: var(--text-sm); color: var(--text-secondary); align-self: center;"></span>
+                </div>
+            </div>
+
+            {# NAS-based providers: SMB/SFTP #}
+            <div id="nasSetup" style="display: none;">
+                <div style="margin-bottom: var(--space-3);">
+                    <label for="nasHost" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_host") }}</label>
+                    <input type="text" id="nasHost" autocomplete="off" placeholder="e.g. 192.168.1.100"
+                           style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                </div>
+                <div style="margin-bottom: var(--space-3);">
+                    <label for="nasPort" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_port") }}</label>
+                    <input type="number" id="nasPort" autocomplete="off" placeholder="445"
+                           style="width: 100%; max-width: 120px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                </div>
+                <div style="margin-bottom: var(--space-3);">
+                    <label for="nasUser" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_username") }}</label>
+                    <input type="text" id="nasUser" autocomplete="off"
+                           style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                </div>
+                <div style="margin-bottom: var(--space-3);">
+                    <label for="nasPass" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_password") }}</label>
+                    <div style="display: flex; gap: 4px; max-width: 360px;">
+                        <input type="password" id="nasPass" autocomplete="off"
+                               style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                        <button type="button" onclick="toggleFieldSecret('nasPass', this)"
+                                style="padding: 4px 8px; background-color: var(--btn-info-bg); color: var(--btn-info-text); border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">{{ _("common.show") }}</button>
+                    </div>
+                </div>
+                {# SMB-only fields #}
+                <div id="nasSmbFields" style="display: none;">
+                    <div style="margin-bottom: var(--space-3);">
+                        <label for="nasShare" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_share") }}</label>
+                        <input type="text" id="nasShare" autocomplete="off" placeholder="e.g. TeslaArchive"
+                               style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: var(--space-3);">
+                        <label for="nasDomain" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_domain") }}</label>
+                        <input type="text" id="nasDomain" autocomplete="off" placeholder="WORKGROUP"
+                               style="width: 100%; max-width: 360px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                    </div>
+                </div>
+                {# SFTP-only fields #}
+                <div id="nasSftpFields" style="display: none;">
+                    <div style="margin-bottom: var(--space-3);">
+                        <label for="nasKeyFile" style="display: block; margin-bottom: 4px; font-weight: 500; color: var(--text-primary);">{{ _("cloud.nas_key_file") }}</label>
+                        <input type="text" id="nasKeyFile" autocomplete="off" placeholder="{{ _('cloud.nas_key_file_placeholder') }}"
+                               style="width: 100%; max-width: 480px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-input); background-color: var(--form-input-bg); color: var(--text-primary); font-size: 14px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="edit-btn" onclick="saveNasProvider()" style="padding: 8px 16px; font-size: 14px;">
+                        {{ _("cloud.save_and_connect") }}
+                    </button>
+                    <button type="button" class="action-btn" onclick="testConnection()" id="testConnBtnNas">{{ _("cloud.test_connection") }}</button>
+                    <span id="testConnResultNas" style="font-size: var(--text-sm); color: var(--text-secondary); align-self: center;"></span>
                 </div>
             </div>
             {% endif %}
@@ -966,8 +1024,8 @@
        =================================================================== */
 
     window.testConnection = async function() {
-        var btn = document.getElementById('testConnBtn') || document.getElementById('testConnBtnSetup');
-        var result = document.getElementById('testConnResult') || document.getElementById('testConnResultSetup');
+        var btn = document.getElementById('testConnBtn') || document.getElementById('testConnBtnSetup') || document.getElementById('testConnBtnNas');
+        var result = document.getElementById('testConnResult') || document.getElementById('testConnResultSetup') || document.getElementById('testConnResultNas');
         if (btn) { btn.disabled = true; btn.textContent = _t('cloud.testing'); }
         if (result) { result.textContent = ''; result.style.color = 'var(--text-secondary)'; }
         _showBusy(_t('cloud.testing_connection'));
@@ -1001,6 +1059,7 @@
 
     var rcloneProviders = ['google-drive', 'onedrive', 'dropbox'];
     var keyProviders = ['s3', 'b2', 'wasabi'];
+    var nasProviders = ['smb', 'sftp'];
     var rcloneCmds = {
         'google-drive': 'rclone authorize "drive"',
         'onedrive':     'rclone authorize "onedrive"',
@@ -1017,10 +1076,29 @@
         var val = sel ? sel.value : '';
         var rcloneDiv = document.getElementById('rcloneSetup');
         var keyDiv = document.getElementById('keySetup');
+        var nasDiv = document.getElementById('nasSetup');
         var endpointGroup = document.getElementById('endpointGroup');
 
         if (rcloneDiv) rcloneDiv.style.display = rcloneProviders.indexOf(val) !== -1 ? 'block' : 'none';
         if (keyDiv) keyDiv.style.display = keyProviders.indexOf(val) !== -1 ? 'block' : 'none';
+        if (nasDiv) nasDiv.style.display = nasProviders.indexOf(val) !== -1 ? 'block' : 'none';
+
+        /* Toggle SMB/SFTP-specific fields */
+        var smbFields = document.getElementById('nasSmbFields');
+        var sftpFields = document.getElementById('nasSftpFields');
+        if (smbFields) smbFields.style.display = (val === 'smb') ? 'block' : 'none';
+        if (sftpFields) sftpFields.style.display = (val === 'sftp') ? 'block' : 'none';
+
+        /* Reset NAS fields on provider switch */
+        if (nasProviders.indexOf(val) !== -1) {
+            ['nasHost','nasPort','nasUser','nasPass','nasShare','nasDomain','nasKeyFile'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            /* Set default ports */
+            var portEl = document.getElementById('nasPort');
+            if (portEl) portEl.placeholder = val === 'sftp' ? '22' : '445';
+        }
 
         /* Update rclone command and provider name */
         if (rcloneProviders.indexOf(val) !== -1) {
@@ -1150,6 +1228,61 @@
                 showToast(data.message || _t('cloud.failed_to_save_provider'), 'error');
             }
         } catch (e) {
+            showToast(_t('cloud.network_error'), 'error');
+        }
+    };
+
+    window.saveNasProvider = async function() {
+        var sel = document.getElementById('providerSelect');
+        var provider = sel ? sel.value : '';
+        if (!provider || nasProviders.indexOf(provider) === -1) {
+            showToast(_t('cloud.select_provider_warning'), 'warning');
+            return;
+        }
+
+        var credentials = {
+            host: (document.getElementById('nasHost') || {}).value || '',
+            port: (document.getElementById('nasPort') || {}).value || '',
+            user: (document.getElementById('nasUser') || {}).value || '',
+            pass: (document.getElementById('nasPass') || {}).value || '',
+        };
+
+        if (provider === 'smb') {
+            credentials.share = (document.getElementById('nasShare') || {}).value || '';
+            credentials.domain = (document.getElementById('nasDomain') || {}).value || '';
+            if (!credentials.host || !credentials.user || !credentials.pass || !credentials.share) {
+                showToast('Host, Username, Password, and Share are required.', 'warning');
+                return;
+            }
+        } else {  // sftp
+            credentials.key_file = (document.getElementById('nasKeyFile') || {}).value || '';
+            if (!credentials.host || !credentials.user || !credentials.pass) {
+                showToast('Host, Username, and Password are required.', 'warning');
+                return;
+            }
+        }
+
+        _showBusy(_t('cloud.connecting'));
+
+        try {
+            var resp = await fetch('{{ url_for("cloud_archive.api_nas_connect") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ provider: provider, credentials: credentials })
+            });
+            var data = await resp.json();
+            _hideBusy();
+            if (data.success) {
+                showToast(_t('cloud.connected_success'), 'success');
+                setTimeout(function() { window.location.reload(); }, 1500);
+            } else {
+                showToast(data.message || _t('cloud.connect_failed'), 'error');
+            }
+        } catch (e) {
+            _hideBusy();
             showToast(_t('cloud.network_error'), 'error');
         }
     };
@@ -1385,8 +1518,9 @@
         }
     };
 
-    window.toggleCredSecret = function(btn) {
-        var field = document.getElementById('credSecret');
+    window.toggleFieldSecret = function(fieldId, btn) {
+        var field = document.getElementById(fieldId);
+        if (!field) return;
         if (field.type === 'password') {
             field.type = 'text';
             btn.textContent = _t('common.hide');
@@ -1394,6 +1528,10 @@
             field.type = 'password';
             btn.textContent = _t('common.show');
         }
+    };
+
+    window.toggleCredSecret = function(btn) {
+        toggleFieldSecret('credSecret', btn);
     };
 
     /* ===================================================================

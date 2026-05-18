@@ -219,59 +219,61 @@ def _format_eta_human(eta_seconds: int) -> str:
 
 
 def _format_pause_reason(load_pause: Dict[str, Any],
-                         disk_pause: Dict[str, Any]) -> str:
-    """Phase 4.5 (#101) — render a self-explanatory pause-reason string.
+                         disk_pause: Dict[str, Any]) -> tuple:
+    """Phase 4.5 (#101) — return (reason_key, reason_params) for i18n.
 
     The archive worker auto-pauses for two reasons:
 
-    * **load** — 1-min loadavg crossed
-      ``archive_queue.load_pause_threshold`` (default 3.5). The pause
-      relieves the SDIO bus and keeps the hardware watchdog daemon
-      from missing its kick. Reason string: ``"load 4.2 > 3.5"``.
-    * **disk** — free space at ``archive_root`` fell below the
-      configured critical threshold (default 100 MB). The pause stops
-      new copies until retention or manual cleanup frees space.
-      Reason string: ``"SD card 96% full"`` (when total is known) or
-      ``"SD card 50 MB free (threshold 100 MB)"`` (when only free is
-      known).
+    * **load** — 1-min loadavg crossed ``archive_queue.load_pause_threshold``.
+    * **disk** — free space at ``archive_root`` fell below the critical threshold.
 
-    When both fire concurrently we join them with a semicolon.
-    When neither has armed (``pause_worker()`` was called manually,
-    or the worker is paused for an unknown reason at the iteration
-    boundary), return ``"background"`` so the caller renders a
-    generic "Paused (background task)" without claiming false specificity.
+    Returns:
+        (key, params) where key is a translatable message key and params
+        is a dict of substitution values.  When neither guard has armed,
+        returns ``('health.pause_reason_background', {})``.
     """
-    parts = []
-
     load_now = bool(load_pause.get('is_paused_now'))
     load_avg = load_pause.get('last_loadavg')
     load_thresh = load_pause.get('threshold')
-    if load_now and isinstance(load_avg, (int, float)) and \
-            isinstance(load_thresh, (int, float)) and load_thresh > 0:
-        parts.append(f'load {load_avg:.1f} > {load_thresh:.1f}')
-
     disk_now = bool(disk_pause.get('is_paused_now'))
     free_mb = disk_pause.get('last_free_mb')
     total_mb = disk_pause.get('last_total_mb')
     crit_mb = disk_pause.get('critical_threshold_mb')
-    if disk_now and isinstance(free_mb, (int, float)) and free_mb >= 0:
-        if isinstance(total_mb, (int, float)) and total_mb > 0:
-            pct_full = int(round((1 - free_mb / total_mb) * 100))
-            # Cap at 99% so we never claim "100% full" — there's
-            # always at least the few MB the OS keeps reserved.
-            pct_full = min(pct_full, 99)
-            parts.append(f'SD card {pct_full}% full')
-        elif isinstance(crit_mb, (int, float)) and crit_mb > 0:
-            parts.append(
-                f'SD card {int(free_mb)} MB free '
-                f'(threshold {int(crit_mb)} MB)'
-            )
-        else:
-            parts.append(f'SD card {int(free_mb)} MB free')
 
-    if not parts:
-        return 'background'
-    return '; '.join(parts)
+    has_load = (load_now and isinstance(load_avg, (int, float)) and
+                isinstance(load_thresh, (int, float)) and load_thresh > 0)
+    has_disk = (disk_now and isinstance(free_mb, (int, float)) and free_mb >= 0)
+
+    # Both firing at once — rare, use a combined key
+    if has_load and has_disk:
+        pct_full = int(round((1 - free_mb / total_mb) * 100)) if (
+            isinstance(total_mb, (int, float)) and total_mb > 0) else None
+        return ('health.pause_reason_load_disk', {
+            'load': f'{load_avg:.1f}',
+            'threshold': f'{load_thresh:.1f}',
+            'disk_pct': str(min(pct_full, 99)) if pct_full is not None else '',
+            'disk_free': str(int(free_mb)),
+        })
+
+    if has_load:
+        return ('health.pause_reason_load', {
+            'load': f'{load_avg:.1f}',
+            'threshold': f'{load_thresh:.1f}',
+        })
+
+    if has_disk:
+        if isinstance(total_mb, (int, float)) and total_mb > 0:
+            pct_full = min(int(round((1 - free_mb / total_mb) * 100)), 99)
+            return ('health.pause_reason_disk_pct', {'pct': str(pct_full)})
+        elif isinstance(crit_mb, (int, float)) and crit_mb > 0:
+            return ('health.pause_reason_disk_free', {
+                'free': str(int(free_mb)),
+                'threshold': str(int(crit_mb)),
+            })
+        else:
+            return ('health.pause_reason_disk_free_simple', {'free': str(int(free_mb))})
+
+    return ('health.pause_reason_background', {})
 
 
 def _archive_block() -> Dict[str, Any]:
@@ -350,6 +352,9 @@ def _archive_block() -> Dict[str, Any]:
     # data points (queue depth, ETA) every poll so the operator can
     # see WHAT changed across transitions, not have the whole thing
     # rewritten.
+    # Queue / ETA / dead-letter counts are surfaced as translation
+    # parameters so every branch below produces localised text.
+    reason_key, reason_params = _format_pause_reason(load_pause, disk_pause)
     queue_tail = ''
     if pending > 0:
         if eta_human:
@@ -367,37 +372,33 @@ def _archive_block() -> Dict[str, Any]:
 
     if not running:
         sev = SEV_ERROR
-        msg = 'Worker not running' + queue_tail + dead_tail
         msg_key = 'health.worker_stalled'
-        msg_params = {}
+        msg_params = {'pending': pending, 'eta': eta_human or '', 'dead': dead}
     elif wd_sev == SEV_ERROR:
         sev = SEV_ERROR
         wd_txt = watchdog.get('message')
         if wd_txt:
-            msg = wd_txt[:160] + dead_tail
+            msg = wd_txt[:160]
+            if dead > 0:
+                msg += f' · {dead} failed'
             msg_key = ''
             msg_params = {}
         else:
-            msg = 'Watchdog error' + dead_tail
             msg_key = 'health.watchdog_error'
-            msg_params = {}
+            msg_params = {'dead': dead}
     elif lost_24h > 0:
         # Lost-files dominates dead-letters because lost footage is
         # unrecoverable, whereas a dead-letter row still has the source
         # data on the SD card and can be retried.
         sev = SEV_WARN
-        msg = (f'{lost_24h} clip{"s" if lost_24h != 1 else ""} '
-               'lost in last 24h') + queue_tail + dead_tail
         msg_key = 'health.archive_lost_clips'
-        msg_params = {'n': lost_24h}
+        msg_params = {'n': lost_24h, 'pending': pending, 'eta': eta_human or '', 'dead': dead}
     elif dead > 0:
         # Issue #180 — actionable wording instead of "N dead-letter
         # rows" jargon. The card's overall row links to /jobs.
         sev = SEV_WARN
-        msg = (f'{dead} job{"s" if dead != 1 else ""} need attention '
-               '— open Failed Jobs') + queue_tail
         msg_key = 'health.indexer_dead'
-        msg_params = {'dead': dead}
+        msg_params = {'dead': dead, 'pending': pending, 'eta': eta_human or ''}
     elif paused_effective:
         sev = SEV_WARN
         # Phase 4.5 — render the actual reason instead of an opaque
@@ -405,14 +406,15 @@ def _archive_block() -> Dict[str, Any]:
         # (manual ``pause_worker()`` from a mode switch, RW remount,
         # quick-edit), ``_format_pause_reason`` returns "background"
         # which we surface as the human-friendly fallback.
-        if pause_reason == 'background':
-            msg = 'Paused (background task)' + queue_tail
+        if reason_key == 'health.pause_reason_background':
+            msg = ''
             msg_key = 'health.archive_paused_background'
-            msg_params = {}
+            msg_params = {'pending': pending, 'eta': eta_human or ''}
         else:
-            msg = f'Paused: {pause_reason}' + queue_tail
+            msg = ''
             msg_key = 'health.archive_paused_reason'
-            msg_params = {'reason': pause_reason}
+            msg_params = {'reason_key': reason_key, 'pending': pending, 'eta': eta_human or ''}
+            msg_params.update(reason_params)
     elif wd_sev == SEV_WARN:
         sev = SEV_WARN
         wd_txt = watchdog.get('message')
@@ -421,31 +423,18 @@ def _archive_block() -> Dict[str, Any]:
             msg_key = ''
             msg_params = {}
         else:
-            msg = 'Watchdog warn' + dead_tail
             msg_key = 'health.watchdog_warn'
-            msg_params = {}
+            msg_params = {'dead': dead}
     elif pending > 200:
         sev = SEV_WARN
-        if eta_human:
-            msg = f'{pending} pending — est. {eta_human}'
-            msg_key = 'health.archive_pending_eta'
-            msg_params = {'n': pending, 'eta': eta_human}
-        else:
-            msg = f'{pending} pending (catch-up)'
-            msg_key = 'health.archive_pending_catchup'
-            msg_params = {'n': pending}
+        msg_key = 'health.archive_pending_eta' if eta_human else 'health.archive_pending_catchup'
+        msg_params = {'n': pending, 'eta': eta_human or ''}
     else:
         sev = SEV_OK
-        if pending and eta_human:
-            msg = f'{pending} pending — est. {eta_human}'
-            msg_key = 'health.archive_pending_eta'
-            msg_params = {'n': pending, 'eta': eta_human}
-        elif pending:
-            msg = f'{pending} pending'
-            msg_key = 'health.archive_pending'
-            msg_params = {'n': pending}
+        if pending:
+            msg_key = 'health.archive_pending_eta' if eta_human else 'health.archive_pending'
+            msg_params = {'n': pending, 'eta': eta_human or ''}
         else:
-            msg = 'Idle, queue empty'
             msg_key = 'health.archive_idle'
             msg_params = {}
 
@@ -471,7 +460,7 @@ def _archive_block() -> Dict[str, Any]:
         # Phase 4.5 — surface raw pause-reason for callers that want
         # to render their own UI (chip, tooltip, etc.) without
         # re-parsing the message string.
-        'pause_reason': pause_reason if paused_effective else None,
+        'pause_reason': reason_key if paused_effective else None,
     }
 
 

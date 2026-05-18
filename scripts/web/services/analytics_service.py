@@ -218,8 +218,6 @@ def get_storage_health():
 
     # Check each partition for storage space
     for partition_name, stats in usage.items():
-        friendly_name = _friendly_name(partition_name)
-
         if 'error' in stats:
             health['status'] = 'critical'
             health['alerts'].append({
@@ -233,17 +231,35 @@ def get_storage_health():
 
         if percent >= 95:
             health['status'] = 'critical'
-            health['alerts'].append(f"{friendly_name}: Critical storage ({percent:.1f}% used)")
-            health['recommendations'].append(f"Delete videos from {friendly_name} drive immediately")
+            health['alerts'].append({
+                'key': 'analytics.alert_critical_storage',
+                'drive_key': _partition_key(partition_name),
+                'percent': percent,
+            })
+            health['recommendations'].append({
+                'key': 'analytics.recommend_delete_immediately',
+                'drive_key': _partition_key(partition_name),
+            })
         elif percent >= 90:
             if health['status'] != 'critical':
                 health['status'] = 'warning'
-            health['alerts'].append(f"{friendly_name}: Low storage ({percent:.1f}% used)")
-            health['recommendations'].append(f"Consider cleaning up old videos from {friendly_name} drive")
+            health['alerts'].append({
+                'key': 'analytics.alert_low_storage',
+                'drive_key': _partition_key(partition_name),
+                'percent': percent,
+            })
+            health['recommendations'].append({
+                'key': 'analytics.recommend_cleanup_old',
+                'drive_key': _partition_key(partition_name),
+            })
         elif percent >= 80:
             if health['status'] == 'healthy':
                 health['status'] = 'warning'
-            health['alerts'].append(f"{friendly_name}: Storage usage at {percent:.1f}%")
+            health['alerts'].append({
+                'key': 'analytics.alert_storage_usage',
+                'drive_key': _partition_key(partition_name),
+                'percent': percent,
+            })
 
     return health
 

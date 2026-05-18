@@ -11,14 +11,14 @@
         <div class="alert alert-critical">
             <strong>{{ _('analytics.critical_storage_alert') }}</strong>
             {% for alert in health.alerts %}
-                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
+                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), percent='%.1f'|format(alert.get('percent', 0)), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
             {% endfor %}
         </div>
     {% elif health.status == 'warning' %}
         <div class="alert alert-warning">
             <strong>{{ _('analytics.storage_warning') }}</strong>
             {% for alert in health.alerts %}
-                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
+                <div>{% if alert is mapping %}{{ _(alert.key, drive=_(alert.drive_key), percent='%.1f'|format(alert.get('percent', 0)), days=alert.get('days', 0), error=alert.get('error', '')) }}{% else %}{{ alert }}{% endif %}</div>
             {% endfor %}
         </div>
     {% else %}
@@ -60,7 +60,7 @@
                          style="width: {{ usage.percent_used }}%">
                     </div>
                 </div>
-                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}{{ _('analytics.percent_used') }}</div>
+                <div class="progress-label">{{ "%.1f"|format(usage.percent_used) }}% {{ _('analytics.percent_used') }}</div>
 
                 <div class="partition-path">{{ usage.path }}</div>
             {% endif %}
