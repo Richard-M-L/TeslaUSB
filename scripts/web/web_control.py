@@ -172,10 +172,11 @@ def handle_os_error(e):
 # once from the upstream source.
 #
 # Default upstream: Gaode (高德) street tiles, accessible inside China
-# without a proxy.  NOTE — Gaode uses the GCJ-02 datum, which shifts
-# WGS-84 GPS coordinates by ~300 m.  If your Pi has VPN access, set
-# ``map.tile_upstream_url`` in config.yaml to the OSM URL below for
-# native WGS-84 tiles:
+# without VPN.  Gaode tiles use the GCJ-02 datum, but the frontend
+# (mapping.html) automatically transforms Tesla's WGS-84 GPS to GCJ-02
+# before rendering, so points align correctly with roads.  If you prefer
+# OpenStreetMap tiles (native WGS-84, no transform needed), set
+# ``map.tile_upstream_url`` in config.yaml — requires VPN in China:
 #
 #     mapping:
 #       tile_upstream_url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"

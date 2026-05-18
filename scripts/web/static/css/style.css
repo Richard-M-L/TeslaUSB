@@ -3001,6 +3001,74 @@ details summary:hover {
     border-color: var(--ds-accent-primary);
 }
 
+/* --- WiFi scan custom dropdown (replaces native <datalist>) --- */
+.wifi-scan-dropdown {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 100%;
+    max-width: 300px;
+    margin: 2px 0 0 0;
+    padding: 4px 0;
+    list-style: none;
+    background: var(--bg-secondary);
+    border: 1px solid var(--ds-accent-primary, var(--border-color));
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    max-height: 220px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.wifi-scan-dropdown li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    min-height: 44px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+.wifi-scan-dropdown li:last-child {
+    border-bottom: none;
+}
+
+.wifi-scan-dropdown li:hover,
+.wifi-scan-dropdown li.active {
+    background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+[data-theme="dark"] .wifi-scan-dropdown li:hover,
+[data-theme="dark"] .wifi-scan-dropdown li.active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.wifi-scan-icon {
+    width: 18px;
+    text-align: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.wifi-scan-ssid {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wifi-scan-signal {
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 /* === Filesystem Check cards === */
 .fsck-partitions {
     display: grid;

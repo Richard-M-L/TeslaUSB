@@ -218,11 +218,11 @@
                 <button class="edit-btn" onclick="toggleAddNetwork()" id="btnAddNetwork" style="padding:4px 10px;font-size:0.85em">{{ _("index.add_network") }}</button>
             </div>
             <div id="addNetworkPanel" style="display:none;margin-top:12px;padding:12px;background-color:var(--bg-info);border:1px solid var(--border-color);border-radius:var(--radius-md,8px)">
-                <div style="margin-bottom:8px">
+                <div style="margin-bottom:8px;position:relative">
                     <label for="newWifiSSID" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">{{ _("index.ssid") }}</label>
-                    <input type="text" id="newWifiSSID" maxlength="32" placeholder="{{ _('index.network_name') }}" list="wifiScanResults"
-                           class="settings-form-input" style="max-width:300px">
-                    <datalist id="wifiScanResults"></datalist>
+                    <input type="text" id="newWifiSSID" maxlength="32" placeholder="{{ _('index.network_name') }}"
+                           class="settings-form-input" style="max-width:300px" autocomplete="off">
+                    <ul id="wifiScanResults" class="wifi-scan-dropdown" style="display:none" role="listbox"></ul>
                 </div>
                 <div style="margin-bottom:8px">
                     <label for="newWifiPassword" style="display:block;font-size:0.85em;font-weight:500;color:var(--text-primary);margin-bottom:4px">{{ _("index.password") }}</label>
@@ -978,15 +978,143 @@ function scanAndRefreshNetworks() {
     .then(r => r.json())
     .then(networks => {
         btn.disabled = false; btn.textContent = _t('index.scan');
-        // Update datalist for add-network panel
+        // Populate custom dropdown for add-network panel
         const dl = document.getElementById('wifiScanResults');
         if (dl && networks.length) {
-            dl.innerHTML = networks.map(n => '<option value="' + n.ssid.replace(/"/g, '&quot;') + '">' + n.signal + '% ' + (n.secured ? '🔒' : '') + '</option>').join('');
+            dl.innerHTML = networks.map(function(n, i) {
+                return '<li role="option" data-value="' + n.ssid.replace(/"/g, '&quot;') + '"' +
+                       ' data-secured="' + (n.secured ? '1' : '0') + '"' +
+                       ' data-signal="' + n.signal + '"' +
+                       ' tabindex="0"' +
+                       '><span class="wifi-scan-icon">' + (n.secured ? '🔒' : '') + '</span>' +
+                       '<span class="wifi-scan-ssid">' + n.ssid.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+                       '<span class="wifi-scan-signal">' + getSignalIcon(n.signal) + ' ' + n.signal + '%</span></li>';
+            }).join('');
+            _wifiScanData = networks;
         }
         // Refresh the saved networks list (now with updated signal info)
         loadSavedNetworks();
     })
-    .catch(() => { btn.disabled = false; btn.textContent = _t('index.scan'); });
+    .catch(function() { btn.disabled = false; btn.textContent = _t('index.scan'); });
+}
+
+// --- WiFi scan dropdown (custom, replaces native <datalist>) ---
+var _wifiScanData = [];
+
+(function initWifiScanDropdown() {
+    var input = document.getElementById('newWifiSSID');
+    var list = document.getElementById('wifiScanResults');
+    if (!input || !list) return;
+
+    // Show dropdown on focus or click (mobile: tap to open)
+    input.addEventListener('focus', _showWifiDropdown);
+    input.addEventListener('click', function(e) {
+        // On mobile, a tap may not trigger focus reliably
+        if (document.activeElement === input && _wifiScanData.length) {
+            _showWifiDropdown();
+        }
+    });
+
+    // Filter as user types
+    input.addEventListener('input', function() {
+        var val = input.value.toLowerCase();
+        var items = list.querySelectorAll('li');
+        var visible = 0;
+        for (var i = 0; i < items.length; i++) {
+            var ssid = (items[i].dataset.value || '').toLowerCase();
+            if (!val || ssid.indexOf(val) !== -1) {
+                items[i].style.display = '';
+                visible++;
+            } else {
+                items[i].style.display = 'none';
+            }
+        }
+        list.style.display = visible ? '' : 'none';
+    });
+
+    // Select item on click/tap
+    list.addEventListener('click', function(e) {
+        var li = e.target.closest('li');
+        if (!li) return;
+        _selectWifiItem(li);
+    });
+
+    // Keyboard navigation
+    input.addEventListener('keydown', function(e) {
+        var items = _visibleWifiItems();
+        if (!items.length) return;
+        var cur = list.querySelector('li.active');
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            var idx = cur ? items.indexOf(cur) : -1;
+            var next = items[(idx + 1) % items.length];
+            _focusWifiItem(next);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            var idxUp = cur ? items.indexOf(cur) : -1;
+            var prev = items[(idxUp - 1 + items.length) % items.length];
+            _focusWifiItem(prev);
+        } else if (e.key === 'Enter') {
+            if (cur) {
+                e.preventDefault();
+                _selectWifiItem(cur);
+            } else {
+                list.style.display = 'none';
+            }
+        } else if (e.key === 'Escape') {
+            list.style.display = 'none';
+        }
+    });
+
+    // Click outside closes the dropdown
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+            list.style.display = 'none';
+        }
+    });
+})();
+
+function _showWifiDropdown() {
+    var list = document.getElementById('wifiScanResults');
+    if (!list || !_wifiScanData.length) return;
+    // Show all items (reset filter)
+    var items = list.querySelectorAll('li');
+    for (var i = 0; i < items.length; i++) items[i].style.display = '';
+    list.style.display = '';
+}
+
+function _visibleWifiItems() {
+    var list = document.getElementById('wifiScanResults');
+    if (!list) return [];
+    var items = list.querySelectorAll('li');
+    var visible = [];
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].style.display !== 'none') visible.push(items[i]);
+    }
+    return visible;
+}
+
+function _focusWifiItem(li) {
+    var list = document.getElementById('wifiScanResults');
+    var items = list.querySelectorAll('li');
+    for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+    li.classList.add('active');
+    // Scroll into view within the dropdown
+    var listRect = list.getBoundingClientRect();
+    var liRect = li.getBoundingClientRect();
+    if (liRect.bottom > listRect.bottom) li.scrollIntoView(false);
+    if (liRect.top < listRect.top) li.scrollIntoView(true);
+}
+
+function _selectWifiItem(li) {
+    var input = document.getElementById('newWifiSSID');
+    var list = document.getElementById('wifiScanResults');
+    input.value = li.dataset.value || '';
+    list.style.display = 'none';
+    // Focus the password field so user can continue
+    var pw = document.getElementById('newWifiPassword');
+    if (pw) pw.focus();
 }
 
 function confirmWifiUpdate() {

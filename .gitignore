@@ -42,6 +42,10 @@ tesla_salt.bin
 *.key
 *.pem
 
+# Config — the user's config.yaml is never tracked.
+# config.example.yaml is the versioned template.
+config.yaml
+
 # Config backups (timestamped copies left by setup_usb.sh)
 config.yaml.bak.*
 

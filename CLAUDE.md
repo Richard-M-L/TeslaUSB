@@ -67,6 +67,9 @@ There is **no CI pipeline**; tests are run locally by contributors.
 - `config.yaml` — **single source of truth** for ALL configuration. Bash reads via `config.sh` (yq), Python via `web/config.py` (PyYAML). Never hardcode values.
 
 ## Configuration
+- `config.example.yaml` is the **versioned template** (tracked in git).
+- `config.yaml` is the **user's runtime config** — gitignored, never overwritten by upgrades.
+- `setup_usb.sh` copies `config.example.yaml` → `config.yaml` on fresh install if the latter is missing.
 - Edit `config.yaml` → restart `gadget_web.service` (and `wifi-monitor.service` if network settings changed).
 - Template changes also need `sudo ./setup_usb.sh` to substitute `__PLACEHOLDER__` values.
 - For one-file template updates, sed-substitute manually and `systemctl daemon-reload` — faster than full `setup_usb.sh`.

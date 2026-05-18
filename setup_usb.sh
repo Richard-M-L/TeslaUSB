@@ -38,6 +38,20 @@ fi
 # Run early optimization before any package installs
 early_memory_optimization
 
+# If config.yaml does not exist (fresh clone / first install),
+# create it from the versioned template so the user has a working
+# default to edit.  Existing config.yaml is never overwritten.
+CONFIG_IS_NEW=false
+if [ ! -f "$SCRIPT_DIR/config.yaml" ]; then
+  if [ -f "$SCRIPT_DIR/config.example.yaml" ]; then
+    cp "$SCRIPT_DIR/config.example.yaml" "$SCRIPT_DIR/config.yaml"
+    CONFIG_IS_NEW=true
+  else
+    echo "错误：未找到 config.example.yaml 模板文件"
+    exit 1
+  fi
+fi
+
 # Check if yq is installed (required to read config.yaml)
 if ! command -v yq &> /dev/null; then
   echo "yq 未安装。正在安装 yq 和 python3-yaml..."
@@ -63,6 +77,49 @@ fi
 # Override TARGET_USER if running via sudo (prefer SUDO_USER)
 if [ -n "${SUDO_USER-}" ]; then
   TARGET_USER="$SUDO_USER"
+fi
+
+# If config.yaml was just created from the template (or still uses defaults),
+# warn the user about insecure default passwords before proceeding.
+_check_default() {
+  local key="$1" current="$2" default="$3"
+  if [ "$current" = "$default" ]; then
+    return 0  # match — still default
+  fi
+  return 1
+}
+WARN_ITEMS=""
+_check_default "Samba 密码"     "${SAMBA_PASS:-}"     "tesla"          && WARN_ITEMS="$WARN_ITEMS  - Samba 密码 (network.samba_password) 仍为默认值 \"tesla\"\n"
+_check_default "AP 热点密码"     "${OFFLINE_AP_PASSPHRASE:-}" "teslausb1234" && WARN_ITEMS="$WARN_ITEMS  - AP 热点密码 (offline_ap.passphrase) 仍为默认值 \"teslausb1234\"\n"
+_check_default "AP 热点名称"     "${OFFLINE_AP_SSID:-}"      "TeslaUSB"    && WARN_ITEMS="$WARN_ITEMS  - AP 热点名称 (offline_ap.ssid) 仍为默认值 \"TeslaUSB\"\n"
+if [ -n "$WARN_ITEMS" ]; then
+  echo ""
+  echo "╔══════════════════════════════════════════════════════════════╗"
+  echo "║  ⚠️  安 全 提 醒                                            ║"
+  echo "╠══════════════════════════════════════════════════════════════╣"
+  echo "║                                                            ║"
+  echo "║  以下配置项仍使用模板默认值，存在安全风险：                  ║"
+  echo "║                                                            ║"
+  printf "%b" "$WARN_ITEMS"
+  echo "║                                                            ║"
+  if [ "$CONFIG_IS_NEW" = "true" ]; then
+    echo "║  config.yaml 刚刚从模板创建，尚未编辑。                      ║"
+  fi
+  echo "║                                                            ║"
+  echo "║  你可以：                                                   ║"
+  echo "║  - 现在退出，编辑 config.yaml 后重新运行                    ║"
+  echo "║  - 继续部署，之后通过 Web 界面修改（设置页面）              ║"
+  echo "║                                                            ║"
+  echo "╚══════════════════════════════════════════════════════════════╝"
+  echo ""
+  read -p "是否继续部署？（y=继续 / n=退出并编辑配置）[y/n]: " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "已取消。请编辑 config.yaml 后重新运行 sudo ./setup_usb.sh"
+    exit 0
+  fi
+  echo "将继续使用当前配置进行部署..."
+  echo ""
 fi
 
 IMG_CAM_PATH="$GADGET_DIR/$IMG_CAM_NAME"

@@ -1,0 +1,269 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                      TeslaUSB 配 置 文 件 模 板                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
+# 📖 使用说明
+# ──────────
+# 1. 将此文件复制为 config.yaml：  cp config.example.yaml config.yaml
+#    （首次运行 setup_usb.sh 会自动完成此步骤）
+# 2. 编辑 config.yaml，修改标记 ⚠️ 的必改项
+# 3. config.yaml 不会被 Git 跟踪，升级不会覆盖你的配置
+#
+# ⚠️ 必须修改的配置项（安全相关）
+# ──────────────────────────────
+#   - network.samba_password          Samba 文件共享密码
+#   - offline_ap.passphrase           车载 WiFi 热点密码
+#   - web.secret_key                  Flask 会话加密密钥
+#
+# 🔧 建议检查的配置项（按需调整）
+# ──────────────────────────────
+#   - offline_ap.ssid                 热点名称（默认 TeslaUSB）
+#   - setup.*                         磁盘分区大小
+#   - mapping.sample_rate             地图轨迹采样率
+#   - cloud_archive.*                 云同步设置
+#   - archive.retention_days          本地视频保留天数
+#   - cleanup.*                       存储空间管理
+#
+# 💡 提示
+# ────────
+#   - 修改配置后需重启服务：sudo systemctl restart gadget_web.service
+#   - 所有带路径的配置项使用绝对路径
+#   - 布尔值使用 true / false（小写）
+#   - 此模板由 Git 版本控制，config.yaml 不受影响
+# ============================================================================
+
+
+# ============================================================================
+# 安装与路径
+# ============================================================================
+installation:
+  target_user: pi                           # 运行 TeslaUSB 服务的 Linux 用户
+  mount_dir: /mnt/gadget                    # USB 硬盘挂载目录
+
+
+# ============================================================================
+# 磁盘镜像
+# ============================================================================
+disk_images:
+  cam_name: usb_cam.img                     # 行车记录仪镜像文件名
+  lightshow_name: usb_lightshow.img         # 灯光秀镜像文件名
+  cam_label: TeslaCam                       # 行车记录仪盘标签
+  lightshow_label: Lightshow                # 灯光秀盘标签
+  music_name: usb_music.img                 # 音乐镜像文件名（可选第三分区）
+  music_label: Music                        # 音乐盘标签（特斯拉要求 FAT32）
+  music_enabled: true                       # 是否启用音乐分区
+  music_fs: fat32                           # 音乐镜像文件系统格式
+  boot_fsck_enabled: true                   # 启动时自动检查并修复文件系统
+
+
+# ============================================================================
+# 磁盘分区大小（setup_usb.sh 使用）
+# ============================================================================
+# 留空 "" 则安装时交互式输入
+setup:
+  part1_size: ""                            # 行车记录仪分区大小（如 "50G"）
+  part2_size: ""                            # 灯光秀分区大小（如 "10G"）
+  part3_size: ""                            # 音乐分区大小（如 "32G"）
+  reserve_size: ""                          # 系统保留空间（默认 5G）
+  archive_reserve_size: "50G"               # SD 卡视频存档保留空间
+
+
+# ============================================================================
+# 网络与安全
+# ============================================================================
+network:
+  # ⚠️ 必须修改：Samba 共享密码
+  samba_password: tesla                     # Samba 认证密码（请务必修改！）
+  web_port: 80                              # Web 界面端口（强制门户需要 80，勿改）
+
+
+# ============================================================================
+# 离线热点（车载 WiFi）
+# ============================================================================
+# 当树莓派无法连接外部 WiFi 时，自动开启热点供手机连接访问
+offline_ap:
+  enabled: true                             # 是否启用离线热点
+  interface: wlan0                          # WiFi 网卡接口名
+  # ⚠️ 必须修改：热点名称和密码
+  ssid: TeslaUSB                            # 热点名称（建议修改）
+  passphrase: teslausb1234                  # 热点密码，8-63 字符（务必修改！）
+  channel: 6                                # 2.4GHz 信道（1-11）
+  ipv4_cidr: 192.168.4.1/24                # 热点静态 IP 地址
+  dhcp_start: 192.168.4.10                  # DHCP 地址池起始
+  dhcp_end: 192.168.4.50                    # DHCP 地址池结束
+  check_interval: 20                        # 健康检查间隔（秒）
+  disconnect_grace: 30                      # WiFi 断开多少秒后启动热点
+  min_rssi: -70                             # 信号强度高于此值则关闭热点（dBm）
+  stable_seconds: 20                        # 信号稳定多少秒后关闭热点
+  ping_target: 8.8.8.8                     # 检测互联网连通性的 Ping 目标
+  retry_seconds: 300                        # 热点运行期间每隔 N 秒尝试重连 WiFi
+  virtual_interface: uap0                   # 虚拟热点网卡名
+  force_mode: auto                          # 强制模式：auto / force_on / force_off
+
+
+# ============================================================================
+# 系统路径
+# ============================================================================
+system:
+  config_file: /boot/firmware/config.txt    # 树莓派启动配置文件
+  samba_conf: /etc/samba/smb.conf           # Samba 配置文件
+
+
+# ============================================================================
+# Web 应用设置
+# ============================================================================
+web:
+  # ⚠️ 必须修改：Flask 会话加密密钥（首次启动时若为默认值会自动生成随机密钥）
+  secret_key: CHANGE-THIS-TO-A-RANDOM-SECRET-KEY-ON-FIRST-INSTALL
+
+  # 锁车音效上传限制
+  max_lock_chime_size: 1048576              # 最大文件大小（字节，1 MiB）
+  max_lock_chime_duration: 10.0             # 最长时长（秒）
+  min_lock_chime_duration: 0.3              # 最短时长（秒）
+
+  # 音频变速范围（音频修剪器）
+  speed_range_min: 0.5                      # 最低播放速度（0.5 = 半速）
+  speed_range_max: 2.0                      # 最高播放速度（2.0 = 双倍速）
+  speed_step: 0.05                          # 速度调节步长
+
+  # 文件路径
+  lock_chime_filename: LockChime.wav        # 当前锁车音效文件名
+  chimes_folder: Chimes                     # 自定义锁车音效存放文件夹
+  lightshow_folder: LightShow               # 灯光秀文件存放文件夹
+
+  # 上传限制
+  max_upload_size_mb: 2048                  # 音乐/灯光秀最大上传大小（MiB）
+  max_upload_chunk_mb: 16                   # 流式上传分块大小（MiB）
+
+
+# ============================================================================
+# 地图与 GPS 轨迹索引
+# ============================================================================
+# 从行车记录仪视频中提取 GPS/遥测数据，在地图上显示行驶轨迹和事件
+mapping:
+  enabled: true                             # 是否启用地图和 GPS 索引
+
+  # GPS 数据提取
+  sample_rate: 30                           # 每 N 帧采样一次（30 ≈ 每秒一次@30fps）
+  trip_gap_minutes: 5                       # GPS 中断多少分钟视为新行程
+  index_too_new_seconds: 120                # 跳过最近 N 秒内修改过的视频（避免读取正在写入的文件）
+
+  # 驾驶事件自动检测
+  event_detection:
+    harsh_brake_threshold: -4.0             # 急刹车阈值 m/s²（负值 = 减速）
+    emergency_brake_threshold: -7.0         # 紧急刹车阈值 m/s²
+    hard_accel_threshold: 3.5               # 急加速阈值 m/s²
+    sharp_turn_lateral_g: 4.0               # 急转弯阈值 m/s²（横向加速度）
+    speed_limit_mps: 35.76                  # 超速警报阈值（35.76 m/s ≈ 129 km/h，0=禁用）
+
+  # 🔧 地图图块源（国内用户无需修改，默认高德地图可在国内直接访问）
+  # 如需 OpenStreetMap（WGS-84 坐标系，需 VPN），取消下面注释：
+  # tile_upstream_url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
+# ============================================================================
+# 云存档（rclone 自动上传）
+# ============================================================================
+# 将哨兵/保存的视频自动同步到云存储
+cloud_archive:
+  enabled: true                             # 是否启用云同步
+
+  # 云服务商（通过 Web 界面配置 OAuth 授权，凭据加密存储，不在此处填写）
+  provider: ""                              # google_drive / onedrive / dropbox / s3 / b2 / wasabi
+  remote_path: "TeslaUSB"                   # 云端存储路径/文件夹名
+
+  # 要同步的 TeslaCam 子文件夹
+  sync_folders:
+    - SentryClips
+    - SavedClips
+    - RecentClips
+
+  # 🔧 同步优先级（排第一的最优先上传）
+  priority_order:
+    - SentryClips
+    - SavedClips
+    - RecentClips
+
+  # 带宽与存储限制
+  max_upload_mbps: 5                        # 上传带宽限制（树莓派上传能力有限，建议不超过 5）
+  cloud_reserve_gb: 1                       # 云端保留空间（GB），避免 100% 占满
+  keep_local_after_upload: true             # 上传后保留本地文件
+  sync_non_event_videos: false              # 是否同步无事件的普通视频
+
+  # 🔧 云端自动清理
+  cloud_auto_cleanup: false                 # 云端空间不足时自动删除旧视频
+  cloud_cleanup_threshold_pct: 90           # 云端使用率超过此百分比时触发清理
+  cloud_min_retention_days: 30              # 至少保留 N 天，即使触发清理
+
+  # 🔧 本地 SD 卡视频保留
+  archived_clips_retention_days: 30         # SD 卡上视频保留天数（超期自动删除）
+  delete_unsynced: null                     # null=智能模式，false=保护未上传视频，true=一律按时间删
+
+  # 🔧 上传重试
+  retry_max_attempts: 5                     # 上传失败最大重试次数（1-20），超限后不再自动重试
+
+  # ⚙️ 高级选项（一般无需修改）
+  disk_space_warning_mb: 500                # SD 卡剩余低于此值记录 WARNING
+  disk_space_critical_mb: 100               # SD 卡低于此值拒绝新存档
+  disk_space_pause_seconds: 300             # 磁盘不足后暂停时长（秒）
+  enqueue_to_pipeline: true                 # 使用统一任务队列（推荐）
+  shadow_pipeline_queue: false
+  use_pipeline_reader: true
+
+
+# ============================================================================
+# 存储与保留策略
+# ============================================================================
+# 管理 SD 卡存储空间，自动清理过期视频
+cleanup:
+  default_retention_days: 0                 # 0 = 继承 cloud_archive 的天数设置
+  free_space_target_pct: 10                 # 尽量保持 SD 卡至少此百分比的空闲空间
+  max_archive_size_gb: 0                    # ArchivedClips 总大小硬上限（0 = 不限制）
+  short_retention_warning_days: 7           # 保留天数低于此值时在界面上显示警告
+
+  # 🔧 按文件夹覆盖保留天数（可选）
+  policies: {}
+    # 取消注释并修改以下示例以针对特定文件夹：
+    # SentryClips:
+    #   enabled: false
+    #   retention_days: 90
+    # SavedClips:
+    #   enabled: false
+    #   retention_days: 365
+    # ArchivedClips:
+    #   enabled: true
+    #   retention_days: 30
+
+
+# ============================================================================
+# RecentClips 存档
+# ============================================================================
+# 在特斯拉的 1 小时循环覆盖之前，自动将 RecentClips 复制到 SD 卡
+archive:
+  enabled: true                             # 是否启用 RecentClips 存档
+  interval_minutes: 2                       # 扫描新视频的间隔（分钟）
+  retention_days: 30                        # 存档视频保留天数
+  min_free_space_gb: 20                     # SD 卡剩余空间低于此值停止存档（确保 ext4 性能）
+  max_size_gb: 0                            # 存档总大小上限（0 = 自动：用完剩余空间减去预留）
+  path: ""                                  # 存档路径（默认：~/ArchivedClips）
+
+
+# ============================================================================
+# 存档队列（⚙️ 高级，一般无需修改）
+# ============================================================================
+archive_queue:
+  rescan_interval_seconds: 60               # 全目录重新扫描间隔
+  worker_check_interval_seconds: 5          # 队列空闲时工作线程休眠时间
+  retry_max_attempts: 3                     # I/O 错误最大重试次数
+  copy_chunk_bytes: 1048576                 # 复制块大小（1 MiB）
+  watchdog_check_interval_seconds: 60       # 健康检查间隔
+  inter_file_sleep_seconds: 1.0             # 文件间休眠（防止 SD 卡读写饱和）
+  load_pause_threshold: 3.5                 # 系统负载超过此值暂停复制
+  load_pause_seconds: 30                    # 负载过高时暂停时长
+  boot_scan_defer_seconds: 30               # 启动后延迟扫描（避免开机负载峰值）
+  chunk_pause_seconds: 0.25                 # 负载高时块间额外休眠
+  per_file_time_budget_seconds: 60.0        # 单个文件复制超时（超限则中止重新入队）
+  stable_write_age_seconds: 5.0             # 跳过最近 N 秒内修改过的文件
+  stale_claim_max_age_seconds: 600.0        # 崩溃/OOM 后恢复超过此时间的挂起任务
+  shadow_pipeline_queue: true               # 影子模式验证（仅可观测性）
+  use_pipeline_reader: false                # 使用统一队列读取器
