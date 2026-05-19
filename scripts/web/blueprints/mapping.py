@@ -2,7 +2,7 @@
 
 import os
 import re
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, send_file
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
 
 from config import (
     IMG_CAM_PATH, MAPPING_ENABLED, MAPPING_DB_PATH,
@@ -27,10 +27,6 @@ _DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 @mapping_bp.before_request
 def _require_cam_image():
-    # The event-based map APIs read from the filesystem (event.json),
-    # not the USB gadget — they don't require the cam image.
-    if request.path.startswith('/api/map/') or request.path.startswith('/thumbnails/'):
-        return None
     if not os.path.isfile(IMG_CAM_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable — TeslaCam image not found"}), 503
@@ -977,93 +973,3 @@ def api_event_clips(folder, event_name):
         'first_front': f'{event_name}-front.mp4',
         'front_clips': [clip_path],
     })
-
-
-# ---------------------------------------------------------------------------
-# Event-based map display APIs (filesystem-driven, not DB)
-# ---------------------------------------------------------------------------
-
-@mapping_bp.route("/api/map/event-dates")
-def api_event_dates():
-    """Return sorted list of dates that have Sentry/Saved events.
-
-    Reads event.json files from the filesystem (cached 30s). Does NOT
-    depend on the geo-indexing pipeline — works immediately even when
-    the detected_events DB table is empty (e.g. China-market Teslas
-    that don't embed GPS in SEI).
-    """
-    from services.event_mapping_service import get_event_dates
-    try:
-        return jsonify(get_event_dates())
-    except Exception as e:
-        logger.error("Failed to get event dates: %s", e)
-        return jsonify({
-            'dates': [], 'total': 0, 'total_events': 0,
-            'earliest': None, 'latest': None,
-        }), 200
-
-
-@mapping_bp.route("/api/map/events-by-date")
-def api_events_by_date():
-    """Return enriched events for a specific date (YYYY-MM-DD).
-
-    Query params:
-        date (required): ISO date string YYYY-MM-DD
-
-    Each event includes lat/lon from event.json, city, reason,
-    has_thumbnail flag, and video_path for playback.
-    """
-    from services.event_mapping_service import get_events_by_date
-    date_str = request.args.get('date', '')
-    if not _DATE_RE.match(date_str):
-        return jsonify({'error': 'date must be YYYY-MM-DD'}), 400
-    try:
-        return jsonify(get_events_by_date(date_str))
-    except Exception as e:
-        logger.error("Failed to get events for %s: %s", date_str, e)
-        return jsonify({'date': date_str, 'events': [], 'total': 0}), 200
-
-
-@mapping_bp.route("/thumbnails/<path:rel_path>/thumb.png")
-def serve_event_thumbnail(rel_path):
-    """Serve thumb.png from a Sentry/Saved event folder.
-
-    The rel_path encodes source_folder/event_name (e.g.
-    SentryClips/2026-05-19_14-30-00). Tries TeslaCam root first,
-    falls back to archive. Returns a 1x1 transparent PNG placeholder
-    if thumb.png doesn't exist.
-    """
-    from services.event_mapping_service import (
-        _get_teslacam_root, _get_archive_root, TRANSPARENT_PNG,
-    )
-    import io
-
-    # Sanitize: only allow alphanumeric chars, /, -, _ in path
-    safe = rel_path.replace('\\', '/').split('/')
-    if len(safe) != 2:
-        return send_file(io.BytesIO(TRANSPARENT_PNG), mimetype='image/png',
-                         max_age=300)
-
-    source_folder, event_name = safe
-    if source_folder not in ('SentryClips', 'SavedClips', 'ArchivedClips'):
-        return send_file(io.BytesIO(TRANSPARENT_PNG), mimetype='image/png',
-                         max_age=300)
-
-    # Try TeslaCam
-    teslacam = _get_teslacam_root()
-    if teslacam:
-        candidate = os.path.join(teslacam, source_folder, event_name, 'thumb.png')
-        if os.path.isfile(candidate):
-            return send_file(candidate, mimetype='image/png',
-                             max_age=3600, conditional=True)
-
-    # Try archive
-    archive = _get_archive_root()
-    if archive:
-        candidate = os.path.join(archive, event_name, 'thumb.png')
-        if os.path.isfile(candidate):
-            return send_file(candidate, mimetype='image/png',
-                             max_age=3600, conditional=True)
-
-    return send_file(io.BytesIO(TRANSPARENT_PNG), mimetype='image/png',
-                     max_age=300)
