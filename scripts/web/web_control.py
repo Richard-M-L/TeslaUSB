@@ -283,7 +283,11 @@ def upgrade_check():
             cwd=GADGET_DIR,
         )
         if result.returncode != 0:
-            return {'available': False, 'error': 'git fetch failed'}
+            stderr = (result.stderr or '').strip()
+            # Extract the last meaningful line for concise diagnostics
+            lines = [l for l in stderr.splitlines() if l.strip() and 'warning:' not in l.lower()]
+            detail = lines[-1] if lines else stderr[:200]
+            return {'available': False, 'error': f'git fetch 失败: {detail}'}
         # Compare HEAD to origin/main
         result = subprocess.run(
             ['git', 'rev-list', '--count', 'HEAD..origin/main'],
@@ -295,7 +299,7 @@ def upgrade_check():
             return {'available': False, 'current': True}
         return {'available': True, 'commits_behind': count}
     except subprocess.TimeoutExpired:
-        return {'available': False, 'error': '检查超时'}, 504
+        return {'available': False, 'error': '检查超时 — 网络慢或 GitHub 不可达'}, 504
     except Exception as e:
         return {'available': False, 'error': str(e)[:200]}, 500
 
