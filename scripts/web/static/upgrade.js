@@ -37,7 +37,7 @@
                 _checkRunning = false;
                 if (data.error) {
                     if (msg) msg.innerHTML = '<span style="color:var(--ds-accent-warning)">' +
-                        _t('index.upgrade_check_error') + '</span>';
+                        _t('index.upgrade_check_error') + ': ' + escapeHTML(data.error) + '</span>';
                     btn.textContent = _t('index.upgrade_check_btn');
                     btn.disabled = false;
                     return;
@@ -57,10 +57,10 @@
                 btn.onclick = runUpgrade;
                 btn.disabled = false;
             })
-            .catch(function() {
+            .catch(function(e) {
                 _checkRunning = false;
                 if (msg) msg.innerHTML = '<span style="color:var(--ds-accent-warning)">' +
-                    _t('index.upgrade_check_error') + '</span>';
+                    _t('index.upgrade_check_error') + ': ' + escapeHTML(String(e)) + '</span>';
                 btn.textContent = _t('index.upgrade_check_btn');
                 btn.disabled = false;
             });
