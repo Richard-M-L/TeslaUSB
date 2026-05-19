@@ -109,7 +109,7 @@ def test_overall_severity_ranking(monkeypatch):
     ))
     out = sh._build_health()
     assert out['overall']['severity'] == 'ok'
-    assert out['overall']['message'] == 'All systems normal'
+    assert out['overall']['message_key'] == 'health.all_ok'
 
 
 # ---------------------------------------------------------------------------

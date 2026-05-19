@@ -696,20 +696,14 @@ def _build_health() -> Dict[str, Any]:
             worst_subsystem = name
 
     if worst == SEV_OK:
-        overall_msg = 'All systems normal'
         overall_key = 'health.all_ok'
         overall_params = {}
     else:
-        overall_msg = (
-            f'{worst_subsystem}: {worst_msg}'
-            if worst_subsystem else 'All systems normal'
-        )
         overall_key = 'health.attention_needed'
         overall_params = {'subsystem': worst_subsystem or ''}
 
     payload['overall'] = {
         'severity': worst,
-        'message': overall_msg,
         'message_key': overall_key,
         'message_params': overall_params,
         'subsystem': worst_subsystem,
