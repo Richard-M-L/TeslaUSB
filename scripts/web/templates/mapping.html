@@ -1287,6 +1287,7 @@ let allEvents = [];
 let dayLoadSeq = 0;
 let tripSelectSeq = 0;
 let showingAllTime = false;
+let _indexedFileCount = 0;
 
 // ── Day-load progress indicator ──
 // Cheap nestable counter: callers wrap each in-flight load in a
@@ -1922,7 +1923,8 @@ async function loadStats() {
         const resp = await fetch('/api/stats');
         const data = await resp.json();
         const indexedEl = document.getElementById('tripIndexedCount');
-        if (indexedEl) indexedEl.textContent = (data.mapped_file_count || data.indexed_file_count || 0).toLocaleString();
+        _indexedFileCount = data.mapped_file_count || data.indexed_file_count || 0;
+        if (indexedEl) indexedEl.textContent = _indexedFileCount.toLocaleString();
     } catch(e) { console.error('Failed to load stats:', e); }
 }
 
@@ -1939,7 +1941,7 @@ async function loadDays() {
         allDays = data.days || [];
 
         if (!allDays.length) {
-            renderEmptyState();
+            renderEmptyState(_indexedFileCount > 0);
             return;
         }
 
@@ -2117,15 +2119,20 @@ function renderAllTimeCard() {
     if (allBtn) allBtn.disabled = !allDays.length;
 }
 
-function renderEmptyState() {
+function renderEmptyState(hasIndexedFiles) {
     const dateEl = document.getElementById('dayCardDate');
     const statsEl = document.getElementById('dayCardStats');
     const prevBtn = document.getElementById('dayPrev');
     const nextBtn = document.getElementById('dayNext');
     const allBtn = document.getElementById('dayAllBtn');
 
-    dateEl.textContent = _t('mapping.no_mapped_drives_title');
-    statsEl.textContent = _t('mapping.no_mapped_drives_desc');
+    if (hasIndexedFiles) {
+        dateEl.textContent = _t('mapping.no_trips');
+        statsEl.textContent = _t('mapping.no_trips_desc');
+    } else {
+        dateEl.textContent = _t('mapping.no_mapped_drives_title');
+        statsEl.textContent = _t('mapping.no_mapped_drives_desc');
+    }
     if (prevBtn) prevBtn.disabled = true;
     if (nextBtn) nextBtn.disabled = true;
     if (allBtn) allBtn.disabled = true;
