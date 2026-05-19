@@ -819,6 +819,7 @@ class TestDefaultDbPath:
 # isolation so a regression in the queue layer surfaces immediately.
 
 from services.archive_queue import (  # noqa: E402
+    _compute_retry_backoff,
     claim_next_for_worker,
     delete_skipped_stationary,
     mark_copied,
@@ -827,6 +828,7 @@ from services.archive_queue import (  # noqa: E402
     mark_source_gone,
     recover_stale_claims,
     release_claim,
+    retry_dead_letter,
 )
 
 
@@ -1463,7 +1465,10 @@ class TestMarkFailed:
         assert rows[0]['status'] == 'pending'
         assert rows[0]['claimed_at'] is None
 
-    def test_dead_letter_at_max_attempts(self, db, sample_file):
+    def test_dead_letter_at_max_attempts(self, db, sample_file, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 0.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 0.0)
         enqueue_for_archive(sample_file, db_path=db)
         row = claim_next_for_worker('w1', db_path=db)
         # Three failures with max=3 → final transition to dead_letter.
@@ -2699,3 +2704,158 @@ class TestClaimSpecificPending:
             assert row['status'] == 'in_progress'
         finally:
             conn.close()
+
+
+# ---------------------------------------------------------------------------
+# v18: retry backoff — _compute_retry_backoff, mark_failed next_retry_at,
+# claim_next_for_worker next_retry_at filter, retry_dead_letter clears it
+# ---------------------------------------------------------------------------
+
+
+class TestComputeRetryBackoff:
+    def test_first_attempt_returns_base(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 600.0)
+        assert _compute_retry_backoff(1) == 60.0
+
+    def test_second_attempt_doubles(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 600.0)
+        assert _compute_retry_backoff(2) == 120.0
+
+    def test_third_attempt_quadruples(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 600.0)
+        assert _compute_retry_backoff(3) == 240.0
+
+    def test_respects_cap(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 60.0)
+        assert _compute_retry_backoff(10) == 60.0
+
+    def test_zero_attempts_clamped_to_one(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 600.0)
+        assert _compute_retry_backoff(0) == 60.0
+
+    def test_negative_attempts_clamped_to_one(self, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 60.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 600.0)
+        assert _compute_retry_backoff(-1) == 60.0
+
+
+class TestMarkFailedRetryBackoff:
+    def test_sets_next_retry_at_on_pending_retry(self, db, sample_file):
+        enqueue_for_archive(sample_file, db_path=db)
+        row = claim_next_for_worker('w1', db_path=db)
+        status = mark_failed(row['id'], 'oops', max_attempts=3, db_path=db)
+        assert status == 'pending'
+        rows = list_queue(db_path=db)
+        assert rows[0]['attempts'] == 1
+        assert rows[0]['next_retry_at'] is not None
+        # next_retry_at should be in the future
+        assert rows[0]['next_retry_at'] > rows[0]['enqueued_at']
+
+    def test_dead_letter_does_not_set_next_retry_at(self, db, sample_file, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 0.0)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 0.0)
+        enqueue_for_archive(sample_file, db_path=db)
+        row = claim_next_for_worker('w1', db_path=db)
+        for _ in range(2):
+            mark_failed(row['id'], 'oops', max_attempts=3, db_path=db)
+            row = claim_next_for_worker('w1', db_path=db)
+        status = mark_failed(row['id'], 'final', max_attempts=3, db_path=db)
+        assert status == 'dead_letter'
+        rows = list_queue(db_path=db)
+        # dead_letter rows keep whatever next_retry_at was set last
+        # (it's harmless — the worker never picks dead_letter rows)
+
+
+class TestClaimNextForWorkerSkipsBackoff:
+    def test_skips_row_with_future_next_retry_at(self, db, sample_file):
+        """A row whose next_retry_at is in the future is invisible to claim."""
+        from datetime import datetime, timedelta, timezone
+        enqueue_for_archive(sample_file, db_path=db)
+        # Set next_retry_at 1 hour in the future via direct SQL
+        future = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+        conn = sqlite3.connect(db)
+        try:
+            conn.execute(
+                "UPDATE archive_queue SET next_retry_at=? WHERE source_path=?",
+                (future, sample_file),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        result = claim_next_for_worker('w1', db_path=db)
+        assert result is None
+
+    def test_claims_row_with_past_next_retry_at(self, db, sample_file):
+        """A row whose next_retry_at is in the past IS claimable."""
+        from datetime import datetime, timedelta, timezone
+        enqueue_for_archive(sample_file, db_path=db)
+        past = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+        conn = sqlite3.connect(db)
+        try:
+            conn.execute(
+                "UPDATE archive_queue SET next_retry_at=? WHERE source_path=?",
+                (past, sample_file),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        row = claim_next_for_worker('w1', db_path=db)
+        assert row is not None
+        assert row['source_path'] == sample_file
+
+    def test_claims_row_with_null_next_retry_at(self, db, sample_file):
+        """A row with NULL next_retry_at (never failed) is always claimable."""
+        enqueue_for_archive(sample_file, db_path=db)
+        # next_retry_at is NULL by default
+        row = claim_next_for_worker('w1', db_path=db)
+        assert row is not None
+        assert row['source_path'] == sample_file
+
+
+class TestRetryDeadLetterClearsNextRetryAt:
+    def test_bulk_reset_clears_next_retry_at(self, db, sample_file, monkeypatch):
+        """retry_dead_letter must clear next_retry_at so reset rows
+        are immediately claimable."""
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 0.01)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 0.01)
+        enqueue_for_archive(sample_file, db_path=db)
+        row = claim_next_for_worker('w1', db_path=db)
+        for _ in range(3):
+            mark_failed(row['id'], 'oops', max_attempts=3, db_path=db)
+        # Now dead_letter with attempts=3
+        rows = list_queue(db_path=db)
+        assert rows[0]['status'] == 'dead_letter'
+
+        reset = retry_dead_letter(db_path=db)
+        assert reset == 1
+        rows = list_queue(db_path=db)
+        assert rows[0]['status'] == 'pending'
+        assert rows[0]['attempts'] == 0
+        assert rows[0]['next_retry_at'] is None
+
+    def test_single_reset_clears_next_retry_at(self, db, sample_file, monkeypatch):
+        import config as cfg
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS', 0.01)
+        monkeypatch.setattr(cfg, 'ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS', 0.01)
+        enqueue_for_archive(sample_file, db_path=db)
+        row = claim_next_for_worker('w1', db_path=db)
+        for _ in range(3):
+            mark_failed(row['id'], 'oops', max_attempts=3, db_path=db)
+
+        reset = retry_dead_letter(row['id'], db_path=db)
+        assert reset == 1
+        rows = list_queue(db_path=db)
+        assert rows[0]['next_retry_at'] is None

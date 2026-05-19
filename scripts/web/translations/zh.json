@@ -448,6 +448,8 @@
     "settings.advanced_archive_per_file_budget_desc": "任何单次复制超过此时限将中止并重新入队。限制异常慢速文件的爆炸范围。",
     "settings.advanced_archive_stable_write_age": "存档：稳定写入期限",
     "settings.advanced_archive_stable_write_age_desc": "修改时间晚于此时限的文件将重新入队。避免复制 Tesla 仍在写入的文件。",
+    "settings.advanced_archive_retry_backoff": "存档：重试退避",
+    "settings.advanced_archive_retry_backoff_desc": "失败存档复制重试前的基础等待时间。每次重试翻倍（指数退避），上限 10 分钟。将 3 次重试分散到数分钟内，给 Tesla 足够时间写完 MP4 末尾的 moov atom。",
     "settings.advanced_archive_stale_claim_max_age": "存档：过期声明最大期限",
     "settings.advanced_archive_stale_claim_max_age_desc": "工作线程启动时将超过此时限的已声明行重置为待处理。从崩溃或 OOM 的声明中恢复。",
     "settings.advanced_indexer_too_new": "索引器：过新阈值",

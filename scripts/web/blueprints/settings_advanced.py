@@ -145,6 +145,17 @@ def _build_tunables() -> List[Dict[str, Any]]:
             'cast': _bounded_float(0.0, 60.0),
         },
         {
+            'key': 'archive_queue.retry_base_backoff_seconds',
+            'form_name': 'archive_retry_base_backoff_seconds',
+            'label_key': 'settings.advanced_archive_retry_backoff',
+            'description_key': 'settings.advanced_archive_retry_backoff_desc',
+            'current': float(config.ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS),
+            'default': 60.0,
+            'unit_key': 'settings.unit_seconds',
+            'min': 10.0, 'max': 600.0, 'step': 5.0,
+            'cast': _bounded_float(10.0, 600.0),
+        },
+        {
             'key': 'archive_queue.stale_claim_max_age_seconds',
             'form_name': 'archive_stale_claim_max_age_seconds',
             'label_key': 'settings.advanced_archive_stale_claim_max_age',

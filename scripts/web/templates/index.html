@@ -2165,9 +2165,14 @@ if (document.getElementById('fsck-status-container')) {
                         var v = (block.message_params || {})[k];
                         if (v == null) return '';
                         // If the value looks like a translation key
-                        // (e.g. health.pause_reason_load), resolve it.
+                        // (e.g. health.pause_reason_load), resolve it
+                        // and recursively substitute its own placeholders
+                        // (e.g. {load}, {threshold}) from the same params.
                         if (typeof v === 'string' && v.indexOf('health.') === 0) {
-                            return _t(v);
+                            return _t(v).replace(/\{(\w+)\}/g, function(_, k2) {
+                                var v2 = (block.message_params || {})[k2];
+                                return v2 != null ? v2 : '';
+                            });
                         }
                         return v;
                     }
@@ -2319,13 +2324,8 @@ if (document.getElementById('fsck-status-container')) {
         }
         if (lostDetail) {
             lostDetail.textContent =
-                n === 1
-                ? '1 clip lost in the last 24 hours — Tesla ' +
-                  'rotated it out of RecentClips before it could ' +
-                  'be archived. Device may be overloaded.'
-                : n + ' clips lost in the last 24 hours — Tesla ' +
-                  'rotated them out of RecentClips before they ' +
-                  'could be archived. Device may be overloaded.';
+                _t(n === 1 ? 'index.files_lost_singular' : 'index.files_lost_plural')
+                .replace(/\{n\}/g, n);
         }
         lostBanner.hidden = false;
     }

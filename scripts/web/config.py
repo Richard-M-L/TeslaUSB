@@ -308,6 +308,15 @@ ARCHIVE_QUEUE_PER_FILE_TIME_BUDGET_SECONDS = float(
 ARCHIVE_QUEUE_STABLE_WRITE_AGE_SECONDS = float(
     _archive_queue.get('stable_write_age_seconds', 5.0)
 )
+# Retry backoff: exponential delay between failed archive copy attempts.
+# BASE is the first-retry delay in seconds; delay doubles each attempt.
+# Cap at MAX so pathological cases don't wait hours.
+ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS = float(
+    _archive_queue.get('retry_base_backoff_seconds', 60.0)
+)
+ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS = float(
+    _archive_queue.get('retry_max_backoff_seconds', 600.0)
+)
 ARCHIVE_QUEUE_STALE_CLAIM_MAX_AGE_SECONDS = float(
     _archive_queue.get('stale_claim_max_age_seconds', 600.0)
 )

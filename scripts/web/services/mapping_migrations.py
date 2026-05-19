@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 # Database Schema & Management
 # ---------------------------------------------------------------------------
 
-_SCHEMA_VERSION = 17
+_SCHEMA_VERSION = 18
 _BACKUP_RETENTION = 3  # Keep this many migration backups before pruning oldest
 
 # Schema version that introduced ``pipeline_queue.claimed_by`` and
@@ -235,7 +235,8 @@ CREATE TABLE IF NOT EXISTS archive_queue (
     claimed_by TEXT,
     copied_at TEXT,
     expected_size INTEGER,
-    expected_mtime REAL
+    expected_mtime REAL,
+    next_retry_at TEXT
 );
 -- Worker pick-next index: partial over only ready rows, ordered by
 -- priority then mtime (closest-to-TTL first within each priority band).
@@ -725,6 +726,22 @@ def _init_db(db_path: str) -> sqlite3.Connection:
             logger.info(
                 "Migration v16->v17: pipeline_queue claim-bookkeeping "
                 "columns + idx_pipeline_stale_claims ready"
+            )
+        if current > 0 and current < 18:
+            # v18: ``next_retry_at`` column on ``archive_queue`` so the
+            # worker's ``mark_failed`` can set an exponential backoff
+            # before releasing the row back to pending. Without this
+            # column, retries fire immediately and all 3 attempts burn
+            # within seconds — too fast for Tesla to finish writing
+            # the moov atom at the end of a slowly-written clip.
+            try:
+                conn.execute(
+                    "ALTER TABLE archive_queue ADD COLUMN next_retry_at TEXT"
+                )
+            except sqlite3.OperationalError:
+                pass
+            logger.info(
+                "Migration v17->v18: archive_queue.next_retry_at column ready"
             )
         conn.execute("DELETE FROM schema_version")
         conn.execute(

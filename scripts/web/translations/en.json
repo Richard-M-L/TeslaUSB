@@ -448,6 +448,8 @@
     "settings.advanced_archive_per_file_budget_desc": "Abort and requeue any single copy taking longer than this. Bounded blast radius for a pathologically slow clip.",
     "settings.advanced_archive_stable_write_age": "Archive: stable-write age",
     "settings.advanced_archive_stable_write_age_desc": "Re-queue clips whose mtime is fresher than this. Avoids copying a file Tesla is still writing.",
+    "settings.advanced_archive_retry_backoff": "Archive: retry backoff",
+    "settings.advanced_archive_retry_backoff_desc": "Base delay before retrying a failed archive copy. Doubles each attempt (exponential backoff) up to a 10-minute cap. Spreads 3 attempts across several minutes so Tesla has time to finish writing the moov atom at the end of an MP4.",
     "settings.advanced_archive_stale_claim_max_age": "Archive: stale-claim max age",
     "settings.advanced_archive_stale_claim_max_age_desc": "Reset claimed rows older than this back to pending on worker startup. Recovers from crashed or OOMed claims.",
     "settings.advanced_indexer_too_new": "Indexer: too-new threshold",

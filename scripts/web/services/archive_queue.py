@@ -82,7 +82,7 @@ import os
 import sqlite3
 import time
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Iterable, Iterator, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -1135,7 +1135,8 @@ def retry_dead_letter(row_id: Optional[int] = None,
                 """UPDATE archive_queue
                    SET status = 'pending', attempts = 0,
                        claimed_by = NULL,
-                       claimed_at = NULL
+                       claimed_at = NULL,
+                       next_retry_at = NULL
                    WHERE status = 'dead_letter'"""
             )
         else:
@@ -1143,7 +1144,8 @@ def retry_dead_letter(row_id: Optional[int] = None,
                 """UPDATE archive_queue
                    SET status = 'pending', attempts = 0,
                        claimed_by = NULL,
-                       claimed_at = NULL
+                       claimed_at = NULL,
+                       next_retry_at = NULL
                    WHERE status = 'dead_letter' AND id = ?""",
                 (int(row_id),),
             )
@@ -1281,6 +1283,9 @@ def claim_next_for_worker(claimed_by: str, *,
                      WHERE id = (
                         SELECT id FROM archive_queue
                          WHERE status = 'pending'
+                           AND (next_retry_at IS NULL
+                                OR CAST(strftime('%s', next_retry_at) AS INTEGER)
+                                   <= CAST(strftime('%s', 'now') AS INTEGER))
                          ORDER BY priority ASC,
                                   expected_mtime IS NULL,
                                   expected_mtime ASC,
@@ -1304,6 +1309,9 @@ def claim_next_for_worker(claimed_by: str, *,
                     """
                     SELECT * FROM archive_queue
                      WHERE status = 'pending'
+                       AND (next_retry_at IS NULL
+                            OR CAST(strftime('%s', next_retry_at) AS INTEGER)
+                               <= CAST(strftime('%s', 'now') AS INTEGER))
                      ORDER BY priority ASC,
                               expected_mtime IS NULL,
                               expected_mtime ASC,
@@ -1814,6 +1822,36 @@ def release_claim(row_id: int, *,
                 pass
 
 
+def _compute_retry_backoff(attempts: int) -> float:
+    """Return the retry delay in seconds for the given attempt count.
+
+    Exponential backoff matching the pattern in
+    :func:`indexing_queue_service.compute_backoff`: ``BASE * 2^(attempts-1)``,
+    capped at ``MAX``. ``attempts`` is 1-indexed (the count AFTER the
+    increment in :func:`mark_failed`), so the first retry waits BASE,
+    the second waits 2*BASE, and so on.
+
+    Configurable via ``archive_queue.retry_base_backoff_seconds``
+    (default 60.0) and ``archive_queue.retry_max_backoff_seconds``
+    (default 600.0). Falls back to hard-coded defaults when the config
+    module isn't importable (unit-test environments).
+    """
+    if attempts < 1:
+        attempts = 1
+    try:
+        from config import (
+            ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS,
+            ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS,
+        )
+        base = float(ARCHIVE_QUEUE_RETRY_BASE_BACKOFF_SECONDS)
+        cap = float(ARCHIVE_QUEUE_RETRY_MAX_BACKOFF_SECONDS)
+    except Exception:  # noqa: BLE001
+        base = 60.0
+        cap = 600.0
+    delay = base * (2 ** (attempts - 1))
+    return min(delay, cap)
+
+
 def mark_failed(row_id: int, error: str, *,
                 max_attempts: int = 3,
                 db_path: Optional[str] = None) -> str:
@@ -1842,6 +1880,7 @@ def mark_failed(row_id: int, error: str, *,
     # under a single write lock (BEGIN IMMEDIATE).
     new_status: str = 'error'
     new_attempts: int = 0
+    next_retry: Optional[str] = None
     try:
         with _atomic_archive_op(db_path) as conn:
             row = conn.execute(
@@ -1867,6 +1906,8 @@ def mark_failed(row_id: int, error: str, *,
                 )
                 new_status = 'dead_letter'
             else:
+                backoff = _compute_retry_backoff(new_attempts)
+                next_retry = (datetime.now(timezone.utc) + timedelta(seconds=backoff)).isoformat()
                 conn.execute(
                     """
                     UPDATE archive_queue
@@ -1875,10 +1916,11 @@ def mark_failed(row_id: int, error: str, *,
                            previous_last_error = last_error,
                            last_error = ?,
                            claimed_at = NULL,
-                           claimed_by = NULL
+                           claimed_by = NULL,
+                           next_retry_at = ?
                      WHERE id = ?
                     """,
-                    (new_attempts, truncated, int(row_id)),
+                    (new_attempts, truncated, next_retry, int(row_id)),
                 )
                 new_status = 'pending'
     except sqlite3.Error as e:
@@ -1903,6 +1945,7 @@ def mark_failed(row_id: int, error: str, *,
             status='pending',
             attempts=new_attempts,
             last_error=truncated,
+            next_retry_at=_epoch_from_iso(next_retry) if next_retry else None,
             db_path=db_path,
         )
     return new_status
