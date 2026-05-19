@@ -699,8 +699,15 @@ def _build_health() -> Dict[str, Any]:
         overall_key = 'health.all_ok'
         overall_params = {}
     else:
+        # Translate the subsystem name for the overall tooltip
+        from services.i18n_service import get_text
+        from flask import g
+        lang = getattr(g, 'lang', 'zh')
+        sub_label = get_text(
+            f'index.system_health_subsystems.{worst_subsystem}', lang
+        ) if worst_subsystem else ''
         overall_key = 'health.attention_needed'
-        overall_params = {'subsystem': worst_subsystem or ''}
+        overall_params = {'subsystem': sub_label or worst_subsystem or ''}
 
     payload['overall'] = {
         'severity': worst,
