@@ -360,9 +360,9 @@ PART_LABEL_MAP = {
 
 # Mode display configuration
 MODE_DISPLAY = {
-    "present": ("USB Gadget Mode", "present"),
-    "edit": ("Edit Mode", "edit"),
-    "unknown": ("Unknown", "unknown"),
+    "present": ("USB 设备模式", "present"),
+    "edit": ("网络文件共享", "edit"),
+    "unknown": ("未知", "unknown"),
 }
 
 # File type configurations
