@@ -101,7 +101,7 @@
             {% set other_locale = 'en' if current_locale() == 'zh' else 'zh' %}
             <a href="/lang/{{ other_locale }}" class="lang-switch-btn" title="{{ _('base.lang_switch_title') }}">
                 <img src="{{ url_for('static', filename='icons/flag-' + other_locale + '.svg') }}"
-                     class="lang-flag-icon" alt="{{ '中文' if other_locale == 'zh' else 'English' }}"
+                     class="lang-flag-icon" alt="{{ _('base.lang_switch_flag_alt') }}"
                      width="24" height="24">
             </a>
         </div>
@@ -216,7 +216,7 @@
                     <strong>{{ _('base.operation_in_progress') }}</strong>
                     <span id="operation-details">
                         {% if estimated_completion > 0 %}
-                        Estimated completion: {{ estimated_completion }}s
+                        {{ _('base.estimated_completion', seconds=estimated_completion) }}
                         {% else %}
                         {{ _('base.completing_soon') }}
                         {% endif %}
