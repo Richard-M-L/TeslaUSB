@@ -1419,7 +1419,6 @@ function disableDayNav() {
 // candidate trip's polyline on row hover. Drawn into a dedicated
 // layer group (not tripLayer) so we never have to "restore" the
 // styles of existing polylines — clearing this layer is enough.
-const disambigHighlightLayer = L.layerGroup().addTo(map);
 
 // Tracks whether a disambiguation popup is open so we can
 // cleanup highlight layers on navigation/render without depending
@@ -1532,7 +1531,6 @@ function highlightCandidateTrip(trip) {
     // never have to "restore" original styles — just clear the
     // highlight layer. Per the design system the accent color
     // works in both dark and light mode.
-    disambigHighlightLayer.clearLayers();
     if (!trip) return;
     const wps = trip.waypoints || [];
     const latLngs = [];
@@ -1547,11 +1545,9 @@ function highlightCandidateTrip(trip) {
         weight: 6,
         opacity: 0.9,
         interactive: false,
-    }).addTo(disambigHighlightLayer);
 }
 
 function clearDisambigHighlight() {
-    disambigHighlightLayer.clearLayers();
 }
 
 
@@ -3542,12 +3538,10 @@ document.getElementById('vpList').addEventListener('click', function(e) {
 function initFromUrl() {
     // Read date from URL, fall back to loadEventDates
     var state = readUrlState();
-    if (state.date) {
+    if (state && state.date) {
         currentDate = state.date;
-        loadEventDates();
-    } else {
-        loadEventDates();
     }
+    loadEventDates();
 }
 
 // Browser back/forward — re-derive state from the URL and dispatch
@@ -3555,14 +3549,11 @@ function initFromUrl() {
 // firing before the initial loadEventDates() resolved by waiting for
 // eventDates to be populated.
 window.addEventListener('popstate', function () {
-    // All-time mode removed — always load events
+    var state = readUrlState();
+    if (state && state.date && /^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
+        currentDate = state.date;
+    }
     loadEventDates();
-    if (!eventDates.length) return;
-    const target = (state && state.date &&
-                    eventDates.some(d => d.date === state.date))
-        ? state.date
-        : eventDates[0].date;
-    loadDay(target, { skipHistory: true });
 });
 
 // Keyboard shortcuts: left/right arrows cycle days. Skip while the
