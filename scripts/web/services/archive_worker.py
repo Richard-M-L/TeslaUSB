@@ -1682,14 +1682,16 @@ def _clip_has_gps_signal(source_path: str) -> Optional[bool]:
             if scanned >= _SKIP_GPS_PEEK_MAX_MESSAGES:
                 break
         # Generator exhausted (or hit cap) without a GPS-bearing
-        # message. Two sub-cases — both decisive:
-        #   * scanned == 0 — no SEI at all. For a Tesla dashcam clip
-        #     this is vanishingly rare (every Tesla clip has SEI),
-        #     and a clip with no SEI is by definition not a clip
-        #     we'd want to map. Treat as stationary (skip).
-        #   * scanned > 0 — clip has SEI but no GPS. This is the
-        #     stationary signature. Skip.
-        return False
+        # message. Two sub-cases:
+        #   * scanned == 0 — no SEI at all. True stationary (parked
+        #     Sentry clip or camera without telemetry). Skip.
+        #   * scanned > 0 — clip HAS SEI messages but GPS fields
+        #     decoded as zero. This could be a genuine no-GPS-lock
+        #     period OR Tesla firmware with a shifted protobuf schema.
+        #     Archive it and let the indexer handle the parse.
+        if scanned == 0:
+            return False
+        return True
     except FileNotFoundError:
         # Tesla rotated the source between the stable-write gate and
         # the peek. Caller will re-stat and mark source_gone.

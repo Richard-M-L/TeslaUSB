@@ -231,7 +231,9 @@ def _peek_clip_for_gps(source_path: str) -> Optional[bool]:
                 return True
             if scanned >= _MAX_MESSAGES:
                 break
-        return False
+        if scanned == 0:
+            return False
+        return True
     except FileNotFoundError:
         return None
     except Exception as e:  # noqa: BLE001
