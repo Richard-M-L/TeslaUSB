@@ -27,6 +27,10 @@ _DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 @mapping_bp.before_request
 def _require_cam_image():
+    # The event-based map APIs read from the filesystem (event.json),
+    # not the USB gadget — they don't require the cam image.
+    if request.path.startswith('/api/map/') or request.path.startswith('/thumbnails/'):
+        return None
     if not os.path.isfile(IMG_CAM_PATH):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": "Feature unavailable — TeslaCam image not found"}), 503
