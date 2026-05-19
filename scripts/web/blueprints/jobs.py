@@ -263,6 +263,14 @@ _RECOMMENDATION_RULES: Tuple[Tuple[re.Pattern, str, str], ...] = (
      'delete',
      'The source file is gone. Retrying will fail the same way.'),
 
+    # Destination copy incomplete — the archive worker copied a source
+    # MP4 that Tesla hadn't finished writing yet (moov/mdat box missing
+    # in the copy). The source file is still on disk; wait and retry.
+    (re.compile(r'(?i)\bmissing moov or mdat box\b'),
+     'retry',
+     'The copy captured a partial MP4 — Tesla was still writing it. '
+     'Wait a minute then retry; the source file is on disk.'),
+
     # Permanent parse / format errors — the file is on disk but the
     # parser can't make sense of it. Retrying won't change the
     # bitstream.

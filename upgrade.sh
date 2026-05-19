@@ -1,183 +1,254 @@
 #!/bin/bash
 set -euo pipefail
 
-# TeslaUSB Upgrade Script
-# This script pulls the latest code from GitHub and runs setup
-# Supports both git-cloned installations and manual installations
-
 REPO_URL="https://github.com/Richard-M-L/TeslaUSB"
 ARCHIVE_BASE_URL="https://github.com/Richard-M-L/TeslaUSB/archive/refs/heads"
-# Auto-derive install directory from this script's location (run-in-place)
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="main"
 BACKUP_DIR=""
+STATUS_FILE="/tmp/teslausb_upgrade_status.json"
+NON_INTERACTIVE=0
 
-# Cleanup function for error handling
-cleanup_on_error() {
-    local exit_code=$?
-    if [ $exit_code -ne 0 ] && [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
-        echo ""
-        echo "============================================"
-        echo "错误：升级失败，退出代码 $exit_code"
-        echo "============================================"
-        echo ""
-        echo "正在从备份恢复：$BACKUP_DIR"
-
-        # Restore backed up files
-        if [ -f "$BACKUP_DIR/state.txt" ]; then
-            cp "$BACKUP_DIR/state.txt" "$INSTALL_DIR/" 2>/dev/null || true
-        fi
-        if [ -d "$BACKUP_DIR/thumbnails" ]; then
-            rm -rf "$INSTALL_DIR/thumbnails"
-            cp -r "$BACKUP_DIR/thumbnails" "$INSTALL_DIR/" 2>/dev/null || true
-        fi
-
-        echo "备份已恢复。"
-        echo "正在删除备份目录..."
-        rm -rf "$BACKUP_DIR"
-        echo "备份目录已删除。"
-        echo ""
-        echo "系统已恢复到之前的状态。"
-        exit $exit_code
-    fi
+# Status helpers — write JSON so the web API can poll it
+_write_status() {
+  local phase="$1" msg="$2" pct="${3:-0}" code="${4:-0}"
+  printf '{"phase":"%s","message":"%s","pct":%d,"code":%d}\n' \
+    "$phase" "$msg" "$pct" "$code" > "$STATUS_FILE"
 }
 
-# Set trap for error handling (only for non-git path)
-trap cleanup_on_error EXIT
+_error_status() {
+  local msg="$1"
+  printf '{"phase":"error","message":"%s","pct":0,"code":1}\n' "$msg" > "$STATUS_FILE"
+  exit 1
+}
 
-echo "==================================="
-echo "TeslaUSB 升级脚本"
-echo "==================================="
-echo ""
+# Cleanup function for error handling (non-git path only)
+cleanup_on_error() {
+  local exit_code=$?
+  if [ $exit_code -ne 0 ] && [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
+    echo "升级失败，正在从备份恢复: $BACKUP_DIR"
+    [ -f "$BACKUP_DIR/state.txt" ] && cp "$BACKUP_DIR/state.txt" "$INSTALL_DIR/" 2>/dev/null || true
+    if [ -d "$BACKUP_DIR/thumbnails" ]; then
+      rm -rf "$INSTALL_DIR/thumbnails"
+      cp -r "$BACKUP_DIR/thumbnails" "$INSTALL_DIR/" 2>/dev/null || true
+    fi
+    rm -rf "$BACKUP_DIR"
+    echo "备份已恢复。"
+  fi
+  _error_status "升级失败 (exit $exit_code)"
+}
 
-# Store current mode state if it exists
-if [ -f "$INSTALL_DIR/state.txt" ]; then
-    CURRENT_MODE=$(cat "$INSTALL_DIR/state.txt")
-    echo "当前模式：$CURRENT_MODE"
-else
-    CURRENT_MODE="unknown"
-fi
-echo ""
+# ─────────────────────────────────────────────────────────────
+# Parse arguments
+# ─────────────────────────────────────────────────────────────
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --non-interactive) NON_INTERACTIVE=1 ;;
+    *) ;;
+  esac
+  shift
+done
 
-# Check if this is a git repository
+# ─────────────────────────────────────────────────────────────
+# Check if git repo
+# ─────────────────────────────────────────────────────────────
 if [ -d "$INSTALL_DIR/.git" ]; then
+  IS_GIT=1
+else
+  IS_GIT=0
+fi
+
+if [ "$NON_INTERACTIVE" -eq 1 ] && [ "$IS_GIT" -eq 0 ]; then
+  _error_status "非 Git 安装不支持在线升级，请手动运行 upgrade.sh"
+fi
+
+# ─────────────────────────────────────────────────────────────
+# Banner (interactive only)
+# ─────────────────────────────────────────────────────────────
+if [ "$NON_INTERACTIVE" -eq 0 ]; then
+  echo "==================================="
+  echo "TeslaUSB 升级脚本"
+  echo "==================================="
+  echo ""
+fi
+
+# ─────────────────────────────────────────────────────────────
+# Store current mode
+# ─────────────────────────────────────────────────────────────
+if [ -f "$INSTALL_DIR/state.txt" ]; then
+  CURRENT_MODE=$(cat "$INSTALL_DIR/state.txt")
+else
+  CURRENT_MODE="unknown"
+fi
+
+if [ "$NON_INTERACTIVE" -eq 0 ]; then
+  echo "当前模式：$CURRENT_MODE"
+  echo ""
+fi
+
+# ─────────────────────────────────────────────────────────────
+# Git path
+# ─────────────────────────────────────────────────────────────
+if [ "$IS_GIT" -eq 1 ]; then
+  if [ "$NON_INTERACTIVE" -eq 0 ]; then
     echo "检测到 Git 仓库——使用 git pull 方式更新"
     echo ""
-
-    cd "$INSTALL_DIR"
-
-    echo "当前目录：$(pwd)"
-    echo "当前分支：$(git branch --show-current)"
+    echo "当前目录：$INSTALL_DIR"
+    echo "当前分支：$(git -C "$INSTALL_DIR" branch --show-current)"
     echo ""
+  fi
 
-    # Fetch latest changes
+  cd "$INSTALL_DIR"
+
+  if [ "$NON_INTERACTIVE" -eq 1 ]; then
+    _write_status "fetch" "正在检查更新..." 10
+  else
     echo "正在从 GitHub 获取最新更新..."
-    git fetch origin
+  fi
 
-    # Reset any local changes to tracked files (including chmod changes)
-    echo "正在重置跟踪文件的本地更改..."
-    git reset --hard origin/$BRANCH
+  # Fetch + capture old HEAD for change detection
+  OLD_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
+  git fetch origin 2>&1 || _error_status "git fetch 失败，请检查网络连接"
+  NEW_HEAD=$(git rev-parse origin/$BRANCH 2>/dev/null || echo "")
 
-    # Clean up any untracked files (optional - commented out for safety)
-    # git clean -fd
-
-else
-    echo "未检测到 Git 仓库——使用直接下载方式更新"
-    echo ""
-
-    # Create backup directory with timestamp
-    BACKUP_DIR="${INSTALL_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
-    echo "正在创建备份：$BACKUP_DIR"
-
-    # Backup important files
-    mkdir -p "$BACKUP_DIR"
-    [ -f "$INSTALL_DIR/state.txt" ] && cp "$INSTALL_DIR/state.txt" "$BACKUP_DIR/"
-    [ -f "$INSTALL_DIR/usb_cam.img" ] && echo "保留 usb_cam.img（因体积较大，不进行备份）"
-    [ -f "$INSTALL_DIR/usb_lightshow.img" ] && echo "保留 usb_lightshow.img（因体积较大，不进行备份）"
-    [ -d "$INSTALL_DIR/thumbnails" ] && cp -r "$INSTALL_DIR/thumbnails" "$BACKUP_DIR/"
-
-    echo ""
-    echo "正在从 GitHub 下载最新文件..."
-    TEMP_DIR=$(mktemp -d)
-    ARCHIVE_FILE="$TEMP_DIR/repo.tar.gz"
-    EXTRACT_DIR="$TEMP_DIR/src"
-    mkdir -p "$EXTRACT_DIR"
-
-    ARCHIVE_DOWNLOAD_URL="${ARCHIVE_BASE_URL}/${BRANCH}.tar.gz"
-    echo "正在下载压缩包：$ARCHIVE_DOWNLOAD_URL"
-    curl -fsSL "$ARCHIVE_DOWNLOAD_URL" -o "$ARCHIVE_FILE" || { echo "下载仓库压缩包失败"; exit 1; }
-
-    echo "正在解压压缩包..."
-    tar -xzf "$ARCHIVE_FILE" -C "$EXTRACT_DIR" --strip-components=1 || { echo "解压仓库压缩包失败"; exit 1; }
-
-    echo "正在复制文件到 $INSTALL_DIR..."
-    mkdir -p "$INSTALL_DIR"
-    cp -a "$EXTRACT_DIR/." "$INSTALL_DIR/" || { echo "复制文件到安装目录失败"; exit 1; }
-
-    # Restore state file if it was backed up
-    if [ -f "$BACKUP_DIR/state.txt" ]; then
-        cp "$BACKUP_DIR/state.txt" "$INSTALL_DIR/"
+  if [ "$OLD_HEAD" = "$NEW_HEAD" ] && [ -n "$OLD_HEAD" ]; then
+    if [ "$NON_INTERACTIVE" -eq 1 ]; then
+      _write_status "done" "已是最新版本" 100 2
+      exit 2
     fi
+    echo "已是最新版本。"
+    exit 0
+  fi
 
-    # Clean up temp directory
-    rm -rf "$TEMP_DIR"
+  if [ "$NON_INTERACTIVE" -eq 1 ]; then
+    _write_status "pull" "正在下载更新..." 40
+  fi
 
-    echo ""
-    echo "文件更新成功！"
+  git reset --hard origin/$BRANCH 2>&1 || _error_status "git reset 失败"
 
-    # Delete backup if we got here successfully
-    if [ -d "$BACKUP_DIR" ]; then
-        echo "正在删除备份（升级成功）..."
-        rm -rf "$BACKUP_DIR"
-        echo "备份已删除。"
+  if [ "$NON_INTERACTIVE" -eq 1 ]; then
+    _write_status "analyze" "正在分析变更..." 60
+  fi
+
+  # Determine what changed between old and new HEAD
+  CHANGED_FILES=$(git diff --name-only "$OLD_HEAD" "$NEW_HEAD" 2>/dev/null || echo "")
+  SYSTEM_CHANGED=0
+  WEB_ONLY=1
+
+  for f in $CHANGED_FILES; do
+    # If a file outside scripts/web/ changed, it's a system-level change
+    case "$f" in
+      scripts/web/*|scripts/web/templates/*|scripts/web/static/*|scripts/web/translations/*)
+        ;;  # web-only — fine
+      *)
+        SYSTEM_CHANGED=1
+        WEB_ONLY=0
+        ;;
+    esac
+  done
+
+  # Ensure scripts are executable
+  chmod +x "$INSTALL_DIR/setup_usb.sh" 2>/dev/null || true
+  chmod +x "$INSTALL_DIR/cleanup.sh" 2>/dev/null || true
+  chmod +x "$INSTALL_DIR/upgrade.sh" 2>/dev/null || true
+  chmod +x "$INSTALL_DIR/scripts"/*.sh 2>/dev/null || true
+
+  # ── Decide quick vs full ──
+  if [ "$NON_INTERACTIVE" -eq 1 ]; then
+    if [ "$WEB_ONLY" -eq 1 ]; then
+      # Quick upgrade: just restart the web service
+      _write_status "restart" "正在重启 Web 服务..." 80
+      sudo systemctl restart gadget_web.service 2>&1 || _error_status "服务重启失败"
+      _write_status "done" "升级完成（仅前端/后端代码更新）" 100 0
+    else
+      _write_status "done" "代码已更新，涉及系统配置变更，请 SSH 执行 sudo ./setup_usb.sh" 100 3
     fi
-fi
+    exit 0
+  fi
 
-# Disable error trap for git-based updates (they handle their own errors)
-trap - EXIT
+  echo ""
+  echo "==================================="
+  echo "代码更新成功！"
+  echo "==================================="
+  echo ""
 
-# Ensure scripts are executable
-echo ""
-echo "正在设置脚本执行权限..."
-chmod +x "$INSTALL_DIR/setup_usb.sh"
-chmod +x "$INSTALL_DIR/cleanup.sh"
-chmod +x "$INSTALL_DIR/upgrade.sh"
-
-echo ""
-echo "==================================="
-echo "代码更新成功！"
-echo "==================================="
-echo ""
-
-# Ask user if they want to run setup
-read -p "Do you want to run setup_usb.sh now? [y/n]: " -n 1 -r
-echo ""
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo ""
-    echo "正在运行 setup_usb.sh..."
+  # Interactive: ask about setup
+  read -p "是否运行 setup_usb.sh? [y/n]: " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo ./setup_usb.sh
-
-    echo ""
-    echo "==================================="
-    echo "升级完成！"
-    echo "==================================="
-
-    # Restore previous mode if it was in edit mode
     if [ "$CURRENT_MODE" = "edit" ]; then
-        echo ""
-        echo "之前为「编辑」模式。如需切换回编辑模式，请确认。"
-        read -p "Switch to edit mode now? [y/n]: " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            sudo ./scripts/edit_usb.sh
-        fi
+      read -p "之前为编辑模式，是否切回? [y/n]: " -n 1 -r
+      echo ""
+      [[ $REPLY =~ ^[Yy]$ ]] && sudo ./scripts/edit_usb.sh
     fi
-else
-    echo ""
-    echo "跳过 setup。您可以稍后手动运行："
-    echo "  cd $INSTALL_DIR && sudo ./setup_usb.sh"
-fi
+  else
+    echo "跳过 setup。可手动运行: cd $INSTALL_DIR && sudo ./setup_usb.sh"
+    # Restart web service for the new code to take effect
+    sudo systemctl restart gadget_web.service
+  fi
 
-echo ""
-echo "升级流程结束！"
+  echo ""
+  echo "升级流程结束！"
+
+# ─────────────────────────────────────────────────────────────
+# Non-git path (interactive only)
+# ─────────────────────────────────────────────────────────────
+else
+  trap cleanup_on_error EXIT
+
+  BACKUP_DIR="${INSTALL_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
+  echo "正在创建备份：$BACKUP_DIR"
+  mkdir -p "$BACKUP_DIR"
+  [ -f "$INSTALL_DIR/state.txt" ] && cp "$INSTALL_DIR/state.txt" "$BACKUP_DIR/"
+  [ -d "$INSTALL_DIR/thumbnails" ] && cp -r "$INSTALL_DIR/thumbnails" "$BACKUP_DIR/"
+
+  echo "正在从 GitHub 下载最新文件..."
+  TEMP_DIR=$(mktemp -d)
+  ARCHIVE_FILE="$TEMP_DIR/repo.tar.gz"
+  EXTRACT_DIR="$TEMP_DIR/src"
+  mkdir -p "$EXTRACT_DIR"
+
+  curl -fsSL "${ARCHIVE_BASE_URL}/${BRANCH}.tar.gz" -o "$ARCHIVE_FILE" || _error_status "下载失败"
+  tar -xzf "$ARCHIVE_FILE" -C "$EXTRACT_DIR" --strip-components=1 || _error_status "解压失败"
+
+  echo "正在复制文件..."
+  mkdir -p "$INSTALL_DIR"
+  cp -a "$EXTRACT_DIR/." "$INSTALL_DIR/" || _error_status "复制失败"
+
+  [ -f "$BACKUP_DIR/state.txt" ] && cp "$BACKUP_DIR/state.txt" "$INSTALL_DIR/"
+  rm -rf "$TEMP_DIR"
+
+  if [ -d "$BACKUP_DIR" ]; then
+    rm -rf "$BACKUP_DIR"
+  fi
+
+  trap - EXIT
+
+  chmod +x "$INSTALL_DIR/setup_usb.sh"
+  chmod +x "$INSTALL_DIR/cleanup.sh"
+  chmod +x "$INSTALL_DIR/upgrade.sh"
+
+  echo ""
+  echo "==================================="
+  echo "代码更新成功！"
+  echo "==================================="
+  echo ""
+
+  read -p "是否运行 setup_usb.sh? [y/n]: " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    sudo ./setup_usb.sh
+    if [ "$CURRENT_MODE" = "edit" ]; then
+      read -p "之前为编辑模式，是否切回? [y/n]: " -n 1 -r
+      echo ""
+      [[ $REPLY =~ ^[Yy]$ ]] && sudo ./scripts/edit_usb.sh
+    fi
+  else
+    echo "跳过 setup。可手动运行: cd $INSTALL_DIR && sudo ./setup_usb.sh"
+    sudo systemctl restart gadget_web.service
+  fi
+
+  echo ""
+  echo "升级流程结束！"
+fi

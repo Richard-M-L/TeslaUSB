@@ -667,6 +667,16 @@ class TestRecommendationClassifier:
             r = _classify_recommendation('indexer', err)
             assert r['action'] == 'delete', f"failed on {err!r}"
 
+    def test_moov_mdat_missing_recommends_retry(self):
+        from blueprints.jobs import _classify_recommendation
+        for err in (
+            "copy: OSError('destination MP4 missing moov or mdat box "
+            "— source may still be writing: <path>')",
+            'destination MP4 missing moov or mdat box',
+        ):
+            r = _classify_recommendation('archive', err)
+            assert r['action'] == 'retry', f"failed on {err!r}"
+
     def test_network_error_recommends_retry(self):
         from blueprints.jobs import _classify_recommendation
         for err in (

@@ -186,14 +186,6 @@ import urllib.error
 
 _TILE_CACHE_DIR = os.path.join(GADGET_DIR, 'tile_cache')
 _TILE_FETCH_TIMEOUT = 10  # seconds
-_EMPTY_PNG = (
-    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
-    b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x09pHYs\x00\x00\x0b\x13'
-    b'\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x07tIME\x07\xe2\x05'
-    b'\x0e\r*\x2f;G$\x00\x00\x00\x1dIDAT\x08\xd7c\xf8\xff\xff\x7f\x00\x05'
-    b'\xfe\x02\xfe\x02\x02\x30\x00\xc5\x00\x05?\xb4t\xd7\x00\x00\x00\x00'
-    b' IEND\xaeB`\x82'
-)
 
 # Default upstream: Gaode (Amap) street tiles — accessible without VPN in China.
 _DEFAULT_TILE_UPSTREAM = (
@@ -252,9 +244,12 @@ def tile_proxy(z, x, y):
         logging.getLogger('teslausb.tile_proxy').warning(
             "Tile fetch failed %d/%d/%d: %s", z, x, y, e,
         )
-        from flask import Response
-        return Response(
-            _EMPTY_PNG, mimetype='image/png', status=502,
+        # Pi has no internet — redirect the client to fetch the tile
+        # directly from the upstream source using its own connection
+        # (e.g. a phone tethered to the Pi's AP with cellular data).
+        from flask import redirect
+        return redirect(
+            upstream.format(z=z, x=x, y=y), code=302,
         )
 
 
@@ -267,6 +262,76 @@ def tile_cache_service_worker():
         mimetype='application/javascript',
         max_age=86400,
     )
+
+
+# ---------------------------------------------------------------------------
+# Online upgrade — git pull + restart via web UI
+# ---------------------------------------------------------------------------
+_UPGRADE_SCRIPT = os.path.join(GADGET_DIR, 'upgrade.sh')
+_UPGRADE_STATUS_FILE = '/tmp/teslausb_upgrade_status.json'
+
+
+@app.route('/api/system/upgrade/check', methods=['POST'])
+def upgrade_check():
+    """git fetch and report whether new commits are available."""
+    import subprocess
+    try:
+        # Fetch without merging — safe, read-only after fetch
+        result = subprocess.run(
+            ['git', 'fetch', 'origin'],
+            capture_output=True, text=True, timeout=30,
+            cwd=GADGET_DIR,
+        )
+        if result.returncode != 0:
+            return {'available': False, 'error': 'git fetch failed'}
+        # Compare HEAD to origin/main
+        result = subprocess.run(
+            ['git', 'rev-list', '--count', 'HEAD..origin/main'],
+            capture_output=True, text=True, timeout=10,
+            cwd=GADGET_DIR,
+        )
+        count = int(result.stdout.strip() or 0)
+        if count == 0:
+            return {'available': False, 'current': True}
+        return {'available': True, 'commits_behind': count}
+    except subprocess.TimeoutExpired:
+        return {'available': False, 'error': '检查超时'}, 504
+    except Exception as e:
+        return {'available': False, 'error': str(e)[:200]}, 500
+
+
+@app.route('/api/system/upgrade', methods=['POST'])
+def upgrade_run():
+    """Trigger upgrade (git pull + web restart) in the background.
+
+    Writes progress to ``/tmp/teslausb_upgrade_status.json`` which the
+    frontend polls via ``GET /api/system/upgrade/status``.
+    """
+    import subprocess
+    if not os.path.isfile(_UPGRADE_SCRIPT):
+        return {'ok': False, 'error': 'upgrade.sh not found'}, 404
+    try:
+        subprocess.Popen(
+            ['sudo', '-n', 'bash', _UPGRADE_SCRIPT, '--non-interactive'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            cwd=GADGET_DIR,
+            start_new_session=True,  # survive gadget_web.service restart
+        )
+        return {'ok': True}
+    except Exception as e:
+        return {'ok': False, 'error': str(e)[:200]}, 500
+
+
+@app.route('/api/system/upgrade/status')
+def upgrade_status():
+    """Poll the upgrade status file."""
+    import json as _json
+    try:
+        with open(_UPGRADE_STATUS_FILE, 'r') as fh:
+            return _json.load(fh)
+    except (OSError, ValueError):
+        return {'phase': 'idle', 'message': '', 'pct': 0, 'code': 0}
+
 
 # Add catch-all route for captive portal (must be last)
 @app.route('/<path:path>')

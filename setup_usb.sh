@@ -208,7 +208,7 @@ show_image_dashboard() {
   echo ""
   printf "  总存储空间:            %s\n" "$(bytes_to_human $fs_total_bytes)"
   printf "  OS 预留:               %s  (系统 + 5 GiB 余量)\n" "$(bytes_to_human $os_reserve_display)"
-  printf "  归档预留:              %s  (RecentClips 备份)\n" "$(bytes_to_human $archive_reserve_bytes)"
+  printf "  归档预留:              %s  (RecentClips 存档备份)\n" "$(bytes_to_human $archive_reserve_bytes)"
   echo "  ────────────────────────────────────────"
   printf "%b" "$image_lines"
   echo "  ────────────────────────────────────────"
@@ -292,7 +292,7 @@ else
   echo "  ${OPTION_NUM}) 保留现有镜像，跳过镜像配置"
   echo ""
 
-  read -r -p "Select an option [${OPT_KEEP}]: " UPGRADE_CHOICE
+  read -r -p "请选择一个选项 [${OPT_KEEP}]: " UPGRADE_CHOICE
   UPGRADE_CHOICE="${UPGRADE_CHOICE:-$OPT_KEEP}"
 
   if [ -n "$OPT_CREATE_MISSING" ] && [ "$UPGRADE_CHOICE" = "$OPT_CREATE_MISSING" ]; then
@@ -311,7 +311,7 @@ else
     echo "║  灯光秀、装饰贴纸以及其他内容。                         ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
-    read -r -p "Type YES to confirm deletion: " CONFIRM_DELETE
+    read -r -p "输入 YES 确认删除: " CONFIRM_DELETE
     if [ "$CONFIRM_DELETE" != "YES" ]; then
       echo "删除未确认。正在中止。"
       exit 0
@@ -388,14 +388,21 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
   DEFAULT_RESERVE_STR="5G"
 
   if [ -z "${RESERVE_SIZE}" ]; then
-    read -r -p "OS reserve — headroom to leave free (default ${DEFAULT_RESERVE_STR}): " RESERVE_INPUT
+    read -r -p "系统预留空间 — 留给操作系统的空闲空间（默认 ${DEFAULT_RESERVE_STR}）: " RESERVE_INPUT
     RESERVE_SIZE="${RESERVE_INPUT:-$DEFAULT_RESERVE_STR}"
   fi
 
   RESERVE_BYTES="$(size_to_bytes "$RESERVE_SIZE")"
 
   # Archive reserve: space set aside for RecentClips archival on SD card
-  ARCHIVE_RESERVE_STR="${ARCHIVE_RESERVE_SIZE:-50G}"
+  DEFAULT_ARCHIVE_RESERVE_STR="50G"
+
+  if [ -z "${ARCHIVE_RESERVE_SIZE}" ]; then
+    read -r -p "归档预留 — 留给 RecentClips 存档的空间（默认 ${DEFAULT_ARCHIVE_RESERVE_STR}）: " ARCHIVE_RESERVE_INPUT
+    ARCHIVE_RESERVE_STR="${ARCHIVE_RESERVE_INPUT:-$DEFAULT_ARCHIVE_RESERVE_STR}"
+  else
+    ARCHIVE_RESERVE_STR="${ARCHIVE_RESERVE_SIZE}"
+  fi
   ARCHIVE_RESERVE_BYTES="$(size_to_bytes "$ARCHIVE_RESERVE_STR")"
 
   TOTAL_RESERVE_BYTES=$(( RESERVE_BYTES + ARCHIVE_RESERVE_BYTES ))
@@ -460,41 +467,45 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
     fi
 
     if [ "$BASELINE_MIB" -gt 0 ] && [ "$USABLE_MIB" -le "$BASELINE_MIB" ]; then
-      echo "错误：OS 预留后没有足够的可用空间来满足默认大小。"
-      echo "可用空间: ${USABLE_MIB} MiB，基线需求: ${BASELINE_MIB} MiB"
-      echo "请释放空间或减小 Lightshow/Music 的大小。"
-      exit 1
+      echo ""
+      echo "注意：默认大小合计 ${BASELINE_MIB} MiB 超出可用空间 ${USABLE_MIB} MiB。"
+      echo "请根据提示手动指定较小的镜像大小。"
     fi
 
     if [ "$NEED_CAM_IMAGE" = "1" ]; then
-      SUG_P1_MIB="$(round_down_gib_mib $REMAINING_MIB)"
-      SUG_P1_STR="$(mib_to_gib_str "$SUG_P1_MIB")"
+      if [ "$REMAINING_MIB" -lt 1024 ]; then
+        SUG_P1_STR="（需调小其他镜像后才有空间）"
+        SUG_P1_MIB=0
+      else
+        SUG_P1_MIB="$(round_down_gib_mib $REMAINING_MIB)"
+        SUG_P1_STR="$(mib_to_gib_str "$SUG_P1_MIB")"
+      fi
     fi
   fi
 
   echo ""
   echo "============================================"
-  echo "TeslaUSB 镜像大小设置"
+  echo "镜像大小设置"
   echo "============================================"
-  echo "镜像将被创建在：$GADGET_DIR"
+  echo "镜像将创建在：$GADGET_DIR"
   echo "文件系统空闲空间:  $((FS_AVAIL_BYTES / 1024 / 1024)) MiB"
   echo "OS 预留:             $((RESERVE_BYTES / 1024 / 1024)) MiB"
-  echo "归档预留:            $((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB  (RecentClips 备份)"
+  echo "归档预留:            $((ARCHIVE_RESERVE_BYTES / 1024 / 1024)) MiB  (RecentClips 存档备份)"
   echo "可用于镜像的空间:    ${USABLE_MIB} MiB"
   echo ""
   echo "推荐大小（安全，为 Raspberry Pi OS 留有余量）："
-  [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  Lightshow (PART2_SIZE): $SUG_P2_STR"
-  [ "$NEED_MUSIC_IMAGE" = "1" ] && echo "  Music     (PART3_SIZE): $SUG_P3_STR"
-  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  TeslaCam  (PART1_SIZE): $SUG_P1_STR（使用剩余可用空间）"
+  [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  灯光秀 (PART2_SIZE): $SUG_P2_STR"
+  [ "$NEED_MUSIC_IMAGE" = "1" ] && echo "  音乐     (PART3_SIZE): $SUG_P3_STR"
+  [ "$NEED_CAM_IMAGE" = "1" ] && echo "  行车记录仪 (PART1_SIZE): $SUG_P1_STR"
   echo ""
 
   # Only prompt for sizes needed for missing images
   if [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && [ -z "${PART2_SIZE}" ]; then
-    read -r -p "Enter Lightshow size (default ${SUG_P2_STR}): " PART2_SIZE_INPUT
+    read -r -p "输入灯光秀镜像大小（默认 ${SUG_P2_STR}）: " PART2_SIZE_INPUT
     PART2_SIZE="${PART2_SIZE_INPUT:-$SUG_P2_STR}"
     # Validate format immediately
     if ! size_to_bytes "$PART2_SIZE" >/dev/null 2>&1; then
-      echo "错误：Lightshow 的大小格式无效: $PART2_SIZE"
+      echo "错误：灯光秀镜像的大小格式无效: $PART2_SIZE"
       echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
@@ -504,10 +515,10 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
   fi
 
   if [ $MUSIC_REQUIRED -eq 1 ] && [ "$NEED_MUSIC_IMAGE" = "1" ] && [ -z "${PART3_SIZE}" ]; then
-    read -r -p "Enter Music size (default ${SUG_P3_STR}): " PART3_SIZE_INPUT
+    read -r -p "输入音乐镜像大小（默认 ${SUG_P3_STR}）: " PART3_SIZE_INPUT
     PART3_SIZE="${PART3_SIZE_INPUT:-$SUG_P3_STR}"
     if ! size_to_bytes "$PART3_SIZE" >/dev/null 2>&1; then
-      echo "错误：Music 的大小格式无效: $PART3_SIZE"
+      echo "错误：音乐镜像的大小格式无效: $PART3_SIZE"
       echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
@@ -516,11 +527,20 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ] && { [ -z "${PART1_SIZE}" ] || [ -z "${PART2
   fi
 
   if [ "$NEED_CAM_IMAGE" = "1" ] && [ -z "${PART1_SIZE}" ]; then
-    read -r -p "Enter TeslaCam size (default ${SUG_P1_STR}): " PART1_SIZE_INPUT
-    PART1_SIZE="${PART1_SIZE_INPUT:-$SUG_P1_STR}"
+    if [ "$SUG_P1_MIB" -gt 0 ]; then
+      read -r -p "输入行车记录仪镜像大小（默认 ${SUG_P1_STR}）: " PART1_SIZE_INPUT
+      PART1_SIZE="${PART1_SIZE_INPUT:-$SUG_P1_STR}"
+    else
+      read -r -p "输入行车记录仪镜像大小（空间不足，请先调小其他镜像）: " PART1_SIZE_INPUT
+      PART1_SIZE="${PART1_SIZE_INPUT}"
+    fi
+    if [ -z "$PART1_SIZE" ]; then
+      echo "错误：必须指定行车记录仪镜像大小。"
+      exit 2
+    fi
     # Validate format immediately
     if ! size_to_bytes "$PART1_SIZE" >/dev/null 2>&1; then
-      echo "错误：TeslaCam 的大小格式无效: $PART1_SIZE"
+      echo "错误：行车记录仪镜像的大小格式无效: $PART1_SIZE"
       echo "请使用如 512M 或 5G 的格式（仅整数）"
       exit 2
     fi
@@ -590,7 +610,7 @@ if [ "${NEED_SIZE_VALIDATION:-0}" = "1" ] && [ "$SKIP_IMAGE_CREATION" = "0" ]; t
     echo "错误：选定的大小超过 $GADGET_DIR 下的安全可用空间。"
     echo "可用空间:  ${USABLE_MIB} MiB（扣除 OS + 归档预留后）"
     echo "已选择:  ${TOTAL_MIB} MiB（仅计算正在创建的镜像）"
-    echo "请减小 TeslaCam、Lightshow 和/或 Music 的大小。"
+    echo "请减小行车记录仪、灯光秀和/或音乐镜像的大小。"
     exit 1
   fi
 fi
@@ -602,13 +622,13 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ]; then
   echo "============================================"
   if [ "$NEED_CAM_IMAGE" = "1" ] || [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] || [ "$NEED_MUSIC_IMAGE" = "1" ]; then
     echo "将创建以下镜像文件："
-    [ "$NEED_CAM_IMAGE" = "1" ] && echo "  - TeslaCam  : $IMG_CAM_PATH  size=$PART1_SIZE  label=$LABEL1  (读写)" || echo "  - TeslaCam  : 已存在"
-    [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  - Lightshow : $IMG_LIGHTSHOW_PATH  size=$PART2_SIZE  label=$LABEL2  (只读)" || echo "  - Lightshow : 已存在"
+    [ "$NEED_CAM_IMAGE" = "1" ] && echo "  - 行车记录仪  : $IMG_CAM_PATH  size=$PART1_SIZE  label=$LABEL1  (读写)" || echo "  - 行车记录仪  : 已存在"
+    [ "$NEED_LIGHTSHOW_IMAGE" = "1" ] && echo "  - 灯光秀 : $IMG_LIGHTSHOW_PATH  size=$PART2_SIZE  label=$LABEL2  (只读)" || echo "  - 灯光秀 : 已存在"
     if [ $MUSIC_REQUIRED -eq 1 ]; then
       if [ "$NEED_MUSIC_IMAGE" = "1" ]; then
-        echo "  - Music     : $IMG_MUSIC_PATH  size=$PART3_SIZE  label=$LABEL3  (Tesla 只读)"
+        echo "  - 音乐     : $IMG_MUSIC_PATH  size=$PART3_SIZE  label=$LABEL3  (Tesla 只读)"
       else
-        echo "  - Music     : 已存在"
+        echo "  - 音乐     : 已存在"
       fi
     fi
   fi
@@ -616,7 +636,7 @@ if [ "$SKIP_IMAGE_CREATION" = "0" ]; then
   echo "镜像存储位置: $GADGET_DIR"
   echo "如果这些大小过大，Pi 可能会耗尽磁盘空间并运行异常。"
   echo ""
-  read -r -p "Proceed with these sizes? [y/N]: " PROCEED
+  read -r -p "确认使用以上大小？[y/N]: " PROCEED
   PROCEED_LC="$(printf '%s' "$PROCEED" | tr '[:upper:]' '[:lower:]')"
   case "$PROCEED_LC" in
     y|yes) echo "正在继续..." ;;
@@ -1972,9 +1992,9 @@ losetup -d "$LOOP_SETUP"
 rmdir "$TEMP_MOUNT"
 echo "TeslaCam 文件夹设置完成。"
 
-# ===== Create Chimes folder on Lightshow drive =====
+# ===== 在灯光秀驱动器上创建锁车音效文件夹 =====
 echo
-echo "正在 Lightshow 驱动器上设置 Chimes 文件夹..."
+echo "正在灯光秀驱动器上设置锁车音效文件夹..."
 TEMP_MOUNT="/tmp/lightshow_setup_$$"
 mkdir -p "$TEMP_MOUNT"
 
@@ -1983,19 +2003,19 @@ LOOP_SETUP=$(losetup -f)
 losetup "$LOOP_SETUP" "$IMG_LIGHTSHOW_PATH"
 mount "$LOOP_SETUP" "$TEMP_MOUNT"
 
-# Create Chimes directory
+# 创建锁车音效目录
 mkdir -p "$TEMP_MOUNT/Chimes"
 mkdir -p "$TEMP_MOUNT/LightShow"  # Also ensure LightShow folder exists
 
-# Migrate any existing WAV files (except LockChime.wav) to Chimes folder
-echo "正在迁移现有 WAV 文件到 Chimes 文件夹..."
+# 迁移现有 WAV 文件（LockChime.wav 除外）到锁车音效文件夹
+echo "正在迁移现有 WAV 文件到锁车音效文件夹..."
 MIGRATED_COUNT=0
 for wavfile in "$TEMP_MOUNT"/*.wav "$TEMP_MOUNT"/*.WAV; do
   if [ -f "$wavfile" ]; then
     filename=$(basename "$wavfile")
     # Skip LockChime.wav (case-insensitive)
     if [[ "${filename,,}" != "lockchime.wav" ]]; then
-      echo "  正在移动 $filename 到 Chimes/"
+      echo "  正在移动 $filename 到锁车音效目录/"
       mv "$wavfile" "$TEMP_MOUNT/Chimes/"
       MIGRATED_COUNT=$((MIGRATED_COUNT + 1))
     fi
@@ -2003,7 +2023,7 @@ for wavfile in "$TEMP_MOUNT"/*.wav "$TEMP_MOUNT"/*.WAV; do
 done
 
 if [ $MIGRATED_COUNT -gt 0 ]; then
-  echo "  已迁移 $MIGRATED_COUNT 个 WAV 文件到 Chimes 文件夹"
+  echo "  已迁移 $MIGRATED_COUNT 个 WAV 文件到锁车音效文件夹"
 else
   echo "  未找到需要迁移的 WAV 文件"
 fi
@@ -2013,7 +2033,7 @@ sync
 umount "$TEMP_MOUNT"
 losetup -d "$LOOP_SETUP"
 rmdir "$TEMP_MOUNT"
-echo "Chimes 文件夹设置完成。"
+echo "锁车音效文件夹设置完成。"
 
 # ===== Create Music folder on Music drive =====
 if [ $MUSIC_REQUIRED -eq 1 ] && [ -f "$IMG_MUSIC_PATH" ]; then

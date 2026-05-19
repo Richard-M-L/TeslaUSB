@@ -766,6 +766,18 @@
         </div>
     </details>
 
+    <!-- Online Upgrade -->
+    <details class="settings-section">
+        <summary>{{ _('index.upgrade_title') }}</summary>
+        <div class="section-content">
+            <button id="btnUpgradeCheck" class="btn btn-secondary"
+                    style="padding:8px 20px;" onclick="checkUpgrade()">
+                {{ _('index.upgrade_check_btn') }}
+            </button>
+            <span id="upgradeMsg" style="margin-left:12px; font-size:0.85rem;"></span>
+        </div>
+    </details>
+
     <!-- Phase 5.9 (#102): low-key link to the Advanced sub-page. NOT a
          top-level nav item — buried at the bottom of Settings so casual
          users don't see it but power users can find it. -->
@@ -2339,4 +2351,6 @@ if (document.getElementById('fsck-status-container')) {
     if (!document.hidden) startPoll();
 })();
 </script>
+
+<script src="{{ url_for('static', filename='upgrade.js') }}"></script>
 {% endblock %}

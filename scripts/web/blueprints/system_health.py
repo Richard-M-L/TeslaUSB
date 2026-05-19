@@ -370,6 +370,8 @@ def _archive_block() -> Dict[str, Any]:
     if dead > 0:
         dead_tail = f' \u00b7 {dead} failed'
 
+    msg = ''
+
     if not running:
         sev = SEV_ERROR
         msg_key = 'health.worker_stalled'
