@@ -404,7 +404,10 @@
             function applyHealth(payload) {
                 const overall = (payload && payload.overall) || {};
                 const sev = overall.severity || 'unknown';
-                const msg = overall.message || _t('base.system_status');
+                const msg = (overall.message_key
+                    ? _t(overall.message_key).replace(/\{(\w+)\}/g, function(_,k) {
+                        return (overall.message_params || {})[k] || ''; })
+                    : _t('base.system_status'));
                 // Reset any prior class then apply the new one.
                 dot.className = 'status-dot health-dot ' +
                     (SEV_TO_CLASS[sev] || SEV_TO_CLASS.unknown);
