@@ -92,6 +92,8 @@
     }
 
     // ── Poll upgrade status ──
+    var _deadmanTimer = null;
+    var _inRestartPhase = false;
     function pollStatus(attempt) {
         if (attempt > 120) {
             var msg = el('upgradeMsg');
@@ -107,22 +109,43 @@
                 var phase = data.phase || '';
 
                 if (phase === 'done') {
+                    _inRestartPhase = false;
+                    if (_deadmanTimer) { clearTimeout(_deadmanTimer); _deadmanTimer = null; }
                     if (data.code === 3) {
                         if (msg) msg.innerHTML = '<span style="color:var(--ds-accent-warning);white-space:pre-line">' +
                             _t('index.upgrade_done_system') + '</span>';
                     } else {
                         if (msg) msg.innerHTML = '<span style="color:var(--ds-accent-success)">' +
                             _t('index.upgrade_done') + '</span>';
+                        // Service was restarted — page needs a hard reload
+                        // to pick up the new code. Short delay so the user
+                        // sees the success message first.
+                        setTimeout(function() { location.reload(true); }, 1500);
                     }
                     resetBtn();
                     return;
                 }
 
                 if (phase === 'error') {
+                    _inRestartPhase = false;
+                    if (_deadmanTimer) { clearTimeout(_deadmanTimer); _deadmanTimer = null; }
                     if (msg) msg.innerHTML = '<span style="color:var(--ds-accent-danger)">' +
                         _t('index.upgrade_error') + ': ' + escapeHTML(data.message || '') + '</span>';
                     resetBtn();
                     return;
+                }
+
+                if (phase === 'restart') {
+                    _inRestartPhase = true;
+                    // Service is about to / has just restarted. The next few
+                    // polls will likely fail while the new process binds port
+                    // 80. Set a dead-man reload: if we can't reach the server
+                    // for 12 seconds during restart, reload the page anyway.
+                    if (!_deadmanTimer) {
+                        _deadmanTimer = setTimeout(function() {
+                            location.reload(true);
+                        }, 12000);
+                    }
                 }
 
                 if (msg) msg.innerHTML = '<span style="color:var(--text-secondary)">' +
@@ -131,7 +154,11 @@
                 _pollTimer = setTimeout(function() { pollStatus(attempt + 1); }, 1000);
             })
             .catch(function() {
-                _pollTimer = setTimeout(function() { pollStatus(attempt + 1); }, 2000);
+                // Network error — expected during service restart.
+                // If we're in the restart phase and the dead-man is ticking,
+                // keep polling a bit faster so we catch the server coming back.
+                var delay = _inRestartPhase ? 1500 : 2000;
+                _pollTimer = setTimeout(function() { pollStatus(attempt + 1); }, delay);
             });
     }
 })();

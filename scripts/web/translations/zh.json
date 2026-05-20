@@ -105,7 +105,7 @@
     "mapping.no_trips": "暂无已索引的行程。",
     "mapping.no_mapped_drives_title": "暂无已索引的硬盘",
     "mapping.no_mapped_drives_desc": "索引行车记录视频以查看行程和事件",
-    "mapping.no_trips_desc": "索引视频中的行车记录 GPS 数据后可自动检测行程。",
+    "mapping.no_trips_desc": "中国行车记录视频中未包含GPS信息，导致行程功能不可用。",
     "mapping.load_events_fail": "加载事件失败",
     "mapping.load_trips_fail": "加载行程失败",
     "mapping.no_videos_folder": "该文件夹中没有视频",

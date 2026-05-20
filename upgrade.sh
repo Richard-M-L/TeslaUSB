@@ -162,6 +162,15 @@ if [ "$IS_GIT" -eq 1 ]; then
       # Quick upgrade: just restart the web service
       _write_status "restart" "正在重启 Web 服务..." 80
       sudo systemctl restart gadget_web.service 2>&1 || _error_status "服务重启失败"
+
+      # Wait for the web service to be fully ready so the frontend
+      # poll lands on a live server and sees the final status.
+      _write_status "restart" "Web 服务已重启，等待就绪..." 90
+      for _ in $(seq 1 30); do
+        curl -s -o /dev/null --max-time 2 http://localhost/api/system/upgrade/status 2>/dev/null && break
+        sleep 1
+      done
+
       _write_status "done" "升级完成（仅前端/后端代码更新）" 100 0
     else
       _write_status "done" "代码已更新，涉及系统配置变更，请 SSH 执行 sudo ./setup_usb.sh" 100 3
