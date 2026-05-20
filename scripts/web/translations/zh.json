@@ -462,6 +462,8 @@
     "settings.advanced_retention_scan_interval_desc": "存档健康看门狗的检查频率。当可用空间下降时修剪旧文件的工作线程。",
     "settings.advanced_archive_copy_chunk_size": "存档：复制块大小",
     "settings.advanced_archive_copy_chunk_size_desc": "temp+fsync+rename 复制循环中每次写入的字节数。越小则每块暂停成本越低，但系统调用更多。",
+    "settings.advanced_no_gps_telemetry": "保留无GPS视频的遥测数据",
+    "settings.advanced_no_gps_telemetry_desc": "中国版特斯拉行车记录视频无GPS坐标。开启后仍保留转向、刹车、加速等CAN总线驾驶数据供视频回放HUD使用——路点不会出现在地图上（无坐标）。",
     "settings.unit_seconds": "秒",
     "settings.unit_load": "负载",
     "settings.unit_bytes": "字节",

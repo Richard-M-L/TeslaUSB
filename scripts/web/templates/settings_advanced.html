@@ -72,6 +72,19 @@
                 </div>
 
                 <div style="display:flex; gap:8px; align-items:center; min-width:280px;">
+                    {% if t.type == 'checkbox' %}
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox"
+                               id="adv-{{ t.form_name }}"
+                               name="{{ t.form_name }}"
+                               value="on"
+                               {% if t.current %}checked{% endif %}
+                               style="width:18px; height:18px; accent-color:var(--ds-accent-primary, #2563EB);">
+                        <span style="color:var(--text-secondary); font-size:0.9rem;">
+                            {{ _('common.enabled') if t.current else _('common.disabled') }}
+                        </span>
+                    </label>
+                    {% else %}
                     <input type="number"
                            id="adv-{{ t.form_name }}"
                            name="{{ t.form_name }}"
@@ -89,12 +102,25 @@
                                   font-family:inherit; font-size:0.9rem;">
                     <span style="color:var(--text-secondary); font-size:0.85rem;
                                  min-width:48px;">{{ _(t.unit_key) if t.unit_key else t.unit }}</span>
+                    {% endif %}
                 </div>
             </div>
 
             <div style="display:flex; gap:14px; margin-top:6px;
                         font-size:0.8rem; color:var(--text-secondary);
                         flex-wrap:wrap;">
+                {% if t.type == 'checkbox' %}
+                <span>{{ _('settings.default') }}: <strong>{{ _('common.enabled') if t.default else _('common.disabled') }}</strong></span>
+                <button type="button"
+                        onclick="resetAdvancedCheckbox('{{ t.form_name }}', {{ 'true' if t.default else 'false' }})"
+                        style="background:none; border:none;
+                               color:var(--ds-accent-primary, #2563EB);
+                               cursor:pointer; padding:0; font-size:0.8rem;
+                               text-decoration:underline;"
+                        aria-label="Reset {{ t.label }} to default">
+                    {{ _('settings.reset_to_default') }}
+                </button>
+                {% else %}
                 <span>{{ _('settings.default') }}: <strong>{{ '%g'|format(t.default) }} {{ _(t.unit_key) if t.unit_key else t.unit }}</strong></span>
                 <span>{{ _('settings.range') }}: {{ '%g'|format(t.min) }} – {{ '%g'|format(t.max) }} {{ _(t.unit_key) if t.unit_key else t.unit }}</span>
                 <button type="button"
@@ -106,6 +132,7 @@
                         aria-label="Reset {{ t.label }} to default">
                     {{ _('settings.reset_to_default') }}
                 </button>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -127,6 +154,13 @@ function resetAdvancedField(name, defaultValue) {
     var el = document.getElementById('adv-' + name);
     if (el) {
         el.value = defaultValue;
+        el.focus();
+    }
+}
+function resetAdvancedCheckbox(name, defaultValue) {
+    var el = document.getElementById('adv-' + name);
+    if (el) {
+        el.checked = defaultValue;
         el.focus();
     }
 }

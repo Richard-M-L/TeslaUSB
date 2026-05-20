@@ -1171,8 +1171,14 @@ def _write_inline_sei_sidecar(dest_path: str) -> None:
         return
 
     try:
+        from config import MAPPING_STORE_NO_GPS_TELEMETRY as _keep_all
+    except ImportError:
+        _keep_all = False
+
+    try:
         sidecar = sei_parser.write_sei_sidecar(
             dest_path, sample_rate=_INLINE_SEI_SAMPLE_RATE,
+            keep_all_messages=_keep_all,
         )
     except Exception as e:  # noqa: BLE001
         logger.warning(

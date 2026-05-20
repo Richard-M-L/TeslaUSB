@@ -116,6 +116,7 @@ MAPPING_EVENT_THRESHOLDS = {
     'sharp_turn_lateral_g': float(_event_cfg.get('sharp_turn_lateral_g', 4.0)),
     'speed_limit_mps': float(_event_cfg.get('speed_limit_mps', 35.76)),
 }
+MAPPING_STORE_NO_GPS_TELEMETRY = bool(_mapping.get('store_no_gps_telemetry', True))
 
 # Cloud Archive Configuration
 _cloud = config.get('cloud_archive', {})

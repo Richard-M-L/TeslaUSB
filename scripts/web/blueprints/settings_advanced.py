@@ -69,6 +69,17 @@ def _bounded_int(min_val: int, max_val: int):
     return _cast
 
 
+def _cast_bool(raw: str) -> bool:
+    """Cast a form checkbox value to bool.
+
+    HTML checkboxes only send a value when checked; unchecked means
+    the form field is absent (handled in the save route by checking
+    ``request.form.get()``). When present, "on", "true", "1" are
+    truthy; everything else is False.
+    """
+    return raw.lower() in ('on', 'true', '1', 'yes')
+
+
 def _build_tunables() -> List[Dict[str, Any]]:
     """Return the live list of tunables with current values from config.
 
@@ -212,6 +223,16 @@ def _build_tunables() -> List[Dict[str, Any]]:
             'min': 65536, 'max': 16777216, 'step': 65536,
             'cast': _bounded_int(65536, 16777216),
         },
+        {
+            'key': 'mapping.store_no_gps_telemetry',
+            'form_name': 'mapping_store_no_gps_telemetry',
+            'label_key': 'settings.advanced_no_gps_telemetry',
+            'description_key': 'settings.advanced_no_gps_telemetry_desc',
+            'current': bool(getattr(config, 'MAPPING_STORE_NO_GPS_TELEMETRY', True)),
+            'default': True,
+            'type': 'checkbox',
+            'cast': _cast_bool,
+        },
     ]
 
 
@@ -243,14 +264,23 @@ def save():
     pending: Dict[str, Any] = {}
     try:
         for t in tunables:
+            is_checkbox = t.get('type') == 'checkbox'
             raw = request.form.get(t['form_name'])
-            if raw is None or raw == '':
-                continue
-            new_val = t['cast'](raw)
+            if is_checkbox:
+                # Unchecked checkboxes don't send a value; treat as False.
+                new_val = t['cast'](raw) if raw is not None else False
+            else:
+                if raw is None or raw == '':
+                    continue
+                new_val = t['cast'](raw)
             # Only stage if actually changed (prevents YAML churn on
             # a no-op save).
-            if abs(float(new_val) - float(t['current'])) > 1e-9:
-                pending[t['key']] = new_val
+            if is_checkbox:
+                if bool(new_val) != bool(t['current']):
+                    pending[t['key']] = bool(new_val)
+            else:
+                if abs(float(new_val) - float(t['current'])) > 1e-9:
+                    pending[t['key']] = new_val
     except (ValueError, TypeError) as e:
         flash(f"Invalid value: {e}", "danger")
         return redirect(url_for('settings_advanced.index'))

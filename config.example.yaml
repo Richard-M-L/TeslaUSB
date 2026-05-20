@@ -147,6 +147,7 @@ mapping:
   sample_rate: 30                           # 每 N 帧采样一次（30 ≈ 每秒一次@30fps）
   trip_gap_minutes: 5                       # GPS 中断多少分钟视为新行程
   index_too_new_seconds: 120                # 跳过最近 N 秒内修改过的视频（避免读取正在写入的文件）
+  store_no_gps_telemetry: true              # 保留无 GPS 视频的遥测数据（中国版默认开启）
 
   # 驾驶事件自动检测
   event_detection:

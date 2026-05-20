@@ -793,6 +793,7 @@ def write_sei_sidecar(
     video_path: str,
     sample_rate: int = 30,
     sidecar_path: Optional[str] = None,
+    keep_all_messages: bool = False,
 ) -> Optional[SeiSidecar]:
     """Walk ``video_path`` once (mvhd + SEI) and persist the result
     as a sidecar JSON next to the .mp4.
@@ -812,6 +813,10 @@ def write_sei_sidecar(
     (``mapping_service._index_video``). A reader that requests a
     finer rate must fall back to mmap parse — see
     ``read_sei_sidecar``.
+
+    When ``keep_all_messages`` is True, messages without GPS are
+    also stored (used by China-market vehicles where GPS is always
+    0,0 but CAN-bus telemetry is valid).
     """
     if sidecar_path is None:
         sidecar_path = sidecar_path_for(video_path)
@@ -835,15 +840,16 @@ def write_sei_sidecar(
 
     sei_count = 0
     no_gps_count = 0
-    gps_messages: List[SeiMessage] = []
+    all_messages: List[SeiMessage] = []
     try:
         for msg in extract_sei_messages(
                 video_path, sample_rate=sample_rate):
             sei_count += 1
             if not msg.has_gps:
                 no_gps_count += 1
-                continue
-            gps_messages.append(msg)
+                if not keep_all_messages:
+                    continue
+            all_messages.append(msg)
     except (FileNotFoundError, ValueError) as e:
         logger.debug(
             "sei sidecar: SEI walk failed for %s: %s", video_path, e,
@@ -867,7 +873,7 @@ def write_sei_sidecar(
         ),
         'video_size_bytes': st.st_size,
         'video_mtime_unix': st.st_mtime,
-        'messages': [_message_to_dict(m) for m in gps_messages],
+        'messages': [_message_to_dict(m) for m in all_messages],
     }
 
     tmp_path = sidecar_path + '.tmp'

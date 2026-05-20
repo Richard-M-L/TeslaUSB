@@ -462,6 +462,8 @@
     "settings.advanced_retention_scan_interval_desc": "Cadence of the archive-health watchdog tick. The worker that prunes old clips when free space drops.",
     "settings.advanced_archive_copy_chunk_size": "Archive: copy chunk size",
     "settings.advanced_archive_copy_chunk_size_desc": "Bytes per write in the temp+fsync+rename copy loop. Smaller = lower per-chunk pause cost but more syscalls.",
+    "settings.advanced_no_gps_telemetry": "Store telemetry for GPS-less videos",
+    "settings.advanced_no_gps_telemetry_desc": "Tesla vehicles in China record video without GPS coordinates. When enabled, steering, braking, acceleration and other CAN-bus telemetry is still preserved for video playback HUD — waypoints will not appear on the map (no coordinates).",
     "settings.unit_seconds": "seconds",
     "settings.unit_load": "load",
     "settings.unit_bytes": "bytes",

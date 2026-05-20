@@ -1487,7 +1487,8 @@ function findCandidatesNearClick(clickLatLng, pixelRadius) {
         let minLeft = Infinity, minTop = Infinity;
         let maxLeft = -Infinity, maxTop = -Infinity;
         for (const wp of wps) {
-            if (!Number.isFinite(wp.lat) || !Number.isFinite(wp.lon)) {
+            if (!Number.isFinite(wp.lat) || !Number.isFinite(wp.lon)
+                    || (wp.lat === 0 && wp.lon === 0)) {
                 projected.push(null);
                 continue;
             }
@@ -1570,7 +1571,8 @@ function pickPlayableWaypointForTrip(trip, clickLatLng) {
     let bestDist2 = Infinity, best = null;
     for (const wp of wps) {
         if (!wp || !wp.video_path) continue;
-        if (!Number.isFinite(wp.lat) || !Number.isFinite(wp.lon)) continue;
+        if (!Number.isFinite(wp.lat) || !Number.isFinite(wp.lon)
+            || (wp.lat === 0 && wp.lon === 0)) continue;
         const pt = map.latLngToContainerPoint([wp.lat, wp.lon]);
         const dx = clickPt.x - pt.x, dy = clickPt.y - pt.y;
         const d2 = dx * dx + dy * dy;
@@ -1662,7 +1664,8 @@ function highlightCandidateTrip(trip) {
     const wps = trip.waypoints || [];
     const latLngs = [];
     for (const wp of wps) {
-        if (Number.isFinite(wp.lat) && Number.isFinite(wp.lon)) {
+        if (Number.isFinite(wp.lat) && Number.isFinite(wp.lon)
+            && !(wp.lat === 0 && wp.lon === 0)) {
             latLngs.push([wp.lat, wp.lon]);
         }
     }
@@ -2418,9 +2421,11 @@ function renderTripOnDay(trip, bounds) {
     const waypoints = trip.waypoints || [];
     if (!waypoints.length) return;
 
-    // Filter to renderable waypoints (skip null/non-finite coords).
+    // Filter to renderable waypoints (skip null/non-finite coords
+    // and zero-coordinate telemetry-only waypoints from no-GPS videos).
     const valid = waypoints.filter(wp =>
-        Number.isFinite(wp.lat) && Number.isFinite(wp.lon));
+        Number.isFinite(wp.lat) && Number.isFinite(wp.lon) &&
+        !(wp.lat === 0 && wp.lon === 0));
     if (!valid.length) return;
 
     if (Number.isFinite(trip.start_lat) && Number.isFinite(trip.start_lon)) {
@@ -2679,7 +2684,8 @@ async function renderAllTime() {
 
     for (const trip of trips) {
         const valid = (trip.waypoints || []).filter(w =>
-            Number.isFinite(w.lat) && Number.isFinite(w.lon));
+            Number.isFinite(w.lat) && Number.isFinite(w.lon) &&
+            !(w.lat === 0 && w.lon === 0));
         if (valid.length < 2) continue;
 
         // Split the trip's simplified waypoints into gap-bounded
@@ -3567,6 +3573,7 @@ function renderEvents() {
         // and skip null/non-finite coords (would crash Leaflet).
         if (!isTypeEnabled(ev.event_type || 'unknown')) return;
         if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lon)) return;
+        if (ev.lat === 0 && ev.lon === 0) return;  // telemetry-only event, no map position
 
         const marker = L.marker([ev.lat, ev.lon], {
             icon: makeEventIcon(ev.event_type),
@@ -3996,7 +4003,8 @@ async function loadTripsTimeline() {
             if (evCount > 0) metaParts.push(evCount + ' event' + (evCount !== 1 ? 's' : ''));
             const metaHtml = metaParts.join(' \u00b7 ');
 
-            const hasCoords = trip.start_lat != null && trip.start_lon != null;
+            const hasCoords = trip.start_lat != null && trip.start_lon != null
+                && !(trip.start_lat === 0 && trip.start_lon === 0);
 
             html += '<div class="st-event" data-trip-id="' + escapeHTML(String(trip.id)) + '"';
             if (hasCoords) html += ' data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '"';

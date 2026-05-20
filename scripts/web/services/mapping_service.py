@@ -1227,6 +1227,12 @@ def _index_video(
             rel_path = os.path.relpath(video_path, teslacam_root)
     except ImportError:
         rel_path = os.path.relpath(video_path, teslacam_root)
+
+    try:
+        from config import MAPPING_STORE_NO_GPS_TELEMETRY as _store_no_gps
+    except ImportError:
+        _store_no_gps = False
+
     # Issue #197: read the sidecar exactly once — first to extract
     # the cached mvhd (sample-rate-independent) for
     # ``_resolve_recording_time``, then to consume the cached
@@ -1398,17 +1404,18 @@ def _index_video(
 
         for msg in msg_iter:
             if sidecar_for_messages is None:
-                # Sidecar path already accounted for sei_count /
-                # no_gps_count + filtered out no-GPS messages, so the
-                # tally is only meaningful on the mmap fallback path.
+                # mmap fallback path: tally counts ourselves.
                 sei_count += 1
-                if not msg.has_gps:
+            if not msg.has_gps:
+                if sidecar_for_messages is None:
                     no_gps_count += 1
+                if not _store_no_gps:
                     continue
-            # NOTE: sidecar_for_messages.messages is pre-filtered to
-            # GPS-bearing only (see ``write_sei_sidecar``), so the
-            # ``has_gps`` check above is redundant when
-            # ``sidecar_for_messages is not None``.
+            # NOTE: when _store_no_gps is False, the sidecar was
+            # written with GPS-only pre-filtering, so the ``has_gps``
+            # check above is redundant for the sidecar path. When
+            # True, the sidecar contains all messages and the check
+            # above gates correctly on both paths.
 
             # Compute absolute timestamp from file timestamp + frame offset
             if file_timestamp:
@@ -1446,6 +1453,15 @@ def _index_video(
         logger.warning("Failed to parse SEI from %s: %s", rel_path, e)
         return IndexResult(IndexOutcome.PARSE_ERROR, error=str(e))
 
+    # For Sentry/Saved clips, always try to infer an event from Tesla's
+    # event.json (accurate lat/lon + trigger reason). This runs even when
+    # telemetry waypoints are present — event.json metadata is complementary
+    # to SEI telemetry and provides the trigger reason + GPS fix.
+    inferred_event = False
+    if 'SentryClips' in rel_path or 'SavedClips' in rel_path:
+        inferred_event = _infer_sentry_event(conn, rel_path, file_timestamp,
+                                             teslacam_root=teslacam_root)
+
     if not waypoint_dicts:
         if sei_count == 0:
             logger.info("No SEI messages found in %s", rel_path)
@@ -1453,14 +1469,8 @@ def _index_video(
             logger.info("%s: %d SEI messages but 0 had GPS (%d checked)",
                         rel_path, sei_count, no_gps_count)
 
-        # For Sentry/Saved clips with no GPS, create an event using the
-        # accurate Tesla event.json (preferred) or nearest waypoint as fallback
-        if 'SentryClips' in rel_path or 'SavedClips' in rel_path:
-            inferred = _infer_sentry_event(conn, rel_path, file_timestamp,
-                                            teslacam_root=teslacam_root)
-            if inferred:
-                # 1 inferred event written; treat as indexed for queue purposes.
-                return IndexResult(IndexOutcome.INDEXED, waypoints=0, events=1)
+        if inferred_event:
+            return IndexResult(IndexOutcome.INDEXED, waypoints=0, events=1)
         return IndexResult(IndexOutcome.NO_GPS_RECORDED)
 
     # Determine source folder
