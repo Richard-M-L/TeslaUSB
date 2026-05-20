@@ -3595,11 +3595,14 @@ function renderEvents() {
         };
         var typeLabel = eventLabels[ev.event_type || ''] || (ev.event_type || '').replace(/_/g, ' ');
 
-        // Camera name mapping (Tesla event.json → display)
+        // Camera name mapping (Tesla event.json → i18n key)
         var cameraNames = {
-            front: '前摄像头', back: '后摄像头',
-            left_pillar: '左B柱', right_pillar: '右B柱',
-            left_repeater: '左侧视角', right_repeater: '右侧视角',
+            front: 'player.camera_front',
+            back: 'player.camera_rear',
+            left_pillar: 'player.camera_left_pillar',
+            right_pillar: 'player.camera_right_pillar',
+            left_repeater: 'player.camera_left_repeater',
+            right_repeater: 'player.camera_right_repeater',
         };
 
         // Build popup HTML
@@ -3614,7 +3617,8 @@ function renderEvents() {
                 popupHtml += '<br>' + escapeHTML(_translateReason(metaData.reason));
             }
             if (metaData.camera) {
-                var camLabel = cameraNames[metaData.camera] || metaData.camera.replace(/_/g, ' ');
+                var camKey = cameraNames[metaData.camera];
+                var camLabel = camKey ? _t(camKey) : (metaData.camera || '').replace(/_/g, ' ');
                 popupHtml += '<br>' + escapeHTML(camLabel) + ' ' + _t('mapping.event_triggered');
             }
         } else {
@@ -3627,12 +3631,12 @@ function renderEvents() {
         // "Go to this day" link (All time view)
         const eventDate = (ev.timestamp || '').slice(0, 10);
         if (showingAllTime && /^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
-            popupHtml += '<br><a href="#" class="popup-day-link" data-date="' + eventDate + '">Go to this day &rarr;</a>';
+            popupHtml += '<br><a href="#" class="popup-day-link" data-date="' + eventDate + '">' + _t('mapping.go_to_day') + '</a>';
         }
 
         // View Video link
         if (ev.video_path) {
-            var vp = escapeHTML(ev.video_path).replace(/&amp;/g,'&amp;');
+            var vp = escapeHTML(ev.video_path);
             popupHtml += '<br><a href="#" class="popup-video-link" data-trip-id="' + (ev.trip_id || 0) + '" data-video-path="' + vp + '" data-frame-offset="' + (ev.frame_offset || 0) + '" data-lat="' + ev.lat + '" data-lon="' + ev.lon + '">' + _t('mapping.view_video') + '</a>';
         }
 
@@ -3876,7 +3880,7 @@ async function loadSentryTimeline() {
                 'emergency_brake': { label: _t('mapping.event_emergency_brake'),  dot: 'driving-critical' },
                 'hard_acceleration': { label: _t('mapping.event_hard_accel'),     dot: 'driving' },
                 'sharp_turn':      { label: _t('mapping.event_sharp_turn'),       dot: 'driving' },
-                'speed_alert':     { label: _t('mapping.event_speed_alert'),      dot: 'driving-critical' },
+                'speeding':        { label: _t('mapping.event_speed_alert'),      dot: 'driving-critical' },
                 'fsd_disengage':   { label: _t('mapping.event_fsd_disengage'),    dot: 'fsd' },
                 'fsd_engage':      { label: _t('mapping.event_fsd_engage'),       dot: 'fsd' },
             };
