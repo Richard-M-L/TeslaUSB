@@ -139,6 +139,45 @@ def inject_i18n():
     }
 
 
+@app.template_filter('translate_wifi')
+def translate_wifi_filter(msg):
+    """Translate common English wifi status messages to the current locale."""
+    if not msg:
+        return msg
+    from flask import g
+    lang = getattr(g, 'lang', 'zh')
+    if lang != 'zh':
+        return msg
+    # Pattern replacements — order matters (longer first)
+    replacements = [
+        ("Successfully connected to '", "已成功连接到 '"),
+        ("Already connected to '", "已连接到 '"),
+        ("Failed to connect to '", "无法连接到 '"),
+        ("Connection to '", "连接 '"),
+        ("' timed out.", "' 超时。"),
+        ("' timed out and could not restore previous connection. Fallback AP has been started.", "' 超时且无法恢复之前的连接，已启动备用 AP。"),
+        ("' timed out. Reverted to previous network '", "' 超时。已恢复到之前的网络 '"),
+        ("'. Reverted to previous network '", "'。已恢复到之前的网络 '"),
+        ("' and could not restore previous connection. Fallback AP has been started for direct access.", "' 且无法恢复之前的连接。已启动备用 AP 供直接访问。"),
+        ("'. Please connect to the fallback AP to reconfigure.", "'。请连接到备用 AP 重新配置。"),
+        ("Network '", "网络 '"),
+        ("' is not in the saved list", "' 不在已保存列表中"),
+        ("Another connect attempt is in progress. Please wait.", "另一个连接请求正在进行中，请稍候。"),
+        ("Reconnect to '", "重新连接到 '"),
+        ("' started. AP will drop for ~30-60 seconds while we attempt the connection.", "' 已启动。AP 将断开约 30-60 秒以尝试连接。"),
+        ("' started.", "' 已启动。"),
+        ("Cannot forget the only saved network", "无法删除唯一已保存的网络"),
+        ("Network priorities updated", "网络优先级已更新"),
+        ("Some networks failed: ", "部分网络操作失败："),
+        ("Failed to start: ", "启动失败："),
+        ("Failed to delete: ", "删除失败："),
+        ("' forgotten", "' 已删除"),
+        (" (switched to alternate network)", "（已切换到备用网络）"),
+    ]
+    for eng, chn in replacements:
+        msg = msg.replace(eng, chn)
+    return msg
+
 @app.route('/lang/<locale>')
 def switch_lang(locale):
     """Set the language cookie and redirect back to the referring page."""

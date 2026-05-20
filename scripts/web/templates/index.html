@@ -199,7 +199,7 @@
                             {{ _("index.wifi_alert_failed") }}
                         {% endif %}
                     </strong>
-                    <div style="margin-top: 4px; font-size: 0.95em;">{{ wifi_change_status.message }}</div>
+                    <div style="margin-top: 4px; font-size: 0.95em;">{{ wifi_change_status.message | translate_wifi }}</div>
                     {% if wifi_change_status.timestamp %}
                     <div style="margin-top: 6px; font-size: 0.85em; opacity: 0.8;">{{ wifi_change_status.timestamp }}</div>
                     {% endif %}
