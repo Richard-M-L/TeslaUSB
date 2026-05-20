@@ -950,18 +950,18 @@
 
     <!-- FAB Group (right-side floating) -->
     <div class="map-fab-group" id="mapFabs">
-        <button class="map-fab" id="btnVideos" onclick="toggleVideoPanel()" aria-label="Video browser" title="Videos">
+        <button class="map-fab" id="btnVideos" onclick="toggleVideoPanel()" aria-label="{{ _('mapping.video_browser') }}" title="{{ _('mapping.video_browser') }}">
             <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-video"></use></svg>
         </button>
         <div style="position:relative">
-            <button class="map-fab" id="btnFsd" onclick="toggleFsdOverlay()" aria-label="FSD overlay" title="FSD Overlay">
+            <button class="map-fab" id="btnFsd" onclick="toggleFsdOverlay()" aria-label="{{ _('mapping.fsd_overlay') }}" title="{{ _('mapping.fsd_overlay') }}">
                 <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-layers"></use></svg>
             </button>
         </div>
-        <button class="map-fab" id="btnSpeedLegend" onclick="toggleSpeedLegend()" aria-label="Speed color legend" title="Speed Legend">
+        <button class="map-fab" id="btnSpeedLegend" onclick="toggleSpeedLegend()" aria-label="{{ _('mapping.speed_legend') }}" title="{{ _('mapping.speed_legend') }}">
             <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-zap"></use></svg>
         </button>
-        <button class="map-fab" id="btnScan" onclick="scanForNewClips()" aria-label="Scan for new clips" title="Scan for new clips">
+        <button class="map-fab" id="btnScan" onclick="scanForNewClips()" aria-label="{{ _('mapping.scan_clips') }}" title="{{ _('mapping.scan_clips') }}">
             <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-refresh-cw"></use></svg>
         </button>
     </div>
