@@ -278,7 +278,7 @@ def upgrade_check():
     try:
         # Fetch without merging — safe, read-only after fetch
         result = subprocess.run(
-            ['git', 'fetch', 'origin'],
+            ['git', '-c', f'safe.directory={GADGET_DIR}', 'fetch', 'origin'],
             capture_output=True, text=True, timeout=30,
             cwd=GADGET_DIR,
         )
@@ -290,7 +290,8 @@ def upgrade_check():
             return {'available': False, 'error': f'git fetch 失败: {detail}'}
         # Compare HEAD to origin/main
         result = subprocess.run(
-            ['git', 'rev-list', '--count', 'HEAD..origin/main'],
+            ['git', '-c', f'safe.directory={GADGET_DIR}',
+             'rev-list', '--count', 'HEAD..origin/main'],
             capture_output=True, text=True, timeout=10,
             cwd=GADGET_DIR,
         )

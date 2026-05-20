@@ -108,7 +108,7 @@ if [ "$IS_GIT" -eq 1 ]; then
 
   # Fetch + capture old HEAD for change detection
   OLD_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
-  git fetch origin 2>&1 || _error_status "git fetch 失败，请检查网络连接"
+  git -c safe.directory="$INSTALL_DIR" fetch origin 2>&1 || _error_status "git fetch 失败，请检查网络连接"
   NEW_HEAD=$(git rev-parse origin/$BRANCH 2>/dev/null || echo "")
 
   if [ "$OLD_HEAD" = "$NEW_HEAD" ] && [ -n "$OLD_HEAD" ]; then
