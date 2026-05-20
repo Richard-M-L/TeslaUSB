@@ -3326,7 +3326,55 @@ async function openEventVideo(tripId, videoPath, frameOffset, lat, lon) {
         lon: lon,
     };
 
-    // Load trip route waypoints for telemetry + prev/next
+    // Detect folder event (sentry/saved) from the path so we can
+    // load all camera angles for prev/next navigation.
+    var parts = (videoPath || '').split('/');
+    if (parts[0] === 'ArchivedClips') parts = parts.slice(1);
+    var isFolderEvent = parts.length >= 3 &&
+        (parts[0] === 'SentryClips' || parts[0] === 'SavedClips');
+    var folder = isFolderEvent ? parts[0] : '';
+    var eventName = isFolderEvent ? parts[1] : '';
+
+    if (isFolderEvent) {
+        try {
+            var resp = await fetch('/api/event-clips/' + encodeURIComponent(folder) + '/' + encodeURIComponent(eventName));
+            var data = await resp.json();
+            var frontClips = (data && data.front_clips) || [];
+            if (frontClips.length > 0) {
+                // Strip ArchivedClips prefix so the stream endpoint
+                // finds files on the USB mount (issue: sentry event
+                // paths in DB start with ArchivedClips but archive
+                // may be empty).
+                var wps = frontClips.map(function(p) {
+                    var displayPath = p;
+                    if (displayPath.indexOf('ArchivedClips/') === 0) {
+                        displayPath = displayPath.substring('ArchivedClips/'.length);
+                    }
+                    return { video_path: displayPath, frame_offset: 0, lat: lat, lon: lon };
+                });
+                // Match the clicked camera angle if possible
+                var clickedFile = parts[parts.length - 1];
+                for (var i = 0; i < wps.length; i++) {
+                    if (wps[i].video_path.indexOf(clickedFile) >= 0) {
+                        Object.assign(wp, wps[i]);
+                        break;
+                    }
+                }
+                openVideoOverlay(wp, { x: window.innerWidth / 3, y: window.innerHeight / 4 }, wps, 0);
+                // Set folder/event so download/delete/archive work
+                var overlay = document.getElementById('videoOverlay');
+                if (overlay) {
+                    overlay.dataset.folder = folder;
+                    overlay.dataset.event = eventName;
+                }
+                return;
+            }
+        } catch(e) {
+            console.warn('openEventVideo: failed to load event clips', e);
+        }
+    }
+
+    // Fallback: single-clip mode (driving events or legacy data)
     let wps = [wp];
     if (tripId) {
         try {

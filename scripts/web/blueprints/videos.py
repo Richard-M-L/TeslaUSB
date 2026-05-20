@@ -202,6 +202,13 @@ def stream_video(filepath):
     # Direct archive path: if first segment is ArchivedClips, serve from SD card
     if sanitized_parts and sanitized_parts[0] == 'ArchivedClips':
         video_path = _check_archive_fallback(sanitized_parts[-1])
+        if not video_path and len(sanitized_parts) > 1:
+            # Fall back to USB mount — strip ArchivedClips/ prefix so
+            # sentry/saved clips that were only archived on paper (DB
+            # path) but still live on the USB drive are reachable.
+            usb_path = os.path.join(teslacam_path, *sanitized_parts[1:])
+            if os.path.isfile(usb_path):
+                video_path = usb_path
         if not video_path:
             logger.warning("Archive fallback failed for %s (ArchivedClips path)", sanitized_parts[-1])
             return "Video not found", 404
