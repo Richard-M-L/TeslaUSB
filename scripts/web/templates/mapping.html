@@ -3021,13 +3021,9 @@ function _translateDescription(desc) {
     t = t.replace(/\bSaved Clip\b/g, _t ? _t('mapping.event_saved') : 'Saved Clip');
     t = t.replace(/\blocation from event_json\b/g, _t ? _t('mapping.reason_location_event_json') : 'location from event_json');
     t = t.replace(/\blocation from nearest_waypoint\b/g, _t ? _t('mapping.reason_location_waypoint') : 'location from nearest waypoint');
-    // Translate reason keys embedded in the description
-    t = t.replace(/\bsentry_aware_object_detection\b/g, _t ? _t('mapping.reason_sentry_object') : 'sentry_aware_object_detection');
-    t = t.replace(/\bsentry_aware_accel_trigger\b/g, _t ? _t('mapping.reason_sentry_accel') : 'sentry_aware_accel_trigger');
-    t = t.replace(/\bsentry_aware_state_update\b/g, _t ? _t('mapping.reason_sentry_state') : 'sentry_aware_state_update');
-    t = t.replace(/\buser_interaction_honk\b/g, _t ? _t('mapping.reason_honk') : 'user_interaction_honk');
-    t = t.replace(/\buser_interaction_dashcam_launcher_action_tapped\b/g, _t ? _t('mapping.reason_tapped') : 'user_interaction_dashcam_launcher_action_tapped');
-    t = t.replace(/\bforward_collision_warning\b/g, _t ? _t('mapping.reason_forward_collision') : 'forward_collision_warning');
+    // Translate reason keys embedded in the description — delegate to
+    // _translateReason so the mapping lives in one place.
+    t = t.replace(/\b(sentry_aware_object_detection|sentry_aware_accel_trigger|sentry_aware_state_update|user_interaction_honk|user_interaction_dashcam_launcher_action_tapped|forward_collision_warning)\b/g, function(m) { return _translateReason(m); });
     return t;
 }
 
