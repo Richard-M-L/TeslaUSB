@@ -3345,7 +3345,7 @@ async function openEventVideo(tripId, videoPath, frameOffset, lat, lon) {
                 // finds files on the USB mount (issue: sentry event
                 // paths in DB start with ArchivedClips but archive
                 // may be empty).
-                var wps = frontClips.map(function(p) {
+                var eventWps = frontClips.map(function(p) {
                     var displayPath = p;
                     if (displayPath.indexOf('ArchivedClips/') === 0) {
                         displayPath = displayPath.substring('ArchivedClips/'.length);
@@ -3354,13 +3354,13 @@ async function openEventVideo(tripId, videoPath, frameOffset, lat, lon) {
                 });
                 // Match the clicked camera angle if possible
                 var clickedFile = parts[parts.length - 1];
-                for (var i = 0; i < wps.length; i++) {
-                    if (wps[i].video_path.indexOf(clickedFile) >= 0) {
-                        Object.assign(wp, wps[i]);
+                for (var i = 0; i < eventWps.length; i++) {
+                    if (eventWps[i].video_path.indexOf(clickedFile) >= 0) {
+                        Object.assign(wp, eventWps[i]);
                         break;
                     }
                 }
-                openVideoOverlay(wp, { x: window.innerWidth / 3, y: window.innerHeight / 4 }, wps, 0);
+                openVideoOverlay(wp, { x: window.innerWidth / 3, y: window.innerHeight / 4 }, eventWps, 0);
                 // Set folder/event so download/delete/archive work
                 var overlay = document.getElementById('videoOverlay');
                 if (overlay) {
