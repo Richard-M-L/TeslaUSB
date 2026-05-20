@@ -649,9 +649,9 @@
 <script src="{{ url_for('static', filename='js/protobuf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashcam-mp4.js') }}"></script>
 <script>
-    const folder = "{{ folder }}";
-    const eventName = "{{ event.name }}";
-    const folderStructure = "{{ folder_structure }}";
+    const folder = {{ folder | tojson }};
+    const eventName = {{ event.name | tojson }};
+    const folderStructure = {{ folder_structure | tojson }};
     const video = document.getElementById('mainVideo');
     let currentTime = 0;
     let wasPlaying = false;
@@ -823,7 +823,7 @@
     // Initialize toggle state from localStorage
     function initSEIToggle() {
         if (seiOverlayEnabled) {
-            seiToggleCard.classList.add('active');
+            if (seiToggleCard) seiToggleCard.classList.add('active');
             if (seiToggleLabel) seiToggleLabel.textContent = _t ? _t('player.hud_overlay') : 'Telemetry';
         }
         updateHUDVisibility();
@@ -843,10 +843,10 @@
         localStorage.setItem('seiOverlayEnabled', seiOverlayEnabled);
 
         if (seiOverlayEnabled) {
-            seiToggleCard.classList.add('active');
+            if (seiToggleCard) seiToggleCard.classList.add('active');
             if (seiToggleLabel) seiToggleLabel.textContent = (_t ? _t('player.hud_overlay') : 'Telemetry');
         } else {
-            seiToggleCard.classList.remove('active');
+            if (seiToggleCard) seiToggleCard.classList.remove('active');
         }
         updateHUDVisibility();
 
