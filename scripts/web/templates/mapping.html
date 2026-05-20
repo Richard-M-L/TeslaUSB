@@ -1133,7 +1133,8 @@ function _initMap() {
         // can see the map, even without direct internet access.
         // The Pi fetches from OSM once, caches to SD, and serves locally.
         L.tileLayer('/tiles/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 18,
+            maxNativeZoom: 18,
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
