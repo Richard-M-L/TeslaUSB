@@ -131,6 +131,7 @@
     "mapping.reason_location_event_json": "location from event.json",
     "mapping.reason_location_waypoint": "location from nearest waypoint",
     "mapping.view_video": "View Video",
+    "mapping.filter_all": "All",
     "mapping.event_sentry": "Sentry Mode",
     "mapping.event_saved": "Saved Clip",
     "mapping.event_harsh_brake": "Hard Brake",

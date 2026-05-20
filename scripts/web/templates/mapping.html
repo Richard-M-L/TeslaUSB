@@ -2207,15 +2207,31 @@ function rebuildEventFilterPills() {
     // "All" master pill
     const allOn = isAllEventsEnabled(types);
     container.appendChild(makePill({
-        label: 'All', count: allEvents.length, type: null,
+        label: _t('mapping.filter_all'), count: allEvents.length, type: null,
         active: allOn, color: 'var(--accent-primary, #3B82F6)',
         master: true,
     }));
 
+    // Event type → i18n key (matches mapping.event_* keys)
+    var _eventTypeKeys = {
+        sentry: 'mapping.event_sentry',
+        saved: 'mapping.event_saved',
+        harsh_brake: 'mapping.event_harsh_brake',
+        emergency_brake: 'mapping.event_emergency_brake',
+        hard_acceleration: 'mapping.event_hard_accel',
+        sharp_turn: 'mapping.event_sharp_turn',
+        fsd_engage: 'mapping.event_fsd_engage',
+        fsd_disengage: 'mapping.event_fsd_disengage',
+        speeding: 'mapping.event_speed_alert',
+        unknown: 'mapping.reason_unknown',
+    };
+
     for (const t of types) {
         const cfg = eventMarkerSvgs[t] || { color: '#6c757d' };
+        var tKey = _eventTypeKeys[t];
+        var label = tKey ? _t(tKey) : t.replace(/_/g, ' ');
         container.appendChild(makePill({
-            label: t.replace(/_/g, ' '), count: counts.get(t), type: t,
+            label: label, count: counts.get(t), type: t,
             active: isTypeEnabled(t), color: cfg.color,
         }));
     }

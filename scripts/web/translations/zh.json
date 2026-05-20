@@ -131,6 +131,7 @@
     "mapping.reason_location_event_json": "位置来自 event.json",
     "mapping.reason_location_waypoint": "位置来自最近航点",
     "mapping.view_video": "查看视频",
+    "mapping.filter_all": "全部",
     "mapping.event_sentry": "哨兵模式",
     "mapping.event_saved": "已保存片段",
     "mapping.event_harsh_brake": "急刹车",
