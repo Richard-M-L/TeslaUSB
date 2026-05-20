@@ -1170,8 +1170,6 @@ function _initMap() {
     }
 }
 
-_initMap();
-
 // Guard for functions that require the map to be initialised.
 function mapReady() { return map != null; }
 
@@ -1210,6 +1208,8 @@ let _indexedFileCount = 0;
 // sees it when there's actually something to wait for.
 let mapLoadingDepth = 0;
 let mapLoadingRevealTimer = null;
+
+_initMap();
 
 function beginMapLoading() {
     mapLoadingDepth += 1;
