@@ -100,6 +100,9 @@ if [ "$IS_GIT" -eq 1 ]; then
 
   cd "$INSTALL_DIR"
 
+  # Ensure git trusts this directory (systemd service runs as root)
+  git config --global --add safe.directory "$INSTALL_DIR" 2>/dev/null || true
+
   if [ "$NON_INTERACTIVE" -eq 1 ]; then
     _write_status "fetch" "正在检查更新..." 10
   else
@@ -108,7 +111,7 @@ if [ "$IS_GIT" -eq 1 ]; then
 
   # Fetch + capture old HEAD for change detection
   OLD_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
-  git -c safe.directory="$INSTALL_DIR" fetch origin 2>&1 || _error_status "git fetch 失败，请检查网络连接"
+  git fetch origin 2>&1 || _error_status "git fetch 失败，请检查网络连接"
   NEW_HEAD=$(git rev-parse origin/$BRANCH 2>/dev/null || echo "")
 
   if [ "$OLD_HEAD" = "$NEW_HEAD" ] && [ -n "$OLD_HEAD" ]; then
