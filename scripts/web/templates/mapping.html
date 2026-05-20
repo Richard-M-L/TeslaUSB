@@ -1829,6 +1829,22 @@ function makeEventIcon(eventType) {
     });
 }
 
+// Shared event-type metadata — single point of truth for display labels,
+// dot styles, and i18n keys.  All three render paths (filter pills, map
+// popups, sentry timeline) resolve from this one map.
+const EVENT_TYPE_META = {
+    sentry:             { key: 'mapping.event_sentry',           dot: 'sentry' },
+    saved:              { key: 'mapping.event_saved',            dot: 'saved' },
+    harsh_brake:        { key: 'mapping.event_harsh_brake',      dot: 'driving' },
+    emergency_brake:    { key: 'mapping.event_emergency_brake',  dot: 'driving-critical' },
+    hard_acceleration:  { key: 'mapping.event_hard_accel',       dot: 'driving' },
+    sharp_turn:         { key: 'mapping.event_sharp_turn',       dot: 'driving' },
+    speeding:           { key: 'mapping.event_speed_alert',      dot: 'driving-critical' },
+    fsd_engage:         { key: 'mapping.event_fsd_engage',       dot: 'fsd' },
+    fsd_disengage:      { key: 'mapping.event_fsd_disengage',    dot: 'fsd' },
+    unknown:            { key: 'mapping.reason_unknown',         dot: 'driving' },
+};
+
 // --- Data Loading ---
 
 async function loadStats() {
@@ -2212,24 +2228,10 @@ function rebuildEventFilterPills() {
         master: true,
     }));
 
-    // Event type → i18n key (matches mapping.event_* keys)
-    var _eventTypeKeys = {
-        sentry: 'mapping.event_sentry',
-        saved: 'mapping.event_saved',
-        harsh_brake: 'mapping.event_harsh_brake',
-        emergency_brake: 'mapping.event_emergency_brake',
-        hard_acceleration: 'mapping.event_hard_accel',
-        sharp_turn: 'mapping.event_sharp_turn',
-        fsd_engage: 'mapping.event_fsd_engage',
-        fsd_disengage: 'mapping.event_fsd_disengage',
-        speeding: 'mapping.event_speed_alert',
-        unknown: 'mapping.reason_unknown',
-    };
-
     for (const t of types) {
         const cfg = eventMarkerSvgs[t] || { color: '#6c757d' };
-        var tKey = _eventTypeKeys[t];
-        var label = tKey ? _t(tKey) : t.replace(/_/g, ' ');
+        var meta = EVENT_TYPE_META[t];
+        var label = meta ? _t(meta.key) : t.replace(/_/g, ' ');
         container.appendChild(makePill({
             label: label, count: counts.get(t), type: t,
             active: isTypeEnabled(t), color: cfg.color,
@@ -3581,19 +3583,8 @@ function renderEvents() {
             try { metaData = JSON.parse(ev.metadata); } catch(e) {}
         }
 
-        // Event type label (from i18n mapping)
-        var eventLabels = {
-            sentry: _t('mapping.event_sentry'),
-            saved: _t('mapping.event_saved'),
-            harsh_brake: _t('mapping.event_harsh_brake'),
-            emergency_brake: _t('mapping.event_emergency_brake'),
-            hard_acceleration: _t('mapping.event_hard_accel'),
-            sharp_turn: _t('mapping.event_sharp_turn'),
-            fsd_engage: _t('mapping.event_fsd_engage'),
-            fsd_disengage: _t('mapping.event_fsd_disengage'),
-            speeding: _t('mapping.event_speed_alert'),
-        };
-        var typeLabel = eventLabels[ev.event_type || ''] || (ev.event_type || '').replace(/_/g, ' ');
+        var meta = EVENT_TYPE_META[ev.event_type || ''];
+        var typeLabel = meta ? _t(meta.key) : (ev.event_type || '').replace(/_/g, ' ');
 
         // Camera name mapping (Tesla event.json → i18n key)
         var cameraNames = {
@@ -3872,19 +3863,8 @@ async function loadSentryTimeline() {
 
         events.forEach(function(ev) {
             const evType = ev.event_type || '';
-            // Map event types to display labels and dot classes
-            const eventLabels = {
-                'sentry':          { label: _t('mapping.event_sentry'),           dot: 'sentry' },
-                'saved':           { label: _t('mapping.event_saved'),            dot: 'saved' },
-                'harsh_brake':     { label: _t('mapping.event_harsh_brake'),      dot: 'driving' },
-                'emergency_brake': { label: _t('mapping.event_emergency_brake'),  dot: 'driving-critical' },
-                'hard_acceleration': { label: _t('mapping.event_hard_accel'),     dot: 'driving' },
-                'sharp_turn':      { label: _t('mapping.event_sharp_turn'),       dot: 'driving' },
-                'speeding':        { label: _t('mapping.event_speed_alert'),      dot: 'driving-critical' },
-                'fsd_disengage':   { label: _t('mapping.event_fsd_disengage'),    dot: 'fsd' },
-                'fsd_engage':      { label: _t('mapping.event_fsd_engage'),       dot: 'fsd' },
-            };
-            const info = eventLabels[evType] || { label: evType.replace(/_/g, ' '), dot: 'driving' };
+            const meta = EVENT_TYPE_META[evType];
+            const info = meta ? { label: _t(meta.key), dot: meta.dot } : { label: evType.replace(/_/g, ' '), dot: 'driving' };
             const dotClass = info.dot;
             const typeLabel = info.label;
             const dateStr = formatLocalTime(ev.timestamp);
