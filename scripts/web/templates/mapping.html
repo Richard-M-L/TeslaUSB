@@ -3011,9 +3011,6 @@ function _translateDescription(desc) {
     t = t.replace(/\bforward_collision_warning\b/g, _t ? _t('mapping.reason_forward_collision') : 'forward_collision_warning');
     return t;
 }
-    // Fallback: clean up the raw string (replace underscores, title case)
-    return raw.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-}
 
 function overlayFullscreen() {
     // OS-level fullscreen of the .video-overlay-stage wrapper, NOT the
