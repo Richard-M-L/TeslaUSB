@@ -279,7 +279,7 @@ def upgrade_check():
         # Fetch without merging — safe, read-only after fetch
         result = subprocess.run(
             ['git', '-c', f'safe.directory={GADGET_DIR}', 'fetch', 'origin'],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=60,
             cwd=GADGET_DIR,
         )
         if result.returncode != 0:
