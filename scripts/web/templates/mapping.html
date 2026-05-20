@@ -2812,6 +2812,13 @@ function getBasePath(videoPath) {
     return angle ? videoPath.replace(`-${angle}.mp4`, '') : videoPath.replace('.mp4', '');
 }
 
+function stripSourcePrefix(bp) {
+    // "RecentClips/2026-04-02_18-00-10" → "2026-04-02_18-00-10"
+    // "ArchivedClips/2026-04-02_18-00-10" → "2026-04-02_18-00-10"
+    const idx = bp.indexOf('/');
+    return idx >= 0 ? bp.slice(idx + 1) : bp;
+}
+
 function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
     closeDisambigPopup();
     closeVideoOverlay();
@@ -2875,7 +2882,7 @@ function openVideoOverlay(waypoint, clickPoint, routeWps, tripId) {
             overlayClips.push({ basePath: bp, firstWaypoint: wp });
         }
     });
-    overlayClipIdx = Math.max(0, overlayClips.findIndex(c => c.basePath === overlayBasePath));
+    overlayClipIdx = Math.max(0, overlayClips.findIndex(c => stripSourcePrefix(c.basePath) === stripSourcePrefix(overlayBasePath)));
 
     // Disable prev/next buttons when there's only 0-1 clips
     var hasMultiple = overlayClips.length > 1;
@@ -3252,7 +3259,7 @@ function onOverlayTimeUpdate() {
     let nearest = null, minDelta = Infinity;
     for (const wp of overlayWaypoints) {
         if (!wp.video_path) continue;
-        if (getBasePath(wp.video_path) !== overlayBasePath) continue;
+        if (stripSourcePrefix(getBasePath(wp.video_path)) !== stripSourcePrefix(overlayBasePath)) continue;
         const delta = Math.abs((wp.frame_offset || 0) - currentFrame);
         if (delta < minDelta) { minDelta = delta; nearest = wp; }
     }
@@ -4171,17 +4178,37 @@ async function openVideoFromPanel(folder, eventName) {
             clipMap[p] = { video_path: p, frame_offset: 0 };
         });
 
-        // Look up DB waypoints to attach telemetry
+        // Look up DB waypoints to attach telemetry.
+        // Normalise waypoint paths so the video_path prefix matches
+        // the playback source (e.g. "RecentClips", "SentryClips/event").
+        // DB stores "ArchivedClips/..." — strip that prefix and keep
+        // any remaining subdirectory structure so event-based folders
+        // (SentryClips/SavedClips) retain their event subfolder.
+        var dbWps = [];
+        var dbTripId = null;
         try {
             const wpResp = await fetch(`/api/waypoints-for-clip?path=${encodeURIComponent(frontClips[0])}`);
             const wpData = await wpResp.json();
-            const dbWps = wpData.waypoints || [];
+            dbWps = (wpData.waypoints || []).map(function(w) {
+                if (w.video_path) {
+                    var parts = w.video_path.split('/');
+                    // Strip leading "ArchivedClips/" (or "RecentClips/"),
+                    // keeping any subfolder structure underneath.
+                    if (parts.length > 2) {
+                        w.video_path = parts.slice(1).join('/');
+                    } else {
+                        // Flat path (legacy): replace first segment with
+                        // the playback source prefix.
+                        w.video_path = frontClips[0].split('/')[0] + '/' + parts[parts.length - 1];
+                    }
+                }
+                return w;
+            });
+            dbTripId = wpData.trip_id;
             dbWps.forEach(function(w) {
                 if (!w.video_path) return;
-                var fname = w.video_path.split('/').pop();
-                var rel = nameToRel[fname];
+                var rel = nameToRel[w.video_path.split('/').pop()];
                 if (rel && clipMap[rel]) {
-                    // Merge telemetry into existing entry, keeping relative path
                     Object.assign(clipMap[rel], w, { video_path: rel });
                 }
             });
@@ -4193,7 +4220,7 @@ async function openVideoFromPanel(folder, eventName) {
         if (allClips.length === 0) return;
 
         const clickPoint = { x: window.innerWidth / 3, y: window.innerHeight / 4 };
-        openVideoOverlay(allClips[0], clickPoint, allClips);
+        openVideoOverlay(allClips[0], clickPoint, dbWps, dbTripId);
 
         // Store folder/event for download/delete
         const overlay = document.getElementById('videoOverlay');

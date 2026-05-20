@@ -832,6 +832,8 @@ def candidate_db_paths(canonical_key_value: str) -> List[str]:
             canonical_key_value,
             f'RecentClips/{canonical_key_value}',
             f'ArchivedClips/{canonical_key_value}',
+            # Subfolder-preserving format: ArchivedClips/RecentClips/<basename>
+            f'ArchivedClips/RecentClips/{canonical_key_value}',
         ]
     return [canonical_key_value]
 
@@ -1049,10 +1051,17 @@ def _read_event_json(rel_path: str, teslacam_root: str) -> Optional[dict]:
     """
     try:
         parts = rel_path.replace('\\', '/').split('/')
-        if len(parts) < 2:
+        # Find the SentryClips/SavedClips marker, which may be prefixed
+        # by ArchivedClips/ or RecentClips/ (source folder). The event
+        # subfolder is the element immediately after the marker.
+        evt_idx = -1
+        for i, p in enumerate(parts):
+            if p in ('SentryClips', 'SavedClips') and i + 1 < len(parts):
+                evt_idx = i
+                break
+        if evt_idx < 0:
             return None
-        # Folder is e.g. SavedClips/2026-04-23_19-17-39
-        folder_path = os.path.join(teslacam_root, parts[0], parts[1])
+        folder_path = os.path.join(teslacam_root, parts[evt_idx], parts[evt_idx + 1])
         ej = os.path.join(folder_path, 'event.json')
         if not os.path.isfile(ej):
             return None
@@ -1100,9 +1109,17 @@ def _infer_sentry_event(
 
     # Determine event type from folder
     event_type = 'sentry' if 'SentryClips' in rel_path else 'saved'
-    folder_name = rel_path.replace('\\', '/').split('/')[0]
     parts = rel_path.replace('\\', '/').split('/')
-    event_folder = parts[1] if len(parts) > 2 else parts[0]
+    folder_name = parts[0]
+    # Find the event subfolder (immediately after SentryClips/SavedClips
+    # marker). This handles both bare "SentryClips/<event>/<file>" and
+    # prefixed "ArchivedClips/SentryClips/<event>/<file>" forms.
+    evt_idx = -1
+    for i, p in enumerate(parts):
+        if p in ('SentryClips', 'SavedClips') and i + 1 < len(parts):
+            evt_idx = i
+            break
+    event_folder = parts[evt_idx + 1] if evt_idx >= 0 else parts[0]
 
     # Skip if a fresh event.json-based event already exists for this folder.
     # If we find an OLDER event with metadata that doesn't include
@@ -1218,11 +1235,14 @@ def _index_video(
 
     # Compute a clean relative path for the DB.  ArchivedClips live outside
     # the TeslaCam tree, so os.path.relpath() produces a mangled "../../../"
-    # traversal.  Detect that case and use "ArchivedClips/<filename>" instead.
+    # traversal.  Detect that case and preserve subdirectory structure
+    # (e.g. SentryClips/2024-01-01_10-00-00/) so downstream checks like
+    # ``'SentryClips' in rel_path`` and event-folder extraction work.
     try:
         from config import ARCHIVE_DIR
         if ARCHIVE_DIR and os.path.abspath(video_path).startswith(os.path.abspath(ARCHIVE_DIR)):
-            rel_path = f"ArchivedClips/{os.path.basename(video_path)}"
+            rel_archive = os.path.relpath(video_path, ARCHIVE_DIR)
+            rel_path = f"ArchivedClips/{rel_archive}"
         else:
             rel_path = os.path.relpath(video_path, teslacam_root)
     except ImportError:
