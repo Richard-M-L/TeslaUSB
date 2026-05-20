@@ -2,7 +2,6 @@
 
 from flask import Blueprint, jsonify, request
 
-from services.mode_service import current_mode
 from services import fsck_service
 
 fsck_bp = Blueprint('fsck', __name__, url_prefix='/fsck')

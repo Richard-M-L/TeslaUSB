@@ -1,7 +1,6 @@
 """Blueprint for lock chime management routes."""
 
 import os
-import subprocess
 import time
 import logging
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify

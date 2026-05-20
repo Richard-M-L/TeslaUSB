@@ -1729,12 +1729,6 @@ function showDisambigPopup(latlng, candidates) {
     });
 }
 
-const severityColors = {
-    critical: '#dc3545',
-    warning: '#ffc107',
-    info: '#17a2b8',
-};
-
 // Balloon-pin marker SVGs: circular colored bubble with white skeuomorphic icon + pointer tail
 // Icons centered at (16,13) inside 32x42 viewBox — designed to look like actual car controls
 const eventMarkerSvgs = {
@@ -4099,7 +4093,6 @@ async function loadVideoList(append) {
             card.className = 'vp-clip';
 
             const name = ev.name || 'Unknown';
-            const safeName = escapeHTML(ev.name || 'Unknown');
             const dateStr = (ev.name || '').replace(/_/g, ' ').substring(0, 16);
             const safeDateStr = escapeHTML(dateStr);
             const sizeMb = ev.size_mb || 0;
@@ -4306,28 +4299,6 @@ function _vpArchivePoll(btn) {
             }
         } catch(e) { /* keep polling */ }
     }, 2000);
-}
-
-async function vpQueueForSync(folder, name, btn) {
-    if (btn) { btn.disabled = true; }
-    try {
-        var resp = await fetch('/cloud/api/queue_event', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body: JSON.stringify({ folder: folder, event: name })
-        });
-        var data = await resp.json();
-        if (data.success) {
-            if (typeof showToast === 'function') showToast(data.message, 'success');
-            if (btn) { btn.style.color = 'var(--accent-success, #30D158)'; btn.textContent = '✓Q'; }
-        } else {
-            if (typeof showToast === 'function') showToast(data.message || 'Queue failed', 'error');
-        }
-    } catch(e) {
-        if (typeof showToast === 'function') showToast(_t('mapping.toast_queue_fail') + ': ' + e.message, 'error');
-    } finally {
-        if (btn) { btn.disabled = false; }
-    }
 }
 
 // Event delegation for video panel buttons (prevents XSS from inline onclick)

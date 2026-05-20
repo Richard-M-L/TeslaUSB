@@ -598,18 +598,6 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 # (currently just ``get_stats`` for ``/api/stats``).
 
 
-def get_indexer_status() -> dict:
-    """Return a worker-status snapshot.
-
-    .. deprecated::
-        Use :func:`services.indexing_worker.get_worker_status` instead.
-        This shim exists so external callers (templates, third-party
-        integrations) that still reach for the old dict shape keep
-        working through the migration.
-    """
-    return _get_worker_status_for_stats()
-
-
 def _get_worker_status_for_stats() -> dict:
     """Return a worker-status snapshot in the legacy ``_status`` shape.
 

@@ -4,7 +4,7 @@ import os
 import logging
 import tempfile
 import zipfile
-from flask import Blueprint, request, redirect, url_for, flash, send_file, jsonify, Response, after_this_request, render_template
+from flask import Blueprint, request, redirect, url_for, flash, send_file, jsonify, after_this_request, render_template
 
 from config import IMG_CAM_PATH
 from utils import get_base_context
@@ -585,7 +585,6 @@ def event_player(folder, event_name):
     import traceback
     from utils import get_base_context
     from services.video_service import get_event_details, get_teslacam_folders, get_teslacam_path
-    from services.mode_service import current_mode
 
     ctx = get_base_context()
     teslacam_path = get_teslacam_path()

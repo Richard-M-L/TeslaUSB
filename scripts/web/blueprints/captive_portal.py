@@ -7,7 +7,7 @@ connectivity by making HTTP requests to known endpoints. We intercept these
 requests and show a branded splash screen.
 """
 
-from flask import Blueprint, redirect, request, make_response, render_template
+from flask import Blueprint, redirect, request, render_template
 import logging
 import os
 import yaml

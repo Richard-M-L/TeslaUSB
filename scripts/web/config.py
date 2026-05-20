@@ -384,7 +384,3 @@ def empty_encrypted_flags():
     return {cam: False for cam in CAMERA_ANGLES}
 
 
-# Script paths (scripts are in GADGET_DIR/scripts/)
-def get_script_path(script_name):
-    """Get the full path to a script in the GADGET_DIR/scripts/ directory."""
-    return os.path.join(GADGET_DIR, "scripts", script_name)
