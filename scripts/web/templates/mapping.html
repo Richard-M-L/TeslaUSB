@@ -2989,6 +2989,28 @@ function _translateReason(raw) {
     };
     var tKey = map[raw];
     if (tKey) return _t ? _t(tKey) : raw;
+    return raw;
+}
+
+// Translate server-generated event descriptions (English → locale).
+// The backend stores descriptions in English because it has no locale
+// context at index time.  We convert the known patterns here.
+function _translateDescription(desc) {
+    if (!desc) return desc;
+    var t = desc;
+    t = t.replace(/\bSentry Mode\b/g, _t ? _t('mapping.event_sentry') : 'Sentry Mode');
+    t = t.replace(/\bSaved Clip\b/g, _t ? _t('mapping.event_saved') : 'Saved Clip');
+    t = t.replace(/\blocation from event_json\b/g, _t ? _t('mapping.reason_location_event_json') : 'location from event_json');
+    t = t.replace(/\blocation from nearest_waypoint\b/g, _t ? _t('mapping.reason_location_waypoint') : 'location from nearest waypoint');
+    // Translate reason keys embedded in the description
+    t = t.replace(/\bsentry_aware_object_detection\b/g, _t ? _t('mapping.reason_sentry_object') : 'sentry_aware_object_detection');
+    t = t.replace(/\bsentry_aware_accel_trigger\b/g, _t ? _t('mapping.reason_sentry_accel') : 'sentry_aware_accel_trigger');
+    t = t.replace(/\bsentry_aware_state_update\b/g, _t ? _t('mapping.reason_sentry_state') : 'sentry_aware_state_update');
+    t = t.replace(/\buser_interaction_honk\b/g, _t ? _t('mapping.reason_honk') : 'user_interaction_honk');
+    t = t.replace(/\buser_interaction_dashcam_launcher_action_tapped\b/g, _t ? _t('mapping.reason_tapped') : 'user_interaction_dashcam_launcher_action_tapped');
+    t = t.replace(/\bforward_collision_warning\b/g, _t ? _t('mapping.reason_forward_collision') : 'forward_collision_warning');
+    return t;
+}
     // Fallback: clean up the raw string (replace underscores, title case)
     return raw.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
 }
@@ -3492,7 +3514,7 @@ function renderEvents() {
         });
 
         const safeType = escapeHTML(ev.event_type || '').replace(/_/g, ' ');
-        const safeDesc = escapeHTML(ev.description || '');
+        const safeDesc = escapeHTML(_translateDescription(ev.description || ''));
 
         // In "All time" mode add a "Go to this day" link so the
         // popup is actionable — the user can drill into the day
@@ -3507,7 +3529,7 @@ function renderEvents() {
             `${formatLocalTime(ev.timestamp)}<br>` +
             `${safeDesc}` +
             (ev.video_path ?
-                `<br><a href="#" class="popup-video-link" data-trip-id="${ev.trip_id || 0}" data-video-path="${(ev.video_path || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}" data-frame-offset="${ev.frame_offset || 0}" data-lat="${ev.lat}" data-lon="${ev.lon}">View Video</a>` : '') +
+                `<br><a href="#" class="popup-video-link" data-trip-id="${ev.trip_id || 0}" data-video-path="${(ev.video_path || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}" data-frame-offset="${ev.frame_offset || 0}" data-lat="${ev.lat}" data-lon="${ev.lon}">${_t('mapping.view_video')}</a>` : '') +
             dayLink
         );
 
@@ -3778,7 +3800,7 @@ async function loadSentryTimeline() {
                 }
             } else {
                 // Driving event — show description and severity
-                const desc = ev.description || '';
+                const desc = _translateDescription(ev.description || '');
                 const sev = ev.severity || '';
                 metaHtml = desc || sev;
             }
