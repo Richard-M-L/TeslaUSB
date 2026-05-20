@@ -132,6 +132,8 @@
     "mapping.reason_location_waypoint": "location from nearest waypoint",
     "mapping.view_video": "View Video",
     "mapping.filter_all": "All",
+    "mapping.event_trigger_time": "Trigger Time",
+    "mapping.event_triggered": "triggered",
     "mapping.event_sentry": "Sentry Mode",
     "mapping.event_saved": "Saved Clip",
     "mapping.event_harsh_brake": "Hard Brake",

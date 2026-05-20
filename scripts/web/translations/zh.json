@@ -132,6 +132,8 @@
     "mapping.reason_location_waypoint": "位置来自最近航点",
     "mapping.view_video": "查看视频",
     "mapping.filter_all": "全部",
+    "mapping.event_trigger_time": "触发时间",
+    "mapping.event_triggered": "触发",
     "mapping.event_sentry": "哨兵模式",
     "mapping.event_saved": "已保存片段",
     "mapping.event_harsh_brake": "急刹车",

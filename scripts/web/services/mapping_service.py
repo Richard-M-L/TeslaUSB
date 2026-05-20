@@ -1153,12 +1153,16 @@ def _infer_sentry_event(
     lat = lon = None
     location_source = None
     reason = None
+    ej_timestamp = None
+    ej_camera = None
     if teslacam_root:
         ej_data = _read_event_json(rel_path, teslacam_root)
         if ej_data:
             lat = ej_data['_lat']
             lon = ej_data['_lon']
             reason = ej_data.get('reason') or 'unknown'
+            ej_timestamp = ej_data.get('timestamp')
+            ej_camera = ej_data.get('camera') or ej_data.get('camera_sensor')
             location_source = 'event_json'
 
     # Fall back to nearest waypoint (legacy behavior)
@@ -1208,6 +1212,8 @@ def _infer_sentry_event(
                 'location_source': location_source,
                 'source_folder': folder_name,
                 'reason': reason,
+                'event_timestamp': ej_timestamp,
+                'camera': ej_camera,
             }),
         )
     )

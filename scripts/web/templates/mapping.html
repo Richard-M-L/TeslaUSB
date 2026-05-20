@@ -3527,25 +3527,68 @@ function renderEvents() {
             icon: makeEventIcon(ev.event_type),
         });
 
-        const safeType = escapeHTML(ev.event_type || '').replace(/_/g, ' ');
-        const safeDesc = escapeHTML(_translateDescription(ev.description || ''));
+        const isFolderEvent = (ev.event_type === 'sentry' || ev.event_type === 'saved');
+        var metaData = {};
+        if (ev.metadata) {
+            try { metaData = JSON.parse(ev.metadata); } catch(e) {}
+        }
 
-        // In "All time" mode add a "Go to this day" link so the
-        // popup is actionable — the user can drill into the day
-        // that owns the event without leaving the map.
+        // Event type label (from i18n mapping)
+        var eventLabels = {
+            sentry: _t('mapping.event_sentry'),
+            saved: _t('mapping.event_saved'),
+            harsh_brake: _t('mapping.event_harsh_brake'),
+            emergency_brake: _t('mapping.event_emergency_brake'),
+            hard_acceleration: _t('mapping.event_hard_accel'),
+            sharp_turn: _t('mapping.event_sharp_turn'),
+            fsd_engage: _t('mapping.event_fsd_engage'),
+            fsd_disengage: _t('mapping.event_fsd_disengage'),
+            speeding: _t('mapping.event_speed_alert'),
+        };
+        var typeLabel = eventLabels[ev.event_type || ''] || (ev.event_type || '').replace(/_/g, ' ');
+
+        // Camera name mapping (Tesla event.json → display)
+        var cameraNames = {
+            front: '前摄像头', back: '后摄像头',
+            left_pillar: '左B柱', right_pillar: '右B柱',
+            left_repeater: '左侧视角', right_repeater: '右侧视角',
+        };
+
+        // Build popup HTML
+        var popupHtml = '<strong>' + escapeHTML(typeLabel) + '</strong>';
+
+        if (isFolderEvent && metaData.event_timestamp) {
+            // Sentry/saved card: show event.json timestamp and reason
+            var ejTs;
+            try { ejTs = formatLocalTime(metaData.event_timestamp); } catch(e) { ejTs = metaData.event_timestamp; }
+            popupHtml += '<br>' + _t('mapping.event_trigger_time') + ': ' + escapeHTML(ejTs);
+            if (metaData.reason) {
+                popupHtml += '<br>' + escapeHTML(_translateReason(metaData.reason));
+            }
+            if (metaData.camera) {
+                var camLabel = cameraNames[metaData.camera] || metaData.camera.replace(/_/g, ' ');
+                popupHtml += '<br>' + escapeHTML(camLabel) + ' ' + _t('mapping.event_triggered');
+            }
+        } else {
+            // Driving event or legacy sentry: show timestamp and description
+            popupHtml += '<br>' + formatLocalTime(ev.timestamp);
+            var safeDesc = _translateDescription(ev.description || '');
+            if (safeDesc) popupHtml += '<br>' + escapeHTML(safeDesc);
+        }
+
+        // "Go to this day" link (All time view)
         const eventDate = (ev.timestamp || '').slice(0, 10);
-        const dayLink = (showingAllTime && /^\d{4}-\d{2}-\d{2}$/.test(eventDate))
-            ? `<br><a href="#" class="popup-day-link" data-date="${eventDate}">Go to this day &rarr;</a>`
-            : '';
+        if (showingAllTime && /^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+            popupHtml += '<br><a href="#" class="popup-day-link" data-date="' + eventDate + '">Go to this day &rarr;</a>';
+        }
 
-        marker.bindPopup(
-            `<strong>${safeType}</strong><br>` +
-            `${formatLocalTime(ev.timestamp)}<br>` +
-            `${safeDesc}` +
-            (ev.video_path ?
-                `<br><a href="#" class="popup-video-link" data-trip-id="${ev.trip_id || 0}" data-video-path="${(ev.video_path || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}" data-frame-offset="${ev.frame_offset || 0}" data-lat="${ev.lat}" data-lon="${ev.lon}">${_t('mapping.view_video')}</a>` : '') +
-            dayLink
-        );
+        // View Video link
+        if (ev.video_path) {
+            var vp = escapeHTML(ev.video_path).replace(/&amp;/g,'&amp;');
+            popupHtml += '<br><a href="#" class="popup-video-link" data-trip-id="' + (ev.trip_id || 0) + '" data-video-path="' + vp + '" data-frame-offset="' + (ev.frame_offset || 0) + '" data-lat="' + ev.lat + '" data-lon="' + ev.lon + '">' + _t('mapping.view_video') + '</a>';
+        }
+
+        marker.bindPopup(popupHtml);
 
         eventCluster.addLayer(marker);
         bounds.push([ev.lat, ev.lon]);
