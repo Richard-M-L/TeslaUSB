@@ -3528,29 +3528,34 @@ async function overlayArchive() {
     }
 }
 
-function _startArchiveNavPoll(btn) {
-    _archivePollTimer = setInterval(async () => {
+// Shared archive-status poller.  Calls ``onReset(btn)`` to restore
+// the button to its idle state once the job finishes or fails.
+function _archivePoll(btn, onReset) {
+    var timer = setInterval(async function() {
         try {
-            const resp = await fetch('/cloud/api/archive_status', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            const st = await resp.json();
+            var resp = await fetch('/cloud/api/archive_status', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            var st = await resp.json();
             if (st.completed) {
-                clearInterval(_archivePollTimer); _archivePollTimer = null;
+                clearInterval(timer);
                 if (btn) { btn.textContent = '✓'; btn.style.color = '#34C759'; btn.title = 'Archived!'; }
                 if (typeof showToast === 'function') showToast(_t('mapping.toast_archived'), 'success');
-                setTimeout(() => _resetArchiveNavBtn(btn), 4000);
+                setTimeout(function() { if (onReset) onReset(btn); }, 4000);
             } else if (st.error) {
-                clearInterval(_archivePollTimer); _archivePollTimer = null;
+                clearInterval(timer);
                 if (typeof showToast === 'function') showToast(st.error, 'error');
-                _resetArchiveNavBtn(btn);
+                if (onReset) onReset(btn);
             } else if (st.running && btn) {
-                let pct = st.total_size > 0 ? Math.min(99, Math.round((st.bytes_transferred || 0) / st.total_size * 100)) : 0;
+                var pct = st.total_size > 0 ? Math.min(99, Math.round((st.bytes_transferred || 0) / st.total_size * 100)) : 0;
                 btn.textContent = pct + '%';
                 btn.title = 'Archiving ' + (st.file_count || '') + ' files...';
             }
         } catch(e) { /* keep polling */ }
     }, 2000);
+    return timer;
+}
+
+function _startArchiveNavPoll(btn) {
+    _archivePollTimer = _archivePoll(btn, _resetArchiveNavBtn);
 }
 
 function _resetArchiveNavBtn(btn) {
@@ -4286,25 +4291,9 @@ async function vpArchive(folder, name, btn) {
 }
 
 function _vpArchivePoll(btn) {
-    var timer = setInterval(async function() {
-        try {
-            var resp = await fetch('/cloud/api/archive_status', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            var st = await resp.json();
-            if (st.completed) {
-                clearInterval(timer);
-                if (btn) { btn.textContent = '✓'; btn.style.color = '#34C759'; }
-                if (typeof showToast === 'function') showToast(_t('mapping.toast_archived'), 'success');
-                setTimeout(function() { if (btn) { btn.disabled = false; btn.textContent = '☁'; btn.style.color = '#32ADE6'; } }, 4000);
-            } else if (st.error) {
-                clearInterval(timer);
-                if (typeof showToast === 'function') showToast(st.error, 'error');
-                if (btn) { btn.disabled = false; btn.textContent = '☁'; btn.style.color = '#32ADE6'; }
-            } else if (st.running && btn) {
-                var pct = st.total_size > 0 ? Math.min(99, Math.round((st.bytes_transferred || 0) / st.total_size * 100)) : 0;
-                btn.textContent = pct + '%';
-            }
-        } catch(e) { /* keep polling */ }
-    }, 2000);
+    _archivePoll(btn, function(b) {
+        if (b) { b.disabled = false; b.textContent = '☁'; b.style.color = '#32ADE6'; }
+    });
 }
 
 // Event delegation for video panel buttons (prevents XSS from inline onclick)
