@@ -908,7 +908,7 @@
     <!-- Day-load progress bar (hidden until .map-container.is-loading) -->
     <div class="map-loading-bar" id="mapLoadingBar"
          role="progressbar"
-         aria-label="Loading map data"
+         aria-label="{{ _('mapping.loading_map') }}"
          aria-busy="false"
          aria-hidden="true">
         <div class="map-loading-bar-fill"></div>
@@ -924,7 +924,7 @@
                 <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-chevron-left"></use></svg>
             </button>
             <div class="trip-card-info">
-                <div class="trip-card-date" id="dayCardDate">Loading...</div>
+                <div class="trip-card-date" id="dayCardDate">{{ _('mapping.loading') }}</div>
                 <div class="trip-card-stats" id="dayCardStats">&mdash;</div>
             </div>
             <button class="trip-nav-btn" id="dayNext" onclick="cycleDay(1)" aria-label="Newer day">
@@ -939,7 +939,7 @@
 
     <!-- Speed Color Legend (toggleable, hidden by default) -->
     <div class="speed-legend" id="speedLegend" aria-hidden="true">
-        <div class="speed-legend-title">Speed (km/h)</div>
+        <div class="speed-legend-title">{{ _('mapping.speed_legend') }} ({{ _('mapping.speed_unit') }})</div>
         <div class="speed-legend-row"><span class="speed-legend-swatch" style="background:#440154"></span><span>0&ndash;54</span></div>
         <div class="speed-legend-row"><span class="speed-legend-swatch" style="background:#3b528b"></span><span>54&ndash;108</span></div>
         <div class="speed-legend-row"><span class="speed-legend-swatch" style="background:#21918c"></span><span>108&ndash;162</span></div>
@@ -2010,11 +2010,11 @@ function renderDayCard() {
     const parts = [];
     if (day.trip_count > 0) {
         const dist = (day.total_distance_km * 0.621371).toFixed(1);
-        parts.push(`${day.trip_count} trip${day.trip_count === 1 ? '' : 's'}`);
-        parts.push(`${dist} mi`);
+        parts.push(day.trip_count === 1 ? _tf('mapping.stat_trip', {n: day.trip_count}) : _tf('mapping.stat_trips', {n: day.trip_count}));
+        parts.push(_tf('mapping.stat_mi', {n: dist}));
     }
     if (day.event_count > 0) {
-        parts.push(`${day.event_count} event${day.event_count === 1 ? '' : 's'}`);
+        parts.push(day.event_count === 1 ? _tf('mapping.stat_event', {n: day.event_count}) : _tf('mapping.stat_events', {n: day.event_count}));
     }
     statsEl.textContent = parts.length ? parts.join(' \u00B7 ') : '\u2014';
 
@@ -2522,14 +2522,14 @@ function renderTripOnDay(trip, bounds) {
     L.circleMarker(startCoord, {
         radius: 7, fillColor: '#28a745', color: '#fff', weight: 2, fillOpacity: 0.9,
     }).bindPopup(
-        `<strong>Trip #${trip.trip_id}</strong><br>` +
-        `${formatLocalTime(trip.start_time)}<br>` +
-        `${dist} mi \u00B7 ${dur} min`
+        '<strong>' + _tf('mapping.trip_number', {n: trip.trip_id}) + '</strong><br>' +
+        formatLocalTime(trip.start_time) + '<br>' +
+        _tf('mapping.stat_mi', {n: dist}) + ' \u00B7 ' + dur + ' min'
     ).addTo(tripLayer);
 
     L.circleMarker(endCoord, {
         radius: 7, fillColor: '#dc3545', color: '#fff', weight: 2, fillOpacity: 0.9,
-    }).bindPopup('Trip End').addTo(tripLayer);
+    }).bindPopup(_t('mapping.trip_end')).addTo(tripLayer);
 }
 
 async function renderAllTime() {
@@ -3698,8 +3698,8 @@ async function scanForNewClips() {
             statusDiv.className = 'indexer-status';
             statusDiv.style.display = 'block';
             statusDiv.textContent = enq > 0
-                ? `Scan complete: ${enq} new clip(s) queued for indexing.`
-                : 'Scan complete: no new clips found.';
+                ? _tf('mapping.scan_complete', {n: enq})
+                : _t('mapping.scan_empty');
             setTimeout(() => {
                 if (!pollIndexer._activeFile) {
                     statusDiv.style.display = 'none';
@@ -3709,10 +3709,10 @@ async function scanForNewClips() {
             // worker picks up the first orphan.
             pollIndexer();
         } else {
-            alert(data.message || 'Failed to scan for new clips');
+            alert(data.message || _t('mapping.scan_failed'));
         }
     } catch(e) {
-        alert('Failed to scan for new clips: ' + e.message);
+        alert(_t('mapping.scan_failed') + ': ' + e.message);
     } finally {
         btn.disabled = false;
         btn.classList.remove('spinning');
@@ -3720,19 +3720,12 @@ async function scanForNewClips() {
 }
 
 function _bannerTextForSource(source, filesDone) {
-    // Human-friendly banner text. `filesDone` is per-session worker
-    // count, so it bumps as each file completes.
     switch (source) {
-        case 'watcher':
-            return 'Indexing new clip from drive…';
-        case 'archive':
-            return 'Indexing archived clip…';
-        case 'manual':
-            return `Rebuilding map index (${filesDone} done)…`;
-        case 'catchup':
-            return `Indexing existing clip (${filesDone} done)…`;
-        default:
-            return 'Indexing video…';
+        case 'watcher':  return _tf('mapping.indexing_clip');
+        case 'archive':  return _tf('mapping.indexing_archived');
+        case 'manual':   return _tf('mapping.indexing_rebuild', {n: filesDone});
+        case 'catchup':  return _tf('mapping.indexing_existing', {n: filesDone});
+        default:         return _tf('mapping.indexing_video');
     }
 }
 
@@ -3875,7 +3868,7 @@ async function loadSentryTimeline() {
             : fmtShort(last.timestamp);
 
         let html = '<div class="sentry-timeline">';
-        html += '<div class="st-summary"><strong>' + events.length + ' Event' + (events.length !== 1 ? 's' : '') + '</strong> \u00b7 <span>' + rangeStr + '</span></div>';
+        html += '<div class="st-summary"><strong>' + _tf('mapping.stat_events', {n: events.length}) + '</strong> \u00b7 <span>' + rangeStr + '</span></div>';
 
         events.forEach(function(ev) {
             const evType = ev.event_type || '';
@@ -4036,7 +4029,7 @@ async function loadTripsTimeline() {
             const metaParts = [];
             if (dist) metaParts.push(dist);
             if (durStr) metaParts.push(durStr);
-            if (evCount > 0) metaParts.push(evCount + ' event' + (evCount !== 1 ? 's' : ''));
+            if (evCount > 0) metaParts.push(evCount === 1 ? _tf('mapping.stat_event', {n: evCount}) : _tf('mapping.stat_events', {n: evCount}));
             const metaHtml = metaParts.join(' \u00b7 ');
 
             const hasCoords = trip.start_lat != null && trip.start_lon != null
@@ -4109,7 +4102,7 @@ async function loadVideoList(append) {
             const totalVids = data.total_video_count || 0;
             const summary = document.createElement('div');
             summary.className = 'st-summary';
-            summary.innerHTML = '<strong>' + data.total_count + ' Clip' + (data.total_count !== 1 ? 's' : '') + '</strong>' + (totalVids > 0 ? ' \u00b7 <span>' + totalVids + ' video' + (totalVids !== 1 ? 's' : '') + '</span>' : '');
+            summary.innerHTML = '<strong>' + (data.total_count === 1 ? _tf('mapping.stat_clip', {n: data.total_count}) : _tf('mapping.stat_clips', {n: data.total_count})) + '</strong>' + (totalVids > 0 ? ' \u00b7 <span>' + (totalVids === 1 ? _tf('mapping.stat_video', {n: totalVids}) : _tf('mapping.stat_videos', {n: totalVids})) + '</span>' : '');
             list.appendChild(summary);
         }
 
