@@ -2996,19 +2996,34 @@ function _iconSvg(name, size) {
            '" aria-hidden="true"><use href="' + LUCIDE_SPRITE + '#' + name + '"></use></svg>';
 }
 
+// Known Tesla firmware reason keys → i18n key.
+// Shared by _translateReason (direct lookup) and _translateDescription
+// (regex match on description text).  Add new keys here and both paths
+// pick them up automatically.
+var _REASON_MAP = {
+    'user_interaction_honk': 'mapping.reason_honk',
+    'user_interaction_dashcam_launcher_action_tapped': 'mapping.reason_tapped',
+    'sentry_aware_object_detection': 'mapping.reason_sentry_object',
+    'sentry_aware_accel_trigger': 'mapping.reason_sentry_accel',
+    'sentry_aware_state_update': 'mapping.reason_sentry_state',
+    'sentry_aware_vehicle_damage': 'mapping.reason_sentry_damage',
+    'forward_collision_warning': 'mapping.reason_forward_collision',
+    'user_interaction_remote_snapshot': 'mapping.reason_remote_snapshot',
+    'user_interaction_mobile_app': 'mapping.reason_mobile_app',
+    'speed_assist_warning': 'mapping.reason_speed_assist',
+    'autopilot_cancel': 'mapping.reason_autopilot_cancel',
+    'autopilot_disabled': 'mapping.reason_autopilot_disabled',
+    'blind_spot_collision_warning': 'mapping.reason_blind_spot',
+    'cross_traffic_warning': 'mapping.reason_cross_traffic',
+    'emergency_vehicle_detection': 'mapping.reason_emergency_vehicle',
+    'lane_departure_avoidance': 'mapping.reason_lane_departure',
+};
+var _REASON_RE = new RegExp('\\b(' + Object.keys(_REASON_MAP).join('|') + ')\\b', 'g');
+
 // --- Translate Tesla event reason strings to human-readable text ---
 function _translateReason(raw) {
     if (!raw) return '';
-    // Known Tesla firmware reason keys → translation key
-    var map = {
-        'user_interaction_honk': 'mapping.reason_honk',
-        'user_interaction_dashcam_launcher_action_tapped': 'mapping.reason_tapped',
-        'sentry_aware_object_detection': 'mapping.reason_sentry_object',
-        'sentry_aware_accel_trigger': 'mapping.reason_sentry_accel',
-        'sentry_aware_state_update': 'mapping.reason_sentry_state',
-        'forward_collision_warning': 'mapping.reason_forward_collision',
-    };
-    var tKey = map[raw];
+    var tKey = _REASON_MAP[raw];
     if (tKey) return _t ? _t(tKey) : raw;
     return raw;
 }
@@ -3023,9 +3038,7 @@ function _translateDescription(desc) {
     t = t.replace(/\bSaved Clip\b/g, _t ? _t('mapping.event_saved') : 'Saved Clip');
     t = t.replace(/\blocation from event_json\b/g, _t ? _t('mapping.reason_location_event_json') : 'location from event_json');
     t = t.replace(/\blocation from nearest_waypoint\b/g, _t ? _t('mapping.reason_location_waypoint') : 'location from nearest waypoint');
-    // Translate reason keys embedded in the description — delegate to
-    // _translateReason so the mapping lives in one place.
-    t = t.replace(/\b(sentry_aware_object_detection|sentry_aware_accel_trigger|sentry_aware_state_update|user_interaction_honk|user_interaction_dashcam_launcher_action_tapped|forward_collision_warning)\b/g, function(m) { return _translateReason(m); });
+    t = t.replace(_REASON_RE, function(m) { return _translateReason(m); });
     return t;
 }
 
