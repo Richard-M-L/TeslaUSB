@@ -1023,6 +1023,15 @@ function escapeHTML(s) {
                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Safe translation helper — calls global _t if available, otherwise
+// returns the key verbatim.  Optional ``params.n`` replaces ``{n}``
+// in the translated string (used for count/size placeholders).
+function _tf(key, params) {
+    var text = (typeof _t === 'function') ? _t(key) : key;
+    if (params && params.n !== undefined) text = text.replace('{n}', params.n);
+    return text;
+}
+
 // Format ISO timestamp to local time
 function formatLocalTime(isoStr) {
     if (!isoStr) return 'Unknown';
@@ -2696,14 +2705,13 @@ async function renderAllTime() {
 
 const CAMERA_ANGLES = ['front', 'back', 'left_repeater', 'right_repeater', 'left_pillar', 'right_pillar'];
 const CAMERA_LABELS = (function() {
-    var t = _t || function(k) { return k; };
     var labels = {};
-    labels.front = t('player.camera_front');
-    labels.back = t('player.camera_rear');
-    labels.left_repeater = t('player.camera_left');
-    labels.right_repeater = t('player.camera_right');
-    labels.left_pillar = t('player.camera_left_pillar');
-    labels.right_pillar = t('player.camera_right_pillar');
+    labels.front = _tf('player.camera_front');
+    labels.back = _tf('player.camera_rear');
+    labels.left_repeater = _tf('player.camera_left');
+    labels.right_repeater = _tf('player.camera_right');
+    labels.left_pillar = _tf('player.camera_left_pillar');
+    labels.right_pillar = _tf('player.camera_right_pillar');
     return labels;
 })();
 // Directional Lucide icons matching each camera's view direction (top-down
@@ -3896,18 +3904,17 @@ async function loadSentryTimeline() {
             html += '<div class="st-type">' + typeLabel + '</div>';
             html += '<div class="st-date">' + dateStr + '</div>';
             html += '<div class="st-meta"' + (metaIsLazy ? ' data-lazy-meta="1"' : '') + '>' + metaHtml + '</div>';
-            var tFn = _t || function(k) { return k; };
             html += '<div class="st-actions">';
             if (isFolderEvent) {
-                html += '<button class="vp-btn st-btn-play" title="' + tFn('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>';
-                html += '<button class="vp-btn st-btn-dl" title="' + tFn('mapping.download_zip') + '">' + _iconSvg('icon-download', 15) + '</button>';
+                html += '<button class="vp-btn st-btn-play" title="' + _tf('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>';
+                html += '<button class="vp-btn st-btn-dl" title="' + _tf('mapping.download_zip') + '">' + _iconSvg('icon-download', 15) + '</button>';
             } else if (hasCoords) {
-                html += '<button class="vp-btn st-btn-map" title="' + tFn('mapping.show_on_map') + '" data-lat="' + ev.lat + '" data-lon="' + ev.lon + '">' + _iconSvg('icon-map-pin', 15) + '</button>';
+                html += '<button class="vp-btn st-btn-map" title="' + _tf('mapping.show_on_map') + '" data-lat="' + ev.lat + '" data-lon="' + ev.lon + '">' + _iconSvg('icon-map-pin', 15) + '</button>';
             } else if (videoPath) {
-                html += '<button class="vp-btn st-btn-play" title="' + tFn('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>';
+                html += '<button class="vp-btn st-btn-play" title="' + _tf('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>';
             }
             if (isFolderEvent) {
-                html += '<button class="vp-btn vp-btn-danger st-btn-del" title="' + tFn('mapping.delete_clip') + '">' + _iconSvg('icon-trash-2', 15) + '</button>';
+                html += '<button class="vp-btn vp-btn-danger st-btn-del" title="' + _tf('mapping.delete_clip') + '">' + _iconSvg('icon-trash-2', 15) + '</button>';
             }
             html += '</div></div></div>';
         });
@@ -4100,8 +4107,7 @@ async function loadVideoList(append) {
             const reasonText = _translateReason(ev.reason || '');
             const safeReason = escapeHTML(reasonText);
 
-            var tFn = _t || function(k, p) { return (p && p.n !== undefined) ? k.replace('{n}', p.n) : k; };
-            var metaText = tFn('mapping.cam_count', {n: cameras}) + ' \u00b7 ' + tFn('mapping.mb_size', {n: sizeMb.toFixed(0)});
+            var metaText = _tf('mapping.cam_count', {n: cameras}) + ' \u00b7 ' + _tf('mapping.mb_size', {n: sizeMb.toFixed(0)});
 
             card.innerHTML =
                 '<div class="vp-clip-info">' +
@@ -4111,11 +4117,11 @@ async function loadVideoList(append) {
                 '</div>' +
                 '<div class="vp-actions">' +
                     (ev.city
-                        ? '<button class="vp-btn vp-btn-map" title="' + tFn('mapping.show_on_map') + '">' + _iconSvg('icon-map-pin', 15) + '</button>'
-                        : '<button class="vp-btn vp-btn-play" title="' + tFn('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>') +
-                    '<button class="vp-btn vp-btn-dl" title="' + tFn('mapping.download_zip') + '">' + _iconSvg('icon-download', 15) + '</button>' +
-                    {% if cloud_provider_connected %}'<button class="vp-btn vp-btn-archive" title="' + tFn('mapping.archive_to_cloud') + '" style="color:#32ADE6">' + _iconSvg('icon-cloud-upload', 15) + '</button>' +{% endif %}
-                    '<button class="vp-btn vp-btn-danger vp-btn-del" title="' + tFn('mapping.delete_clip') + '">' + _iconSvg('icon-trash-2', 15) + '</button>' +
+                        ? '<button class="vp-btn vp-btn-map" title="' + _tf('mapping.show_on_map') + '">' + _iconSvg('icon-map-pin', 15) + '</button>'
+                        : '<button class="vp-btn vp-btn-play" title="' + _tf('mapping.play') + '">' + _iconSvg('icon-play', 15) + '</button>') +
+                    '<button class="vp-btn vp-btn-dl" title="' + _tf('mapping.download_zip') + '">' + _iconSvg('icon-download', 15) + '</button>' +
+                    {% if cloud_provider_connected %}'<button class="vp-btn vp-btn-archive" title="' + _tf('mapping.archive_to_cloud') + '" style="color:#32ADE6">' + _iconSvg('icon-cloud-upload', 15) + '</button>' +{% endif %}
+                    '<button class="vp-btn vp-btn-danger vp-btn-del" title="' + _tf('mapping.delete_clip') + '">' + _iconSvg('icon-trash-2', 15) + '</button>' +
                 '</div>';
 
             // Store data attributes for event delegation (safe from XSS)
