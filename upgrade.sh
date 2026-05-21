@@ -129,6 +129,11 @@ if [ "$IS_GIT" -eq 1 ]; then
 
   git reset --hard origin/$BRANCH 2>&1 || _error_status "git reset 失败"
 
+  # Fix .git ownership — git operations ran as root. Restore to the
+  # owner of the install directory so the web service (which runs
+  # git as the target user) doesn't hit permission problems.
+  chown -R "$(stat -c '%u:%g' "$INSTALL_DIR")" "$INSTALL_DIR/.git" 2>/dev/null || true
+
   if [ "$NON_INTERACTIVE" -eq 1 ]; then
     _write_status "analyze" "正在分析变更..." 60
   fi

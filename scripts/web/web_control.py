@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 
 # Import configuration
-from config import SECRET_KEY, WEB_PORT, GADGET_DIR, MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_CHUNK_MB
+from config import SECRET_KEY, WEB_PORT, GADGET_DIR, TARGET_USER, MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_CHUNK_MB
 
 # Flask app initialization
 app = Flask(__name__)
@@ -313,9 +313,11 @@ def upgrade_check():
     """git fetch and report whether new commits are available."""
     import subprocess
     try:
-        # Fetch without merging — safe, read-only after fetch
+        # Run git as the target user (pi) so file ownership and systemd
+        # mount-namespace restrictions don't cause git to hang.
+        # Fetch without merging — safe, read-only after fetch.
         result = subprocess.run(
-            ['git', '-c', f'safe.directory={GADGET_DIR}', 'fetch', 'origin'],
+            ['sudo', '-n', '-u', TARGET_USER, 'git', 'fetch', 'origin'],
             capture_output=True, text=True, timeout=60,
             cwd=GADGET_DIR,
         )
@@ -327,7 +329,7 @@ def upgrade_check():
             return {'available': False, 'error': f'git fetch 失败: {detail}'}
         # Compare HEAD to origin/main
         result = subprocess.run(
-            ['git', '-c', f'safe.directory={GADGET_DIR}',
+            ['sudo', '-n', '-u', TARGET_USER, 'git',
              'rev-list', '--count', 'HEAD..origin/main'],
             capture_output=True, text=True, timeout=10,
             cwd=GADGET_DIR,
