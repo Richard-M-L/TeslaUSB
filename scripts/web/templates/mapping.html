@@ -915,19 +915,19 @@
     </div>
 
     <!-- Event-Type Filter Pills (top-center, populated dynamically per day) -->
-    <div class="event-filter-pills" id="eventFilterPills" role="toolbar" aria-label="Filter event markers"></div>
+    <div class="event-filter-pills" id="eventFilterPills" role="toolbar" aria-label="{{ _('mapping.filter_events_aria') }}"></div>
 
     <!-- Day Card (bottom-left floating) -->
     <div class="trip-card" id="tripCard">
         <div class="trip-card-nav">
-            <button class="trip-nav-btn" id="dayPrev" onclick="cycleDay(-1)" aria-label="Older day">
+            <button class="trip-nav-btn" id="dayPrev" onclick="cycleDay(-1)" aria-label="{{ _('mapping.older_day') }}">
                 <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-chevron-left"></use></svg>
             </button>
             <div class="trip-card-info">
                 <div class="trip-card-date" id="dayCardDate">{{ _('mapping.loading') }}</div>
                 <div class="trip-card-stats" id="dayCardStats">&mdash;</div>
             </div>
-            <button class="trip-nav-btn" id="dayNext" onclick="cycleDay(1)" aria-label="Newer day">
+            <button class="trip-nav-btn" id="dayNext" onclick="cycleDay(1)" aria-label="{{ _('mapping.newer_day') }}">
                 <svg class="nav-icon"><use href="{{ url_for('static', filename='icons/lucide-sprite.svg') }}#icon-chevron-right"></use></svg>
             </button>
         </div>
@@ -977,7 +977,7 @@
                 <button class="vp-tab" id="vpTabTrips" onclick="vpShowTrips()">{{ _("mapping.tab_trips") }}</button>
                 <button class="vp-tab" id="vpTabClips" onclick="vpShowClips()">{{ _("mapping.tab_all_clips") }}</button>
             </div>
-            <button class="close-btn" onclick="toggleVideoPanel()" aria-label="Close video panel">✕</button>
+            <button class="close-btn" onclick="toggleVideoPanel()" aria-label="{{ _('mapping.close_panel') }}">✕</button>
         </div>
         <div class="vp-folder-row" id="vpFolderRow" style="display: none;">
             <select id="vpFolder" onchange="loadVideoList()">
@@ -1034,7 +1034,7 @@ function _tf(key, params) {
 
 // Format ISO timestamp to local time
 function formatLocalTime(isoStr) {
-    if (!isoStr) return 'Unknown';
+    if (!isoStr) return _t('mapping.unknown_date');
     try {
         const d = new Date(isoStr.replace(' ', 'T'));
         return d.toLocaleString(undefined, {
@@ -1998,7 +1998,7 @@ function renderDayCard() {
     if (allBtn) allBtn.disabled = !allDays.length;
 
     if (!day) {
-        dateEl.textContent = currentDate || 'No data';
+        dateEl.textContent = currentDate || _t('mapping.no_data');
         statsEl.textContent = '\u2014';
         if (prevBtn) prevBtn.disabled = true;
         if (nextBtn) nextBtn.disabled = true;
@@ -3154,9 +3154,7 @@ function markIosFullscreenToastShown() {
 // console.log if showToast isn't available — never blocks the
 // fullscreen action.
 function showIosFullscreenToast() {
-    const msg = ('iOS Safari hides the HUD in fullscreen. ' +
-                 'Tap Maximize for an HUD-visible view, ' +
-                 'or tap Fullscreen again to continue without HUD.');
+    const msg = _t('mapping.ios_fullscreen_toast');
     if (typeof showToast === 'function') {
         showToast(msg, 'info');
     } else {
@@ -3171,8 +3169,8 @@ function showIosFullscreenToast() {
 function updateOverlayMaximizeButton(isMax) {
     const btn = document.getElementById('overlayMaximizeBtn');
     if (!btn) return;
-    btn.title = isMax ? 'Restore' : 'Maximize';
-    btn.setAttribute('aria-label', isMax ? 'Restore video overlay' : 'Maximize video overlay');
+    btn.title = isMax ? _t('player.restore') : _t('player.maximize');
+    btn.setAttribute('aria-label', isMax ? _t('player.restore') : _t('player.maximize'));
     const use = btn.querySelector('use');
     if (use) use.setAttribute('href', isMax ? OVERLAY_ICON_MIN : OVERLAY_ICON_MAX);
 }
@@ -3572,7 +3570,7 @@ function _startArchiveNavPoll(btn) {
 }
 
 function _resetArchiveNavBtn(btn) {
-    if (btn) { btn.disabled = false; btn.textContent = '☁'; btn.style.color = '#32ADE6'; btn.title = 'Archive to Cloud'; }
+    if (btn) { btn.disabled = false; btn.textContent = '☁'; btn.style.color = '#32ADE6'; btn.title = _t('mapping.archive_to_cloud'); }
 }
 
 function renderEvents() {
@@ -4110,7 +4108,7 @@ async function loadVideoList(append) {
             const card = document.createElement('div');
             card.className = 'vp-clip';
 
-            const name = ev.name || 'Unknown';
+            const name = ev.name || _t('mapping.unknown_date');
             const dateStr = (ev.name || '').replace(/_/g, ' ').substring(0, 16);
             const safeDateStr = escapeHTML(dateStr);
             const sizeMb = ev.size_mb || 0;
