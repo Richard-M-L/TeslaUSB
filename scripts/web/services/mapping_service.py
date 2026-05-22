@@ -1026,7 +1026,8 @@ def _find_archived_videos() -> Generator[str, None, None]:
             continue
 
 
-def _read_event_json(rel_path: str, teslacam_root: str) -> Optional[dict]:
+def _read_event_json(rel_path: str, teslacam_root: str,
+                     skip_gps_check: bool = False) -> Optional[dict]:
     """Read Tesla's event.json from the SavedClips/SentryClips folder.
 
     Tesla writes an event.json into each SavedClips/SentryClips event
@@ -1034,6 +1035,10 @@ def _read_event_json(rel_path: str, teslacam_root: str) -> Optional[dict]:
     reason (e.g. user_interaction_honk, sentry_aware_object_detection),
     timestamp, city/street, and camera. This is far better than guessing
     location from the nearest waypoint.
+
+    When ``skip_gps_check`` is True, the (0,0) GPS sentinel is accepted
+    — used for China-market Teslas where event.json lat/lon are always 0
+    but the reason/timestamp fields are still useful for event creation.
 
     Returns the parsed dict on success, or None if not found / unreadable.
     """
@@ -1061,14 +1066,16 @@ def _read_event_json(rel_path: str, teslacam_root: str) -> Optional[dict]:
             lon = float(data.get('est_lon'))
         except (TypeError, ValueError):
             return None
-        # Must be finite, in valid lat/lon range, and not the (0,0) sentinel
-        # that some Tesla firmware writes when GPS hasn't locked yet.
+        # Must be finite, in valid lat/lon range
         import math
         if not (math.isfinite(lat) and math.isfinite(lon)):
             return None
         if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0):
             return None
-        if lat == 0 and lon == 0:
+        # (0,0) sentinel — some Tesla firmware writes this when GPS
+        # hasn't locked. China-market vehicles always report (0,0); the
+        # caller can override this check via ``skip_gps_check``.
+        if not skip_gps_check and lat == 0 and lon == 0:
             return None
         data['_lat'] = lat
         data['_lon'] = lon
@@ -1094,6 +1101,16 @@ def _infer_sentry_event(
     """
     if not file_timestamp:
         return False
+
+    # Detect telemetry-only mode: if the DB has zero waypoints with
+    # non-zero lat/lon, the vehicle is likely a China-market Tesla
+    # where GPS is always 0. In this mode we accept (0,0) coordinates
+    # from event.json and nearest-waypoint fallback so events still
+    # get created.
+    gps_row = conn.execute(
+        "SELECT 1 FROM waypoints WHERE lat != 0 OR lon != 0 LIMIT 1"
+    ).fetchone()
+    is_telemetry_only = gps_row is None
 
     # Determine event type from folder
     event_type = 'sentry' if 'SentryClips' in rel_path else 'saved'
@@ -1144,7 +1161,8 @@ def _infer_sentry_event(
     ej_timestamp = None
     ej_camera = None
     if teslacam_root:
-        ej_data = _read_event_json(rel_path, teslacam_root)
+        ej_data = _read_event_json(rel_path, teslacam_root,
+                                   skip_gps_check=is_telemetry_only)
         if ej_data:
             lat = ej_data['_lat']
             lon = ej_data['_lon']
@@ -1155,19 +1173,33 @@ def _infer_sentry_event(
 
     # Fall back to nearest waypoint (legacy behavior)
     if lat is None or lon is None:
-        row = conn.execute(
-            """SELECT lat, lon FROM waypoints
-               WHERE timestamp <= ? AND lat != 0 AND lon != 0
-               ORDER BY timestamp DESC LIMIT 1""",
-            (file_timestamp,)
-        ).fetchone()
-        if not row:
+        if is_telemetry_only:
             row = conn.execute(
                 """SELECT lat, lon FROM waypoints
-                   WHERE lat != 0 AND lon != 0
-                   ORDER BY timestamp ASC LIMIT 1""",
-                ()
+                   WHERE timestamp <= ?
+                   ORDER BY timestamp DESC LIMIT 1""",
+                (file_timestamp,)
             ).fetchone()
+            if not row:
+                row = conn.execute(
+                    """SELECT lat, lon FROM waypoints
+                       ORDER BY timestamp ASC LIMIT 1""",
+                    ()
+                ).fetchone()
+        else:
+            row = conn.execute(
+                """SELECT lat, lon FROM waypoints
+                   WHERE timestamp <= ? AND lat != 0 AND lon != 0
+                   ORDER BY timestamp DESC LIMIT 1""",
+                (file_timestamp,)
+            ).fetchone()
+            if not row:
+                row = conn.execute(
+                    """SELECT lat, lon FROM waypoints
+                       WHERE lat != 0 AND lon != 0
+                       ORDER BY timestamp ASC LIMIT 1""",
+                    ()
+                ).fetchone()
         if not row:
             logger.info("Cannot infer location for %s — no event.json and no waypoints", rel_path)
             return False
@@ -1543,10 +1575,11 @@ def _index_video(
     if trip_id is None:
         # Create new trip
         cursor = conn.execute(
-            """INSERT INTO trips (start_time, start_lat, start_lon, source_folder, indexed_at)
-               VALUES (?, ?, ?, ?, ?)""",
+            """INSERT INTO trips (start_time, start_lat, start_lon,
+               source_folder, telemetry_only, indexed_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
             (first_wp['timestamp'], first_wp['lat'], first_wp['lon'],
-             source_folder, datetime.now(timezone.utc).isoformat())
+             source_folder, 0, datetime.now(timezone.utc).isoformat())
         )
         trip_id = cursor.lastrowid
 
@@ -1699,8 +1732,11 @@ def _index_video(
         ).fetchall()
         prev = None
         prev_video = None
+        found_gps_waypoint = False
         for w in all_wps:
             video_path = w['video_path']
+            if not found_gps_waypoint and (w['lat'] != 0 or w['lon'] != 0):
+                found_gps_waypoint = True
             if prev is not None and video_path == prev_video:
                 total_dist += _haversine_km(
                     prev['lat'], prev['lon'],
@@ -1720,14 +1756,15 @@ def _index_video(
                start_time = ?, end_time = ?,
                start_lat = ?, start_lon = ?,
                end_lat = ?, end_lon = ?,
-               distance_km = ?, duration_seconds = ?
+               distance_km = ?, duration_seconds = ?,
+               telemetry_only = ?
                WHERE id = ?""",
             (first_ts, last_ts,
              first_row['lat'] if first_row else None,
              first_row['lon'] if first_row else None,
              last_row['lat'] if last_row else None,
              last_row['lon'] if last_row else None,
-             total_dist, dur, trip_id),
+             total_dist, dur, 0 if found_gps_waypoint else 1, trip_id),
         )
 
     conn.commit()

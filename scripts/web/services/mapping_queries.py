@@ -262,7 +262,7 @@ def query_trips(db_path: str, limit: int = 50, offset: int = 0,
         params: List = []
 
         if min_distance_km and min_distance_km > 0:
-            sql += " AND COALESCE(t.distance_km, 0) >= ?"
+            sql += " AND (COALESCE(t.distance_km, 0) >= ? OR t.telemetry_only = 1)"
             params.append(min_distance_km)
 
         if bbox:
@@ -455,7 +455,7 @@ def query_days(db_path: str, limit: int = 60,
                        MAX(COALESCE(end_time, start_time))  AS last_end
                   FROM trips
                  WHERE start_time IS NOT NULL
-                   AND COALESCE(distance_km, 0) >= ?
+                   AND (COALESCE(distance_km, 0) >= ? OR telemetry_only = 1)
                  GROUP BY day
             ),
             event_days AS (
@@ -566,7 +566,7 @@ def query_day_routes(db_path: str, date_str: str,
               FROM trips t
               JOIN waypoints w ON w.trip_id = t.id
              WHERE substr(t.start_time, 1, 10) = ?
-               AND COALESCE(t.distance_km, 0) >= ?
+               AND (COALESCE(t.distance_km, 0) >= ? OR t.telemetry_only = 1)
              ORDER BY t.start_time DESC, w.timestamp ASC, w.id ASC
         """
         rows = conn.execute(sql, (date_str, min_distance_km)).fetchall()
@@ -922,6 +922,7 @@ def query_all_routes_simplified(
                    t.end_lon           AS end_lon,
                    t.distance_km       AS distance_km,
                    t.duration_seconds  AS duration_seconds,
+                   t.telemetry_only    AS telemetry_only,
                    substr(t.start_time, 1, 10) AS date,
                    w.timestamp         AS w_timestamp,
                    w.lat               AS lat,
@@ -930,7 +931,7 @@ def query_all_routes_simplified(
               FROM trips t
               JOIN waypoints w ON w.trip_id = t.id
              WHERE t.start_time IS NOT NULL
-               AND COALESCE(t.distance_km, 0) >= ?
+               AND (COALESCE(t.distance_km, 0) >= ? OR t.telemetry_only = 1)
                AND w.lat IS NOT NULL
                AND w.lon IS NOT NULL
              ORDER BY t.start_time DESC, w.timestamp ASC, w.id ASC
@@ -955,6 +956,7 @@ def query_all_routes_simplified(
                     'end_lon': row['end_lon'],
                     'distance_km': row['distance_km'],
                     'duration_seconds': row['duration_seconds'],
+                    'telemetry_only': row['telemetry_only'],
                 }
                 trips_by_id[trip_id] = trip
                 order.append(trip_id)

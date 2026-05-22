@@ -184,11 +184,16 @@ def _record_skip() -> None:
 def _peek_clip_for_gps(source_path: str) -> Optional[bool]:
     """Producer-side wrapper around the worker's SEI peek.
 
-    Mirrors :func:`archive_worker._clip_has_gps_signal` so the producer
+    Mirrors :func:`archive_worker._clip_has_movement` so the producer
     doesn't have to import the worker module at load time (one-way
     dependency: the worker may import producer-side helpers, never
-    the reverse). Returns the same tri-state: True (has GPS), False
-    (no GPS / skip), None (parse error / fall through).
+    the reverse). Returns the same tri-state: True (has movement/GPS),
+    False (stationary / skip), None (parse error / fall through).
+
+    Detection uses GPS as a fast-path and falls back to telemetry
+    (speed, gear, brake, accelerator, steering, blinkers) so the
+    skip-stationary decision works correctly on China-market Teslas
+    where GPS lat/lon is always zero.
 
     The peek tunables (``MAX_MESSAGES``, ``SAMPLE_RATE``,
     ``MAX_WALK_BYTES``) are pulled from the worker module at call time
@@ -213,9 +218,9 @@ def _peek_clip_for_gps(source_path: str) -> Optional[bool]:
             _SKIP_GPS_PEEK_MAX_WALK_BYTES as _MAX_WALK_BYTES,
         )
     except Exception:  # noqa: BLE001
-        # Worker not importable in this context (e.g., a focused
-        # producer-only test); fall back to the same defaults the
-        # worker uses today. Keep these in sync with archive_worker.py.
+        # Worker not importable (e.g., focused producer-only test);
+        # fall back to the worker's defaults. Keep these in sync with
+        # archive_worker.py.
         _MAX_MESSAGES = 90
         _SAMPLE_RATE = 30
         _MAX_WALK_BYTES = 2 * 1024 * 1024
@@ -229,11 +234,13 @@ def _peek_clip_for_gps(source_path: str) -> Optional[bool]:
             scanned += 1
             if msg.has_gps:
                 return True
+            if msg.has_telemetry:
+                return True
             if scanned >= _MAX_MESSAGES:
                 break
-        if scanned == 0:
-            return False
-        return True
+        # All sampled messages are stationary (no GPS, no telemetry)
+        # — high-confidence skip.
+        return False
     except FileNotFoundError:
         return None
     except Exception as e:  # noqa: BLE001

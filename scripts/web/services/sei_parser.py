@@ -138,6 +138,21 @@ class SeiMessage:
         return (self.latitude_deg != 0.0 or self.longitude_deg != 0.0)
 
     @property
+    def has_telemetry(self) -> bool:
+        """Check if this message carries useful CAN-bus telemetry.
+
+        Mirrors :func:`archive_worker._has_movement` so the sidecar
+        auto-detection uses the same signals as the archive skip logic.
+        """
+        return (abs(self.vehicle_speed_mps) > 0.5
+                or self.gear_state in ('DRIVE', 'REVERSE')
+                or self.brake_applied
+                or self.accelerator_pedal_position > 0
+                or self.steering_wheel_angle != 0.0
+                or self.blinker_on_left
+                or self.blinker_on_right)
+
+    @property
     def speed_mph(self) -> float:
         """Speed in miles per hour."""
         return abs(self.vehicle_speed_mps) * 2.23694
@@ -682,7 +697,7 @@ def parse_video_sei(
 # (``sample_rate=30``) — finer-grained tools (the diagnostic
 # ``sample_rate=1`` walk) fall back transparently.
 SIDECAR_SUFFIX = '.sei.json'
-SIDECAR_SCHEMA_VERSION = 1
+SIDECAR_SCHEMA_VERSION = 2
 
 
 @dataclass
@@ -840,16 +855,14 @@ def write_sei_sidecar(
 
     sei_count = 0
     no_gps_count = 0
-    all_messages: List[SeiMessage] = []
+    temp_all: List[SeiMessage] = []
     try:
         for msg in extract_sei_messages(
                 video_path, sample_rate=sample_rate):
             sei_count += 1
             if not msg.has_gps:
                 no_gps_count += 1
-                if not keep_all_messages:
-                    continue
-            all_messages.append(msg)
+            temp_all.append(msg)
     except (FileNotFoundError, ValueError) as e:
         logger.debug(
             "sei sidecar: SEI walk failed for %s: %s", video_path, e,
@@ -863,11 +876,35 @@ def write_sei_sidecar(
         )
         return None
 
+    # Auto-detect telemetry-only files (China-market Teslas where GPS
+    # is always 0 but CAN-bus telemetry is present). When ALL messages
+    # lack GPS and at least one has telemetry signals, switch to
+    # keep-all mode so the sidecar is useful as a parse cache.
+    telemetry_only = False
+    effective_keep_all = keep_all_messages
+    if not effective_keep_all and sei_count > 0 and no_gps_count == sei_count:
+        if any(m.has_telemetry for m in temp_all):
+            effective_keep_all = True
+            telemetry_only = True
+            logger.info(
+                "sei sidecar: auto-detected telemetry-only file %s "
+                "(%d SEI msgs, 0 GPS, %d with telemetry); "
+                "keeping all messages for sidecar cache",
+                video_path, sei_count,
+                sum(1 for m in temp_all if m.has_telemetry),
+            )
+
+    if effective_keep_all:
+        all_messages = temp_all
+    else:
+        all_messages = [m for m in temp_all if m.has_gps]
+
     payload = {
         'schema_version': SIDECAR_SCHEMA_VERSION,
         'sample_rate': sample_rate,
         'sei_count': sei_count,
         'no_gps_count': no_gps_count,
+        'telemetry_only': telemetry_only,
         'mvhd_creation_time_utc': (
             mvhd_dt.isoformat() if mvhd_dt is not None else None
         ),

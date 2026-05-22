@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 # Database Schema & Management
 # ---------------------------------------------------------------------------
 
-_SCHEMA_VERSION = 18
+_SCHEMA_VERSION = 19
 _BACKUP_RETENTION = 3  # Keep this many migration backups before pruning oldest
 
 # Schema version that introduced ``pipeline_queue.claimed_by`` and
@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS trips (
     distance_km REAL DEFAULT 0.0,
     duration_seconds INTEGER DEFAULT 0,
     source_folder TEXT,
+    telemetry_only INTEGER DEFAULT 0,
     indexed_at TEXT
 );
 
@@ -742,6 +743,20 @@ def _init_db(db_path: str) -> sqlite3.Connection:
                 pass
             logger.info(
                 "Migration v17->v18: archive_queue.next_retry_at column ready"
+            )
+        if current > 0 and current < 19:
+            # v19: ``telemetry_only`` flag on ``trips`` so the UI can
+            # distinguish GPS-less trips (China-market Teslas where
+            # lat/lon are always 0) from normal GPS trips. Defaults to
+            # 0 (GPS available) so existing databases work unchanged.
+            try:
+                conn.execute(
+                    "ALTER TABLE trips ADD COLUMN telemetry_only INTEGER DEFAULT 0"
+                )
+            except sqlite3.OperationalError:
+                pass
+            logger.info(
+                "Migration v18->v19: trips.telemetry_only column ready"
             )
         conn.execute("DELETE FROM schema_version")
         conn.execute(

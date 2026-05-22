@@ -169,7 +169,7 @@ def _block_real_indexer_enqueue(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _default_clip_has_gps_signal_true(request, monkeypatch):
+def _default_clip_has_movement_true(request, monkeypatch):
     """Default the SEI peek to ``True`` ("has GPS, copy normally").
 
     Issue #184 Wave 1 made the SEI peek unconditional for every
@@ -182,14 +182,14 @@ def _default_clip_has_gps_signal_true(request, monkeypatch):
     monkeypatch this function with their own value AFTER this fixture
     runs, so they keep full control of the peek result.
 
-    Tests that exercise the SEI peek itself (``TestClipHasGpsSignal``)
+    Tests that exercise the SEI peek itself (``TestClipHasMovement``)
     need the real function — they're explicitly opted out via the
     class-name check below.
     """
-    if request.cls is not None and request.cls.__name__ == 'TestClipHasGpsSignal':
+    if request.cls is not None and request.cls.__name__ == 'TestClipHasMovement':
         return
     monkeypatch.setattr(
-        archive_worker, '_clip_has_gps_signal',
+        archive_worker, '_clip_has_movement',
         lambda path: True,
     )
 
@@ -703,9 +703,9 @@ class TestArchiveWorkerSkipStationary:
     RecentClips. Issue #184 Wave 1 made the SEI peek unconditional;
     there is no longer an enable toggle to monkeypatch.
 
-    Tests stub ``_clip_has_gps_signal`` directly so we don't need a
+    Tests stub ``_clip_has_movement`` directly so we don't need a
     real Tesla SEI fixture. The helper itself is exercised by
-    ``test_clip_has_gps_signal_*`` below.
+    ``test_clip_has_movement_*`` below.
     """
 
     def test_skipped_when_recent_clips_no_gps(
@@ -716,7 +716,7 @@ class TestArchiveWorkerSkipStationary:
         row = claim_next_for_worker('w', db_path=db)
 
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda path: False,
         )
         # Set up a tripwire — _atomic_copy must NEVER be called.
@@ -751,7 +751,7 @@ class TestArchiveWorkerSkipStationary:
         row = claim_next_for_worker('w', db_path=db)
 
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda path: True,
         )
         outcome = archive_worker.process_one_claim(
@@ -780,7 +780,7 @@ class TestArchiveWorkerSkipStationary:
             return False  # would skip if reached
 
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal', fake_peek,
+            archive_worker, '_clip_has_movement', fake_peek,
         )
         outcome = archive_worker.process_one_claim(
             row, db, archive_root, teslacam_root,
@@ -807,7 +807,7 @@ class TestArchiveWorkerSkipStationary:
 
         peek_called = []
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda p: peek_called.append(p) or False,
         )
         outcome = archive_worker.process_one_claim(
@@ -820,7 +820,7 @@ class TestArchiveWorkerSkipStationary:
     def test_ambiguous_peek_falls_through_to_copy(
         self, db, archive_root, teslacam_root, make_clip, monkeypatch,
     ):
-        # ``_clip_has_gps_signal`` returns ``None`` when it can't
+        # ``_clip_has_movement`` returns ``None`` when it can't
         # decide (parse error, mmap failure, etc.). The data-
         # preservation default is to fall through to the normal copy
         # path so a parser bug never silently drops a clip.
@@ -829,7 +829,7 @@ class TestArchiveWorkerSkipStationary:
         row = claim_next_for_worker('w', db_path=db)
 
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda path: None,  # ambiguous
         )
         outcome = archive_worker.process_one_claim(
@@ -860,7 +860,7 @@ class TestArchiveWorkerSkipStationary:
 
         peek_called = []
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda p: peek_called.append(p) or False,
         )
         # Stable-write gate sees a fresh file with drifted metadata
@@ -888,7 +888,7 @@ class TestArchiveWorkerSkipStationary:
 
         peek_called = []
         monkeypatch.setattr(
-            archive_worker, '_clip_has_gps_signal',
+            archive_worker, '_clip_has_movement',
             lambda p: peek_called.append(p) or False,
         )
         outcome = archive_worker.process_one_claim(
@@ -902,12 +902,12 @@ class TestArchiveWorkerSkipStationary:
 
 
 # ---------------------------------------------------------------------------
-# TestClipHasGpsSignal  (issue #167 sub-deliverable 2 — peek helper)
+# TestClipHasMovement  (issue #167 sub-deliverable 2 — peek helper)
 # ---------------------------------------------------------------------------
 
 
-class TestClipHasGpsSignal:
-    """Unit tests for ``_clip_has_gps_signal`` — the SEI peek helper.
+class TestClipHasMovement:
+    """Unit tests for ``_clip_has_movement`` — the SEI peek helper.
 
     We stub ``services.sei_parser.extract_sei_messages`` rather than
     crafting real Tesla SEI fixtures; the parser itself has its own
@@ -919,8 +919,26 @@ class TestClipHasGpsSignal:
     def fake_msg(self):
         from types import SimpleNamespace
 
-        def _make(has_gps: bool):
-            return SimpleNamespace(has_gps=has_gps)
+        def _make(*, has_gps: bool = False,
+                  vehicle_speed_mps: float = 0.0,
+                  gear_state: str = 'PARK',
+                  brake_applied: bool = False,
+                  accelerator_pedal_position: float = 0.0,
+                  steering_wheel_angle: float = 0.0,
+                  blinker_on_left: bool = False,
+                  blinker_on_right: bool = False,
+                  has_telemetry: bool = False):
+            return SimpleNamespace(
+                has_gps=has_gps,
+                vehicle_speed_mps=vehicle_speed_mps,
+                gear_state=gear_state,
+                brake_applied=brake_applied,
+                accelerator_pedal_position=accelerator_pedal_position,
+                steering_wheel_angle=steering_wheel_angle,
+                blinker_on_left=blinker_on_left,
+                blinker_on_right=blinker_on_right,
+                has_telemetry=has_telemetry,
+            )
 
         return _make
 
@@ -938,24 +956,52 @@ class TestClipHasGpsSignal:
             for i in range(100):
                 seen.append(i)
                 if i == 0:
-                    yield fake_msg(False)
+                    yield fake_msg(has_gps=False)
                 elif i == 1:
-                    yield fake_msg(True)
+                    yield fake_msg(has_gps=True)
                 else:
-                    yield fake_msg(False)
+                    yield fake_msg(has_gps=False)
 
         from services import sei_parser
         monkeypatch.setattr(
             sei_parser, 'extract_sei_messages', fake_extract,
         )
-        result = archive_worker._clip_has_gps_signal(str(clip))
+        result = archive_worker._clip_has_movement(str(clip))
         assert result is True
         # Generator must not have been pulled past the first GPS hit.
         assert seen == [0, 1], (
             f"peek pulled too many messages: {seen!r}"
         )
 
-    def test_returns_false_when_no_gps_in_capped_window(
+    def test_returns_true_on_movement_without_gps(
+        self, monkeypatch, tmp_path, fake_msg,
+    ):
+        # A clip with speed > 0 but no GPS (China-market Tesla) MUST
+        # early-exit as "has movement" and be archived.
+        clip = tmp_path / "china-moving.mp4"
+        clip.write_bytes(b"x" * 100)
+        seen = []
+
+        def fake_extract(path, sample_rate, max_walk_bytes=None):
+            for i in range(50):
+                seen.append(i)
+                if i == 2:
+                    yield fake_msg(has_gps=False, vehicle_speed_mps=10.0,
+                                   gear_state='DRIVE', has_telemetry=True)
+                else:
+                    yield fake_msg(has_gps=False)
+
+        from services import sei_parser
+        monkeypatch.setattr(
+            sei_parser, 'extract_sei_messages', fake_extract,
+        )
+        result = archive_worker._clip_has_movement(str(clip))
+        assert result is True
+        assert seen == [0, 1, 2], (
+            f"peek should early-exit on movement: {seen!r}"
+        )
+
+    def test_returns_false_when_no_movement_in_capped_window(
         self, monkeypatch, tmp_path, fake_msg,
     ):
         clip = tmp_path / "stationary.mp4"
@@ -965,13 +1011,13 @@ class TestClipHasGpsSignal:
             # Yield one less than the cap to confirm we walk normally
             # to exhaustion when no GPS appears.
             for _ in range(archive_worker._SKIP_GPS_PEEK_MAX_MESSAGES - 1):
-                yield fake_msg(False)
+                yield fake_msg(has_gps=False)
 
         from services import sei_parser
         monkeypatch.setattr(
             sei_parser, 'extract_sei_messages', fake_extract,
         )
-        assert archive_worker._clip_has_gps_signal(str(clip)) is False
+        assert archive_worker._clip_has_movement(str(clip)) is False
 
     def test_returns_false_when_zero_messages(
         self, monkeypatch, tmp_path,
@@ -989,7 +1035,7 @@ class TestClipHasGpsSignal:
         )
         # Zero SEIs is treated as stationary (skip). A real Tesla clip
         # always has SEI; a clip without SEI isn't worth mapping anyway.
-        assert archive_worker._clip_has_gps_signal(str(clip)) is False
+        assert archive_worker._clip_has_movement(str(clip)) is False
 
     def test_caps_at_max_messages(
         self, monkeypatch, tmp_path, fake_msg,
@@ -1003,13 +1049,13 @@ class TestClipHasGpsSignal:
         def fake_extract(path, sample_rate, max_walk_bytes=None):
             for i in range(10000):
                 pulled.append(i)
-                yield fake_msg(False)
+                yield fake_msg(has_gps=False)
 
         from services import sei_parser
         monkeypatch.setattr(
             sei_parser, 'extract_sei_messages', fake_extract,
         )
-        result = archive_worker._clip_has_gps_signal(str(clip))
+        result = archive_worker._clip_has_movement(str(clip))
         assert result is False
         assert len(pulled) == archive_worker._SKIP_GPS_PEEK_MAX_MESSAGES
 
@@ -1030,7 +1076,7 @@ class TestClipHasGpsSignal:
         # Parse error → ambiguous → caller must fall through to copy.
         # NEVER return False on a parse error (that would silently
         # drop a potentially-valid clip on a parser bug).
-        assert archive_worker._clip_has_gps_signal(str(clip)) is None
+        assert archive_worker._clip_has_movement(str(clip)) is None
 
     def test_returns_none_on_file_not_found(
         self, monkeypatch, tmp_path,
@@ -1048,7 +1094,7 @@ class TestClipHasGpsSignal:
         )
         # File vanished mid-peek → ambiguous → caller will re-stat
         # and mark source_gone via the existing copy path.
-        assert archive_worker._clip_has_gps_signal(str(clip)) is None
+        assert archive_worker._clip_has_movement(str(clip)) is None
 
     def test_passes_max_walk_bytes_cap_to_parser(
         self, monkeypatch, tmp_path, fake_msg,
@@ -1074,7 +1120,7 @@ class TestClipHasGpsSignal:
         monkeypatch.setattr(
             sei_parser, 'extract_sei_messages', fake_extract,
         )
-        archive_worker._clip_has_gps_signal(str(clip))
+        archive_worker._clip_has_movement(str(clip))
         assert len(captured_kwargs) == 1
         assert captured_kwargs[0]['sample_rate'] == (
             archive_worker._SKIP_GPS_PEEK_SAMPLE_RATE

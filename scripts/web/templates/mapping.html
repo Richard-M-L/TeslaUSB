@@ -899,6 +899,18 @@
     @media (prefers-reduced-motion: reduce) {
         .video-panel { transition: none !important; }
     }
+    .no-gps-badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 5px;
+        border: 1px solid var(--text-secondary, #888);
+        border-radius: 3px;
+        color: var(--text-secondary, #888);
+        margin-left: 6px;
+        vertical-align: middle;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+    }
 </style>
 
 <div class="map-container">
@@ -2350,6 +2362,11 @@ function renderTripOnDay(trip, bounds) {
     const waypoints = trip.waypoints || [];
     if (!waypoints.length) return;
 
+    // Telemetry-only trip (China-market Tesla, no GPS) — nothing to
+    // render on the map; the trip still appears in the slide-out panel
+    // with a "No GPS" badge and play button.
+    if (trip.telemetry_only) return;
+
     // Filter to renderable waypoints (skip null/non-finite coords
     // and zero-coordinate telemetry-only waypoints from no-GPS videos).
     const valid = waypoints.filter(wp =>
@@ -2610,6 +2627,7 @@ async function renderAllTime() {
     const bounds = [];
 
     for (const trip of trips) {
+        if (trip.telemetry_only) continue;
         const valid = (trip.waypoints || []).filter(w =>
             Number.isFinite(w.lat) && Number.isFinite(w.lon) &&
             !(w.lat === 0 && w.lon === 0));
@@ -3221,7 +3239,13 @@ function onOverlayTimeUpdate() {
 
 function updateOverlayTelemetry(wp) {
     const coords = document.getElementById('olCoords');
-    if (coords) coords.innerHTML = _iconSvg('icon-map-pin', 14) + ' ' + (wp.lat || 0).toFixed(4) + ', ' + (wp.lon || 0).toFixed(4);
+    if (coords) {
+        if (wp.lat === 0 && wp.lon === 0) {
+            coords.innerHTML = _iconSvg('icon-map-pin', 14) + ' No GPS';
+        } else {
+            coords.innerHTML = _iconSvg('icon-map-pin', 14) + ' ' + (wp.lat || 0).toFixed(4) + ', ' + (wp.lon || 0).toFixed(4);
+        }
+    }
 
     // Speed
     const speedVal = document.getElementById('olSpeedVal');
@@ -4032,18 +4056,26 @@ async function loadTripsTimeline() {
 
             const hasCoords = trip.start_lat != null && trip.start_lon != null
                 && !(trip.start_lat === 0 && trip.start_lon === 0);
+            const telemetryOnly = trip.telemetry_only === 1 || trip.telemetry_only === true;
 
             html += '<div class="st-event" data-trip-id="' + escapeHTML(String(trip.id)) + '"';
             if (hasCoords) html += ' data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '"';
             html += '>';
             html += '<div class="st-dot trip"></div>';
             html += '<div class="st-card">';
-            html += '<div class="st-type">' + (evCount > 0 ? _t('mapping.trip_with_events') : _t('mapping.trip')) + '</div>';
+            html += '<div class="st-type">' + (evCount > 0 ? _t('mapping.trip_with_events') : _t('mapping.trip'))
+                + (telemetryOnly ? '<span class="no-gps-badge">No GPS</span>' : '')
+                + '</div>';
             html += '<div class="st-date">' + dateStr + '</div>';
             html += '<div class="st-meta">' + metaHtml + '</div>';
             html += '<div class="st-actions">';
             if (hasCoords) {
                 html += '<button class="vp-btn st-btn-map" title="' + _t('mapping.show_on_map') + '" data-lat="' + trip.start_lat + '" data-lon="' + trip.start_lon + '" data-trip-id="' + escapeHTML(String(trip.id)) + '">' + _iconSvg('icon-map-pin', 15) + '</button>';
+            }
+            // For telemetry-only trips without coords, still provide a
+            // play button so users can open the video overlay.
+            if (telemetryOnly) {
+                html += '<button class="vp-btn st-btn-play" title="' + _t('mapping.play') + '" data-trip-id="' + escapeHTML(String(trip.id)) + '">' + _iconSvg('icon-play', 15) + '</button>';
             }
             html += '</div></div></div>';
         });
@@ -4061,6 +4093,13 @@ async function loadTripsTimeline() {
         });
         list.querySelectorAll('.st-btn-map[data-trip-id]').forEach(function(btn) {
             btn.addEventListener('click', function() {
+                const tripId = btn.dataset.tripId;
+                if (tripId) selectDayForTrip(parseInt(tripId, 10));
+            });
+        });
+        list.querySelectorAll('.st-btn-play[data-trip-id]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const tripId = btn.dataset.tripId;
                 if (tripId) selectDayForTrip(parseInt(tripId, 10));
             });

@@ -1600,13 +1600,14 @@ def _stable_write_age_seconds() -> float:
 # Issue #176 — fast-peek tuning
 # ---------------------------------------------------------------------------
 
-# Cap on SEI messages scanned by ``_clip_has_gps_signal`` before declaring
-# "no GPS". Tesla writes one SEI NAL per frame at ~30 fps; with sample_rate=30
-# one SeiMessage is yielded per ~1 s of video. The cap is mainly a defensive
-# bound for degenerate inputs (e.g., a corrupted clip that yields tens of
-# thousands of SEI NALs); the dominant termination signal for a moving clip
-# is the early ``return True`` on the first GPS-bearing message, and for a
-# stationary clip is ``_SKIP_GPS_PEEK_MAX_WALK_BYTES`` (below).
+# Cap on SEI messages scanned by ``_clip_has_movement`` before declaring
+# "no movement". Tesla writes one SEI NAL per frame at ~30 fps; with
+# sample_rate=30 one SeiMessage is yielded per ~1 s of video. The cap is
+# mainly a defensive bound for degenerate inputs (e.g., a corrupted clip
+# that yields tens of thousands of SEI NALs); the dominant termination
+# signal for a moving clip is the early ``return True`` on the first
+# movement-bearing message, and for a stationary clip is
+# ``_SKIP_GPS_PEEK_MAX_WALK_BYTES`` (below).
 _SKIP_GPS_PEEK_MAX_MESSAGES = 90
 # Sample rate for the peek. ``30`` matches what the indexer uses — one SEI
 # per ~1 s of video — so the I/O footprint of the peek is on the same order
@@ -1630,8 +1631,8 @@ _SKIP_GPS_PEEK_SAMPLE_RATE = 30
 _SKIP_GPS_PEEK_MAX_WALK_BYTES = 2 * 1024 * 1024
 
 
-def _clip_has_gps_signal(source_path: str) -> Optional[bool]:
-    """Return whether a RecentClips candidate has any GPS-bearing SEI.
+def _clip_has_movement(source_path: str) -> Optional[bool]:
+    """Return whether a RecentClips candidate shows vehicle movement.
 
     Issue #167 sub-deliverable 2 — fast SEI peek used by
     :func:`process_one_claim` to decide whether to skip a stationary
@@ -1640,23 +1641,26 @@ def _clip_has_gps_signal(source_path: str) -> Optional[bool]:
     longer an opt-in toggle; the peek runs for every RecentClips
     candidate.
 
+    Detection uses :meth:`SeiMessage.has_telemetry` which checks speed, gear,
+    brake, accelerator, steering, and turn-signal telemetry. This
+    covers China-market Teslas where GPS lat/lon is always zero.
+    GPS is still checked as a fast-path: a non-zero lat/lon instantly
+    qualifies the clip as moving without scanning further.
+
     Returns:
-      * ``True``  — at least one SEI message with non-zero lat/lon was
-        found in the first ``_SKIP_GPS_PEEK_MAX_MESSAGES`` samples.
-        The clip is "moving"; the worker should copy it.
-      * ``False`` — every sampled SEI message had ``has_gps == False``,
-        or the file has no SEI messages at all (e.g., a non-camera
-        recording), or the file has fewer than the cap. The clip is
-        "stationary"; the worker can mark it ``skipped_stationary``.
-      * ``None``  — we couldn't decisively determine GPS presence
-        (parse error, file missing, etc.). The caller MUST treat
-        ``None`` as "fall through to normal copy" so ambiguous clips
-        are never silently dropped — the existing copy-then-index
-        path will handle them safely.
+      * ``True``  — at least one SEI message indicates movement (or
+        has GPS) within the first ``_SKIP_GPS_PEEK_MAX_MESSAGES``
+        samples. The worker should copy the clip.
+      * ``False`` — every sampled SEI message was stationary (no
+        movement signals AND no GPS), or the file has no SEI at all.
+        The worker can mark it ``skipped_stationary``.
+      * ``None``  — we couldn't decide (parse error, file missing,
+        etc.). The caller MUST fall through to normal copy so
+        ambiguous clips are never silently dropped.
 
     Memory and I/O model: re-uses the same ``mmap``-backed
     :func:`sei_parser.extract_sei_messages` generator the indexer
-    uses, with an early ``break`` on the first GPS-bearing message
+    uses, with an early return on the first movement-bearing message
     AND a ``max_walk_bytes`` cap so a parked clip with zero SEI does
     NOT have to page in the entire ``mdat`` box to confirm absence.
     Issue #176 — without the byte cap, the parser walks the whole
@@ -1668,10 +1672,8 @@ def _clip_has_gps_signal(source_path: str) -> Optional[bool]:
     try:
         from services import sei_parser
     except Exception as e:  # noqa: BLE001
-        # Parser missing in this environment (e.g., a unit-test stub
-        # without the parser path). Be safe — fall through to copy.
         logger.debug(
-            "_clip_has_gps_signal: sei_parser unavailable (%s); "
+            "_clip_has_movement: sei_parser unavailable (%s); "
             "deferring to copy", e,
         )
         return None
@@ -1683,31 +1685,29 @@ def _clip_has_gps_signal(source_path: str) -> Optional[bool]:
                 sample_rate=_SKIP_GPS_PEEK_SAMPLE_RATE,
                 max_walk_bytes=_SKIP_GPS_PEEK_MAX_WALK_BYTES):
             scanned += 1
+            # GPS fast-path: non-zero lat/lon → definitely moving
             if msg.has_gps:
+                return True
+            # Telemetry fallback: movement signals from non-GPS data
+            if msg.has_telemetry:
                 return True
             if scanned >= _SKIP_GPS_PEEK_MAX_MESSAGES:
                 break
-        # Generator exhausted (or hit cap) without a GPS-bearing
-        # message. Two sub-cases:
-        #   * scanned == 0 — no SEI at all. True stationary (parked
-        #     Sentry clip or camera without telemetry). Skip.
-        #   * scanned > 0 — clip HAS SEI messages but GPS fields
-        #     decoded as zero. This could be a genuine no-GPS-lock
-        #     period OR Tesla firmware with a shifted protobuf schema.
-        #     Archive it and let the indexer handle the parse.
-        if scanned == 0:
-            return False
-        return True
+        # Generator exhausted (or hit cap) without any movement signal.
+        # scanned==0: no SEI at all (parked Sentry clip); scanned>0:
+        # every sampled message is stationary (speed=0, gear=PARK, no
+        # pedal/steering/blinker activity). Both are high-confidence
+        # stationary — skip.
+        return False
     except FileNotFoundError:
         # Tesla rotated the source between the stable-write gate and
         # the peek. Caller will re-stat and mark source_gone.
         return None
     except Exception as e:  # noqa: BLE001
-        # Any parse error (corrupt MP4, mmap failure, protobuf decode
-        # blow-up) — fall through to the existing copy path so we
-        # never lose data on a parser bug.
+        # Corrupt MP4, mmap failure, protobuf blow-up — fall through to
+        # normal copy so a parser bug never silently drops a clip.
         logger.warning(
-            "_clip_has_gps_signal: peek failed for %s (%s); "
+            "_clip_has_movement: peek failed for %s (%s); "
             "deferring to copy", source_path, e,
         )
         return None
@@ -1862,24 +1862,27 @@ def process_one_claim(row: Dict[str, Any], db_path: str,
     # but neither does it consume any). Sentry/Saved event clips have
     # priority 1 and never enter this branch — they bypass the SEI
     # peek entirely and follow the normal copy path.
-    # ``_clip_has_gps_signal`` returns ``None`` for any ambiguous case
-    # (parse error, mmap failure, file vanished mid-peek), and we fall
-    # through to the normal copy path so a parser bug can never
-    # silently drop a clip we should have copied.
+    # ``_clip_has_movement`` checks GPS + telemetry (speed, gear,
+    # brake, accelerator, steering, blinkers) so the stationary skip
+    # works correctly even on China-market Teslas where GPS lat/lon
+    # is always zero. Returns ``None`` for any ambiguous case (parse
+    # error, mmap failure, file vanished mid-peek), and we fall
+    # through to normal copy so a parser bug can never silently drop
+    # a clip we should have copied.
     if _is_recent_clips_priority(row):
-        gps_signal = _clip_has_gps_signal(source_path)
-        if gps_signal is False:
+        has_movement = _clip_has_movement(source_path)
+        if has_movement is False:
             archive_queue.mark_skipped_stationary(row_id, db_path=db_path)
             logger.info(
                 "archive_worker: skipped stationary RecentClips %s "
-                "(no GPS-bearing SEI in first %d KB / %d msgs)",
+                "(no movement/GPS signal in first %d KB / %d msgs)",
                 source_path,
                 _SKIP_GPS_PEEK_MAX_WALK_BYTES // 1024,
                 _SKIP_GPS_PEEK_MAX_MESSAGES,
             )
             return 'skipped_stationary'
-        # gps_signal True → has GPS, fall through to normal copy.
-        # gps_signal None → couldn't decide, fall through to copy
+        # has_movement True → keep the clip, fall through to copy.
+        # has_movement None → couldn't decide, fall through to copy
         # (data-preservation default).
 
     # Disk-space pre-archive guard. We do this AFTER the stable-write
