@@ -4100,8 +4100,27 @@ async function loadTripsTimeline() {
         list.querySelectorAll('.st-btn-play[data-trip-id]').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const tripId = btn.dataset.tripId;
-                if (tripId) selectDayForTrip(parseInt(tripId, 10));
+                const tripId = parseInt(btn.dataset.tripId, 10);
+                if (!tripId) return;
+                // Fetch the trip route to get waypoints with video_paths,
+                // then open the video overlay on the first playable clip.
+                btn.disabled = true;
+                fetch('/api/trip/' + encodeURIComponent(tripId) + '/route')
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(geojson) {
+                        btn.disabled = false;
+                        if (!geojson || !geojson.properties || !geojson.properties.waypoints) return;
+                        var wps = geojson.properties.waypoints;
+                        var seed = null;
+                        for (var i = 0; i < wps.length; i++) {
+                            if (wps[i].video_path) { seed = wps[i]; break; }
+                        }
+                        if (!seed) return;
+                        openVideoOverlay(seed,
+                            { x: window.innerWidth / 3, y: window.innerHeight / 4 },
+                            wps, tripId);
+                    })
+                    .catch(function() { btn.disabled = false; });
             });
         });
     } catch(e) {
